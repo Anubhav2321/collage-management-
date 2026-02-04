@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+    /* --- GLOBAL THEME --- */
+    :root {
+        --bg-dark: #0a0a0f;
+        --card-bg: #13131a;
+        --border-color: #2a2a35;
+        --neon-blue: #00f3ff;
+        --neon-purple: #bc13fe;
+        --text-main: #e0e0e0;
+        --glass: rgba(19, 19, 26, 0.95);
+    }
+
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+    }
+
+    .container-fluid {
+        padding: 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* --- PAGE HEADER & SEARCH --- */
+    .header-section {
+        background: linear-gradient(90deg, #13131a 0%, #1a1a24 100%);
+        border: 1px solid var(--border-color);
+        border-left: 5px solid var(--neon-blue);
+        border-radius: 15px;
+        padding: 30px 40px;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .title-area h2 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2rem;
+        margin: 0 0 5px 0;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    .title-area p { color: #888; font-size: 0.95rem; margin: 0; }
+
+    /* Search Bar */
+    .search-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 450px;
+    }
+    .search-input {
+        width: 100%;
+        padding: 12px 20px;
+        padding-right: 50px;
+        background: #0a0a0f;
+        border: 1px solid var(--border-color);
+        color: #fff;
+        border-radius: 50px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1rem;
+        outline: none;
+        transition: 0.3s;
+    }
+    .search-input:focus {
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+    }
+    .search-btn {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--neon-blue);
+        border: none;
+        color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .search-btn:hover { background: #fff; }
+
+    /* --- COURSE GRID --- */
+    .course-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+        padding-bottom: 50px;
+    }
+
+    /* Course Card */
+    .course-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        transition: 0.3s ease;
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+    
+    /* Hover Glow Only (No Movement) */
+    .course-card:hover {
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+    }
+
+    /* Stagger Animation Delay */
+    .course-card:nth-child(1) { animation-delay: 0.1s; }
+    .course-card:nth-child(2) { animation-delay: 0.2s; }
+    .course-card:nth-child(3) { animation-delay: 0.3s; }
+    .course-card:nth-child(4) { animation-delay: 0.4s; }
+    .course-card:nth-child(5) { animation-delay: 0.5s; }
+    .course-card:nth-child(6) { animation-delay: 0.6s; }
+
+    @keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .thumb-wrapper {
+        position: relative;
+        height: 180px;
+        background: #000;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .course-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.8;
+        transition: 0.3s;
+    }
+    .course-card:hover .course-img { opacity: 1; }
+
+    .category-badge {
+        position: absolute; top: 15px; left: 15px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 1px solid var(--neon-blue);
+        color: var(--neon-blue);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        backdrop-filter: blur(4px);
+    }
+
+    .card-content {
+        padding: 25px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .course-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 10px;
+        line-height: 1.3;
+    }
+
+    .rating-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #ffc107;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    .rating-text { color: #666; font-size: 0.8rem; margin-left: 5px; }
+
+    .course-desc {
+        color: #aaa;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        flex-grow: 1;
+    }
+
+    /* Meta Info */
+    .meta-info {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 15px;
+        border-top: 1px solid var(--border-color);
+        margin-bottom: 20px;
+        font-size: 0.85rem;
+        color: #888;
+    }
+    .meta-item i { margin-right: 5px; color: var(--neon-blue); }
+
+    /* Footer Action */
+    .card-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: auto;
+    }
+
+    .price-label {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .free-tag { color: var(--neon-purple); }
+
+    .enroll-btn {
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: #fff;
+        padding: 8px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+    }
+    .enroll-btn:hover {
+        background: var(--neon-blue);
+        color: #000;
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+    }
+
+    /* --- EMPTY STATE --- */
+    .empty-box {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 80px;
+        border: 1px dashed var(--border-color);
+        border-radius: 20px;
+        color: #666;
+    }
+    .empty-icon { font-size: 3rem; margin-bottom: 20px; color: #333; }
+
+    /* --- PAGINATION --- */
+    .pagination-area {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .page-link {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        color: #aaa;
+        padding: 8px 15px;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: 0.3s;
+    }
+    .page-link:hover, .page-link.active {
+        border-color: var(--neon-blue);
+        color: var(--neon-blue);
+    }
+
+</style>
+
+<div class="container-fluid">
+
+    <div class="header-section">
+        <div class="title-area">
+            <h2><i class="fas fa-layer-group" style="color:var(--neon-blue);margin-right:10px;"></i> Course Library</h2>
+            <p>Unlock new skills with our premium content.</p>
+        </div>
+
+        <div class="search-wrapper">
+            <form method="GET">
+                <input type="text" name="search" class="search-input" placeholder="Search courses..." value="{{ search_query|default:'' }}">
+                <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <div class="course-grid">
+        {% for course in courses %}
+        <div class="course-card">
+            
+            <div class="thumb-wrapper">
+                <span class="category-badge">{{ course.difficulty_level }}</span>
+                {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" alt="{{ course.title }}" class="course-img">
+                {% else %}
+                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#050505;">
+                        <i class="fas fa-code fa-3x" style="color:#333;"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="card-content">
+                <div class="course-title">{{ course.title }}</div>
+                
+                <div class="rating-row">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    <span class="rating-text">(4.8 Reviews)</span>
+                </div>
+
+                <div class="course-desc">
+                    {{ course.description|truncatewords:20 }}
+                </div>
+
+                <div class="meta-info">
+                    <div class="meta-item"><i class="fas fa-cube"></i> {{ course.total_modules }} Modules</div>
+                    <div class="meta-item"><i class="fas fa-user-friends"></i> Popular</div>
+                </div>
+
+                <div class="card-action">
+                    <div class="price-label">
+                        {% if course.price > 0 %}
+                            ₹{{ course.price }}
+                        {% else %}
+                            <span class="free-tag">Free</span>
+                        {% endif %}
+                    </div>
+                    
+                    <a href="{% url 'enroll_course' course.id %}" class="enroll-btn">
+                        Enroll Now <i class="fas fa-arrow-right" style="margin-left:5px;"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        {% empty %}
+            <div class="empty-box">
+                <i class="fas fa-search empty-icon"></i>
+                <h3>No courses found matching your search.</h3>
+                <a href="{% url 'all_courses' %}" style="color:var(--neon-blue);margin-top:15px;display:inline-block;">View All Courses</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if courses.has_other_pages %}
+    <div class="pagination-area">
+        {% if courses.has_previous %}
+            <a href="?page={{ courses.previous_page_number }}" class="page-link">&laquo; Prev</a>
+        {% endif %}
+        
+        <span class="page-link active">{{ courses.number }}</span>
+        
+        {% if courses.has_next %}
+            <a href="?page={{ courses.next_page_number }}" class="page-link">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

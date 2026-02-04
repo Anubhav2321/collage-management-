@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning-365 | Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #000; color: #fff; display: flex; min-height: 100vh; }
+
+        /* --- Admin Sidebar --- */
+        .sidebar {
+            width: 260px;
+            background: #111;
+            border-right: 1px solid #222;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100%;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-links { list-style: none; flex: 1; }
+        .nav-links li { margin-bottom: 10px; }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: 0.3s;
+            font-size: 1rem;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: #222;
+            color: #fff;
+            border-left: 4px solid #ff3366; /* Admin Accent Color */
+        }
+
+        .nav-links i { width: 20px; text-align: center; }
+
+        .logout-btn {
+            margin-top: auto;
+            text-decoration: none;
+            color: #ff4d4d;
+            padding: 12px 15px;
+            border: 1px solid #ff4d4d;
+            border-radius: 8px;
+            text-align: center;
+            transition: 0.3s;
+            display: block;
+        }
+
+        .logout-btn:hover { background: #ff4d4d; color: #fff; }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            margin-left: 260px; /* Width of sidebar */
+            padding: 20px;
+            background: #050505;
+        }
+
+        /* Message Alerts */
+        .alert { padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        .alert-success { background: rgba(0, 255, 136, 0.1); color: #00ff88; border: 1px solid #00ff88; }
+        .alert-error { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; padding: 10px; }
+            .brand span, .nav-links a span, .logout-btn span { display: none; }
+            .main-content { margin-left: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand">
+            <i class="fas fa-user-shield" style="color: #ff3366;"></i>
+            <span>Admin Panel</span>
+        </div>
+
+        <ul class="nav-links">
+            <li>
+                <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fas fa-th-large"></i>
+                    <span>Management</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'admin_student_list' %}" class="{% if 'student' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>Student Details</span>
+                </a>
+            </li>
+        </ul>
+
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> <span>Sign Out</span>
+        </a>
+    </div>
+
+    <div class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+</html>

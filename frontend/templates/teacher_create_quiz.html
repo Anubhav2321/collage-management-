@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    /* --- Page Layout --- */
+    .quiz-wrapper {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    /* --- Upload Area --- */
+    .upload-zone {
+        background: rgba(255, 255, 255, 0.03);
+        border: 2px dashed rgba(0, 229, 255, 0.3);
+        border-radius: 20px;
+        padding: 60px 20px;
+        text-align: center;
+        transition: 0.3s;
+        cursor: pointer;
+        position: relative;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+        background: rgba(0, 229, 255, 0.05);
+        border-color: #00e5ff;
+    }
+    
+    .upload-icon {
+        font-size: 60px;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #00e5ff, #9d00ff);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* --- Generate Button --- */
+    .btn-generate {
+        width: 100%;
+        margin-top: 30px;
+        padding: 15px;
+        background: linear-gradient(90deg, #00e5ff, #9d00ff);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+        box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+        display: none; /* Hidden initially */
+    }
+    .btn-generate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 40px rgba(157, 0, 255, 0.4);
+    }
+
+    /* --- Loader --- */
+    .loading-container {
+        display: none;
+        text-align: center;
+        margin-top: 40px;
+    }
+    .spinner {
+        width: 50px; height: 50px;
+        border: 5px solid rgba(255,255,255,0.1);
+        border-top: 5px solid #00e5ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* --- Quiz Results Area --- */
+    .quiz-result-area {
+        display: none;
+        margin-top: 50px;
+        animation: fadeIn 0.8s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    .question-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 25px;
+        position: relative;
+    }
+    .q-number {
+        position: absolute; top: -15px; left: 20px;
+        background: #9d00ff; color: white;
+        padding: 5px 15px; border-radius: 20px;
+        font-size: 12px; font-weight: 700;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .q-title {
+        font-size: 18px; color: white; margin-bottom: 20px; font-weight: 600; margin-top: 10px;
+    }
+
+    /* Options Grid */
+    .options-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+    }
+    .option-item {
+        padding: 12px 15px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #ccc; font-size: 14px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    
+    /* Highlight Correct Answer */
+    .option-correct {
+        border-color: #00ff88;
+        background: rgba(0, 255, 136, 0.1);
+        color: #00ff88; font-weight: 600;
+    }
+    .check-icon { color: #00ff88; margin-left: auto; }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .options-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="quiz-wrapper">
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h1 style="font-size: 40px; font-weight: 800; margin-bottom: 10px;">
+            <i class="fas fa-brain" style="color:#00e5ff;"></i> AI Quiz Generator
+        </h1>
+        <p style="color: #aaa; max-width: 600px; margin: 0 auto;">
+            Upload your course material (PDF). Our AI will analyze the content and instantly generate a 30-mark MCQ exam for your students.
+        </p>
+    </div>
+
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <i class="fas fa-file-pdf upload-icon"></i>
+        <h3 style="color: white; margin-bottom: 10px;">Click to Upload or Drag PDF Here</h3>
+        <p style="color: #666; font-size: 14px;">Supported Format: PDF (Max 10MB)</p>
+        
+        <input type="file" id="fileInput" accept="application/pdf" style="display: none;">
+        <div id="fileInfo" style="margin-top: 20px; color: #00e5ff; font-weight: 600; display: none;"></div>
+    </div>
+
+    <button id="generateBtn" class="btn-generate" onclick="generateQuiz()">
+        <i class="fas fa-magic"></i> Generate Quiz Now
+    </button>
+
+    <div class="loading-container" id="loadingState">
+        <div class="spinner"></div>
+        <h3 style="color: white;">Analyzing Document...</h3>
+        <p style="color: #aaa;">AI is reading your PDF and crafting questions.</p>
+    </div>
+
+    <div class="quiz-result-area" id="resultArea">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 style="color: white;">Generated Questions (<span id="qCount">0</span>)</h2>
+            <button onclick="window.print()" style="padding: 8px 20px; background: #333; color: white; border: 1px solid #555; border-radius: 5px; cursor: pointer;">
+                <i class="fas fa-print"></i> Print / Save PDF
+            </button>
+        </div>
+
+        <div id="questionsContainer">
+            </div>
+
+        <div style="text-align: center; margin-top: 50px; padding-bottom: 50px;">
+            <p style="color: #aaa; margin-bottom: 15px;">Are you happy with this quiz?</p>
+            <button style="padding: 15px 40px; background: #00ff88; color: black; border: none; border-radius: 50px; font-weight: 800; font-size: 16px; cursor: pointer;">
+                <i class="fas fa-save"></i> Save to Exam Database
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const fileInfo = document.getElementById('fileInfo');
+    const loadingState = document.getElementById('loadingState');
+    const resultArea = document.getElementById('resultArea');
+
+    // --- Drag & Drop Logic ---
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        if(e.dataTransfer.files.length) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if(fileInput.files.length) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+        if (file.type !== 'application/pdf') {
+            alert('Please upload a PDF file only.');
+            return;
+        }
+        fileInfo.style.display = 'block';
+        fileInfo.innerHTML = `<i class="fas fa-check-circle"></i> Selected: ${file.name}`;
+        generateBtn.style.display = 'block';
+    }
+
+    // --- API Call Logic ---
+    async function generateQuiz() {
+        const file = fileInput.files[0] || (dropZone.files ? dropZone.files[0] : null);
+        if (!file && !fileInput.files[0]) return;
+
+        // UI Transition
+        generateBtn.style.display = 'none';
+        dropZone.style.display = 'none'; // Hide upload area
+        loadingState.style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('document', fileInput.files[0]);
+
+        try {
+            const response = await fetch("{% url 'generate_quiz' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+
+            const data = await response.json();
+            
+            loadingState.style.display = 'none';
+
+            if (data.status === 'success') {
+                renderQuiz(data.quiz);
+            } else {
+                alert('Error: ' + data.message);
+                dropZone.style.display = 'block'; // Show upload again
+                generateBtn.style.display = 'block';
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert('Something went wrong! Check console.');
+            loadingState.style.display = 'none';
+            dropZone.style.display = 'block';
+        }
+    }
+
+    // --- Render Logic ---
+    function renderQuiz(questions) {
+        const container = document.getElementById('questionsContainer');
+        container.innerHTML = '';
+        document.getElementById('qCount').innerText = questions.length;
+        resultArea.style.display = 'block';
+
+        questions.forEach((q, index) => {
+            let optionsHTML = '';
+            
+            q.options.forEach((opt, i) => {
+                // Check if this is the correct answer
+                const isCorrect = i === q.answer;
+                const correctClass = isCorrect ? 'option-correct' : '';
+                const icon = isCorrect ? '<i class="fas fa-check-circle check-icon"></i>' : '';
+
+                optionsHTML += `
+                    <div class="option-item ${correctClass}">
+                        <span style="font-weight:700; margin-right:10px;">${String.fromCharCode(65+i)}.</span> 
+                        ${opt}
+                        ${icon}
+                    </div>
+                `;
+            });
+
+            const card = `
+                <div class="question-card">
+                    <div class="q-number">Question ${index + 1}</div>
+                    <div class="q-title">${q.question}</div>
+                    <div class="options-grid">
+                        ${optionsHTML}
+                    </div>
+                </div>
+            `;
+            container.innerHTML += card;
+        });
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    /* Fullscreen-ish Layout */
+    .player-container {
+        display: flex; flex-wrap: wrap; height: calc(100vh - 80px); /* Adjust based on navbar */
+        background: #0f172a; margin-top: -20px; /* Pull up to navbar */
+    }
+
+    /* LEFT: Video Player (70%) */
+    .video-section {
+        flex: 7; background: black; display: flex; flex-direction: column;
+        justify-content: center; position: relative;
+    }
+    .video-wrapper {
+        position: relative; padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        height: 0; width: 100%;
+    }
+    .video-wrapper iframe {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
+    }
+    .lesson-info { padding: 20px; color: white; background: #1e293b; border-bottom: 1px solid #333; }
+
+    /* RIGHT: Playlist (30%) */
+    .playlist-section {
+        flex: 3; background: #1a1a2e; border-left: 1px solid rgba(255,255,255,0.1);
+        display: flex; flex-direction: column; min-width: 300px; max-height: calc(100vh - 80px);
+    }
+    .playlist-header {
+        padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+        background: rgba(0, 229, 255, 0.05);
+    }
+    .playlist-content { flex: 1; overflow-y: auto; }
+
+    /* Scrollbar Styling */
+    .playlist-content::-webkit-scrollbar { width: 8px; }
+    .playlist-content::-webkit-scrollbar-track { background: #0f172a; }
+    .playlist-content::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    .playlist-content::-webkit-scrollbar-thumb:hover { background: #00e5ff; }
+
+    /* Playlist Item */
+    .lesson-item {
+        display: flex; align-items: center; padding: 15px 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc;
+        text-decoration: none; transition: 0.2s; gap: 10px;
+    }
+    .lesson-item:hover { background: rgba(255,255,255,0.05); color: white; }
+    
+    .lesson-item.active {
+        background: rgba(0, 229, 255, 0.1); border-left: 4px solid #00e5ff; color: #00e5ff;
+    }
+    
+    .play-icon { font-size: 12px; }
+    .lesson-meta { font-size: 11px; color: #777; margin-top: 4px; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .player-container { height: auto; flex-direction: column; }
+        .video-section { flex: none; width: 100%; }
+        .playlist-section { flex: none; width: 100%; height: 400px; }
+    }
+</style>
+
+<div class="player-container">
+    
+    <div class="video-section">
+        {% if current_lesson %}
+            <div class="video-wrapper">
+                <iframe src="{{ current_lesson.video_url }}" allowfullscreen></iframe>
+            </div>
+            <div class="lesson-info">
+                <h2 style="font-size: 20px; margin-bottom: 5px; font-weight: 700;">{{ current_lesson.title }}</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <p style="color: #aaa; margin: 0; font-size: 14px;"><i class="fas fa-book-open"></i> {{ course.title }}</p>
+                    <span style="background: rgba(0,255,136,0.1); color: #00ff88; padding: 2px 10px; border-radius: 20px; font-size: 12px; border: 1px solid rgba(0,255,136,0.2);">
+                        Playing Now
+                    </span>
+                </div>
+            </div>
+        {% else %}
+            <div style="text-align: center; color: white; padding: 50px;">
+                <i class="fas fa-video-slash" style="font-size: 50px; color: #555; margin-bottom: 20px;"></i>
+                <h2>No Lessons Available</h2>
+                <p style="color: #aaa;">This course doesn't have any video content yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="playlist-section">
+        <div class="playlist-header">
+            <h3 style="color: white; margin: 0; font-size: 18px;"><i class="fas fa-list"></i> Course Content</h3>
+            <p style="color: #00e5ff; font-size: 12px; margin-top: 5px; font-weight: 600;">
+                {{ lessons.count }} Modules • Video Lessons
+            </p>
+        </div>
+        
+        <div class="playlist-content">
+            {% for lesson in lessons %}
+            <a href="{% url 'course_watch_lesson' course.id lesson.id %}" 
+               class="lesson-item {% if lesson.id == current_lesson.id %}active{% endif %}">
+                
+                <div style="width: 20px; text-align: center;">
+                    <i class="fas {% if lesson.id == current_lesson.id %}fa-play-circle{% else %}fa-play{% endif %} play-icon"></i>
+                </div>
+                
+                <div>
+                    <div style="font-weight: 500; font-size: 14px; line-height: 1.4;">{{ lesson.title }}</div>
+                    <div class="lesson-meta">
+                        <i class="far fa-clock"></i> {{ lesson.duration }}
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div style="padding: 20px; text-align: center; color: #777; font-size: 13px;">
+                No modules found.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

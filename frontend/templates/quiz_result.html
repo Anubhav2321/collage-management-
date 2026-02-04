@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .result-wrapper {
+        max-width: 800px; margin: 40px auto; padding: 20px;
+    }
+
+    /* Score Card */
+    .score-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+        padding: 40px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1);
+        margin-bottom: 40px; backdrop-filter: blur(10px);
+    }
+    
+    .score-circle {
+        width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 20px;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        border: 5px solid #333; position: relative;
+    }
+    
+    .score-text { font-size: 36px; font-weight: 800; color: white; }
+    .total-text { font-size: 14px; color: #aaa; }
+    
+    .pass-status {
+        font-size: 24px; font-weight: bold; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px;
+    }
+
+    /* Review Section */
+    .review-item {
+        background: #151525; padding: 20px; margin-bottom: 15px; border-radius: 10px;
+        border-left: 5px solid #333;
+    }
+    .correct-border { border-left-color: #00ff88; background: rgba(0, 255, 136, 0.05); }
+    .wrong-border { border-left-color: #ff4d4d; background: rgba(255, 77, 77, 0.05); }
+
+    .q-review-text { color: white; font-weight: 600; margin-bottom: 10px; font-size: 16px; }
+    
+    .ans-row { display: flex; justify-content: space-between; font-size: 14px; margin-top: 5px; }
+    .user-ans { color: #ccc; }
+    .correct-ans { color: #00ff88; font-weight: bold; }
+    
+    .btn-back {
+        display: inline-block; padding: 12px 30px; background: #9d00ff; color: white; 
+        text-decoration: none; border-radius: 50px; font-weight: bold; transition: 0.3s;
+    }
+    .btn-back:hover { background: #00e5ff; color: black; }
+</style>
+
+<div class="result-wrapper">
+    
+    <div class="score-card" style="border-top: 3px solid {% if percentage >= 40 %}#00ff88{% else %}#ff4d4d{% endif %};">
+        <h2 style="color: white; margin-bottom: 30px;">Quiz Result</h2>
+        
+        <div class="score-circle" style="border-color: {% if percentage >= 40 %}#00ff88{% else %}#ff4d4d{% endif %}; box-shadow: 0 0 30px {% if percentage >= 40 %}rgba(0,255,136,0.2){% else %}rgba(255,77,77,0.2){% endif %};">
+            <span class="score-text">{{ score }}</span>
+            <span class="total-text">out of {{ total }}</span>
+        </div>
+
+        <p style="color: #ccc; font-size: 18px;">Score: {{ percentage }}%</p>
+        
+        <div class="pass-status" style="color: {% if percentage >= 40 %}#00ff88{% else %}#ff4d4d{% endif %};">
+            {% if percentage >= 40 %}PASSED <i class="fas fa-check-circle"></i>{% else %}FAILED <i class="fas fa-times-circle"></i>{% endif %}
+        </div>
+
+        <div style="margin-top: 30px;">
+            <a href="{% url 'exams' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Exams</a>
+        </div>
+    </div>
+
+    <h3 style="color: white; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+        Detailed Analysis
+    </h3>
+
+    {% for res in results %}
+    <div class="review-item {% if res.is_correct %}correct-border{% else %}wrong-border{% endif %}">
+        <div class="q-review-text">{{ forloop.counter }}. {{ res.question.text }}</div>
+        
+        <div style="margin-top: 10px;">
+            <div class="ans-row">
+                <span class="user-ans">
+                    Your Answer: 
+                    <span style="color: {% if res.is_correct %}#00ff88{% else %}#ff4d4d{% endif %}; font-weight: bold;">
+                        {% if res.selected == 0 %}{{ res.question.option1 }}
+                        {% elif res.selected == 1 %}{{ res.question.option2 }}
+                        {% elif res.selected == 2 %}{{ res.question.option3 }}
+                        {% elif res.selected == 3 %}{{ res.question.option4 }}
+                        {% else %}Skipped{% endif %}
+                    </span>
+                    {% if res.is_correct %} <i class="fas fa-check" style="color:#00ff88;"></i>{% else %} <i class="fas fa-times" style="color:#ff4d4d;"></i>{% endif %}
+                </span>
+            </div>
+
+            {% if not res.is_correct %}
+            <div class="ans-row">
+                <span class="correct-ans">
+                    Correct Answer: 
+                    {% if res.question.correct_answer == 0 %}{{ res.question.option1 }}
+                    {% elif res.question.correct_answer == 1 %}{{ res.question.option2 }}
+                    {% elif res.question.correct_answer == 2 %}{{ res.question.option3 }}
+                    {% elif res.question.correct_answer == 3 %}{{ res.question.option4 }}
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

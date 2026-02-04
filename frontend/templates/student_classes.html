@@ -1,0 +1,313 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+    /* --- GLOBAL THEME --- */
+    :root {
+        --bg-dark: #0a0a0f;
+        --card-bg: #13131a;
+        --border-color: #2a2a35;
+        --neon-pink: #ff0055;
+        --neon-blue: #00f3ff;
+        --text-main: #e0e0e0;
+        --glass: rgba(19, 19, 26, 0.95);
+    }
+
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+    }
+
+    .container-fluid {
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* --- PAGE HEADER --- */
+    .header-section {
+        background: linear-gradient(90deg, #13131a 0%, #1a1a24 100%);
+        border: 1px solid var(--border-color);
+        border-left: 5px solid var(--neon-pink);
+        border-radius: 15px;
+        padding: 30px 40px;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .title-area h2 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2rem;
+        margin: 0;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        display: flex; align-items: center; gap: 15px;
+    }
+    .title-area h2 i { color: var(--neon-pink); animation: pulseIcon 2s infinite; }
+
+    @keyframes pulseIcon {
+        0% { transform: scale(1); text-shadow: 0 0 10px var(--neon-pink); }
+        50% { transform: scale(1.1); text-shadow: 0 0 20px var(--neon-pink); }
+        100% { transform: scale(1); text-shadow: 0 0 10px var(--neon-pink); }
+    }
+
+    .live-badge {
+        background: rgba(255, 0, 85, 0.1);
+        color: var(--neon-pink);
+        border: 1px solid var(--neon-pink);
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: flex; align-items: center; gap: 8px;
+        box-shadow: 0 0 15px rgba(255, 0, 85, 0.2);
+    }
+    .live-dot {
+        width: 10px; height: 10px; background: var(--neon-pink);
+        border-radius: 50%;
+        animation: blink 1.5s infinite;
+    }
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+
+    /* --- CLASS CARD --- */
+    .class-list {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .class-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        overflow: hidden;
+        display: flex;
+        flex-wrap: wrap;
+        transition: 0.3s ease;
+        animation: fadeInUp 0.8s ease-out forwards;
+        position: relative;
+    }
+    
+    .class-card:hover {
+        border-color: var(--neon-pink);
+        box-shadow: 0 0 20px rgba(255, 0, 85, 0.15);
+    }
+
+    .class-card::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+        width: 4px; background: var(--neon-pink);
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-body {
+        flex: 1;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .course-tag {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.85rem; color: var(--neon-blue);
+        text-transform: uppercase; letter-spacing: 1px;
+        margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+
+    .class-title {
+        font-size: 1.8rem; font-weight: 700; color: #fff;
+        margin-bottom: 15px;
+    }
+
+    .class-desc {
+        color: #aaa; font-size: 1rem; line-height: 1.6;
+        margin-bottom: 25px; max-width: 800px;
+    }
+
+    .meta-grid {
+        display: flex; gap: 40px; flex-wrap: wrap;
+        border-top: 1px dashed var(--border-color);
+        padding-top: 20px;
+    }
+
+    .meta-item { display: flex; align-items: center; gap: 12px; }
+    .icon-box {
+        width: 40px; height: 40px; background: #0a0a0f;
+        border: 1px solid var(--border-color);
+        border-radius: 10px; color: #fff;
+        display: flex; justify-content: center; align-items: center;
+        font-size: 1.1rem;
+    }
+    .meta-text span { display: block; font-size: 0.75rem; color: #666; text-transform: uppercase; }
+    .meta-text strong { font-size: 1rem; color: #e0e0e0; }
+
+
+    /* --- ACTION SIDEBAR --- */
+    .action-side {
+        background: #0f0f14;
+        width: 300px;
+        border-left: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .status-text {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--neon-pink);
+        font-size: 1.2rem; margin-bottom: 20px;
+        text-transform: uppercase; letter-spacing: 2px;
+        animation: pulseText 2s infinite;
+    }
+    @keyframes pulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+    .join-btn {
+        background: transparent;
+        color: #fff;
+        border: 1px solid var(--neon-pink);
+        padding: 12px 30px;
+        border-radius: 5px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1rem; text-decoration: none;
+        transition: 0.3s; position: relative; overflow: hidden;
+        z-index: 1;
+    }
+    .join-btn::before {
+        content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+        background: var(--neon-pink); transition: 0.3s; z-index: -1;
+    }
+    .join-btn:hover::before { left: 0; }
+    .join-btn:hover { box-shadow: 0 0 20px rgba(255, 0, 85, 0.4); border-color: var(--neon-pink); }
+
+    .note-text {
+        margin-top: 20px; font-size: 0.8rem; color: #666;
+    }
+
+    /* --- EMPTY STATE --- */
+    .empty-state {
+        text-align: center; padding: 80px 20px;
+        border: 1px dashed var(--border-color); border-radius: 20px;
+        background: rgba(19, 19, 26, 0.5);
+    }
+    .empty-icon { font-size: 4rem; color: #333; margin-bottom: 20px; }
+    .browse-btn {
+        display: inline-block; margin-top: 20px;
+        color: var(--neon-blue); text-decoration: none;
+        border-bottom: 1px solid var(--neon-blue); padding-bottom: 2px;
+        transition: 0.3s;
+    }
+    .browse-btn:hover { color: #fff; border-color: #fff; }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .class-card { flex-direction: column; }
+        .action-side { width: 100%; border-left: none; border-top: 1px solid var(--border-color); flex-direction: row; justify-content: space-between; }
+        .status-text { margin-bottom: 0; font-size: 1rem; }
+        .note-text { display: none; }
+    }
+    @media (max-width: 768px) {
+        .action-side { flex-direction: column; gap: 20px; }
+    }
+
+</style>
+
+<div class="container-fluid">
+
+    <div class="header-section">
+        <div class="title-area">
+            <h2><i class="fas fa-broadcast-tower"></i> Live Schedule</h2>
+        </div>
+        
+        <div class="live-badge">
+            <div class="live-dot"></div> LIVE UPDATES
+        </div>
+    </div>
+
+    <div class="class-list">
+        {% for class in classes %}
+        <div class="class-card">
+            
+            <div class="card-body">
+                <div class="course-tag">
+                    <i class="fas fa-code-branch"></i> {{ class.course.title }}
+                </div>
+                
+                <h3 class="class-title">{{ class.title }}</h3>
+                
+                <p class="class-desc">
+                    {{ class.description|default:"Join this interactive session to clear your doubts and learn advanced topics directly from the instructor." }}
+                </p>
+
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <div class="icon-box" style="color:var(--neon-blue)"><i class="far fa-calendar-alt"></i></div>
+                        <div class="meta-text">
+                            <span>Date</span>
+                            <strong>{{ class.date_time|date:"d M, Y" }}</strong>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="icon-box" style="color:#ffcc00"><i class="far fa-clock"></i></div>
+                        <div class="meta-text">
+                            <span>Time</span>
+                            <strong>{{ class.date_time|date:"h:i A" }}</strong>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="icon-box" style="color:#00ff88"><i class="fas fa-chalkboard-teacher"></i></div>
+                        <div class="meta-text">
+                            <span>Instructor</span>
+                            <strong>Expert Faculty</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-side">
+                <div class="status-text">SCHEDULED</div>
+                
+                <a href="{{ class.meeting_link }}" target="_blank" class="join-btn">
+                    JOIN NOW <i class="fas fa-external-link-alt" style="margin-left:8px;"></i>
+                </a>
+                
+                <p class="note-text"><i class="fas fa-info-circle"></i> Link opens in Zoom/Meet</p>
+            </div>
+
+        </div>
+        {% empty %}
+        
+        <div class="empty-state">
+            <i class="fas fa-satellite-dish empty-icon"></i>
+            <h3 style="color:#fff; margin-bottom:10px;">No Live Classes Scheduled</h3>
+            <p style="color:#888;">Check back later for upcoming sessions.</p>
+            <a href="{% url 'all_courses' %}" class="browse-btn">Browse Recorded Sessions &rarr;</a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

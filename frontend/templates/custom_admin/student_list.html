@@ -1,0 +1,253 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+
+<style>
+    .admin-container {
+        padding: 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: #111;
+        padding: 30px;
+        border-radius: 15px;
+        border: 1px solid #333;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .header-title h2 {
+        color: #fff;
+        margin-bottom: 5px;
+        font-size: 1.8rem;
+    }
+
+    .header-title p {
+        color: #888;
+    }
+
+    .search-form {
+        display: flex;
+        background: #222;
+        border: 1px solid #444;
+        border-radius: 50px;
+        padding: 5px 15px;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .search-form input {
+        background: transparent;
+        border: none;
+        color: #fff;
+        width: 100%;
+        padding: 8px;
+        outline: none;
+    }
+
+    .search-form button {
+        background: transparent;
+        border: none;
+        color: #00d4ff;
+        cursor: pointer;
+        font-size: 1.1rem;
+    }
+
+    .student-table-container {
+        background: #111;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid #222;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #fff;
+    }
+
+    thead {
+        background: #1a1a1a;
+        border-bottom: 2px solid #333;
+    }
+
+    th {
+        padding: 18px;
+        text-align: left;
+        color: #aaa;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    td {
+        padding: 18px;
+        border-bottom: 1px solid #222;
+        vertical-align: middle;
+    }
+
+    tr:hover td {
+        background: #161616;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #333;
+    }
+
+    .user-name {
+        font-weight: bold;
+        color: #fff;
+        display: block;
+    }
+
+    .user-email {
+        font-size: 0.85rem;
+        color: #666;
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: rgba(0, 255, 136, 0.1);
+        color: #00ff88;
+        border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    .status-blocked {
+        background: rgba(255, 51, 102, 0.1);
+        color: #ff3366;
+        border: 1px solid rgba(255, 51, 102, 0.3);
+    }
+
+    .btn-view {
+        background: #333;
+        color: #fff;
+        padding: 8px 15px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 0.85rem;
+        transition: 0.3s;
+        border: 1px solid #444;
+    }
+
+    .btn-view:hover {
+        background: #00d4ff;
+        color: #000;
+        border-color: #00d4ff;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 50px;
+        color: #666;
+    }
+</style>
+
+<div class="admin-container">
+    
+    <div class="page-header">
+        <div class="header-title">
+            <h2><i class="fas fa-users-cog"></i> Student Management</h2>
+            <p>View, manage, and monitor all registered students.</p>
+        </div>
+
+        <form method="GET" class="search-form">
+            <input type="text" name="search" placeholder="Search by name, email..." value="{{ search_query }}">
+            <button type="submit"><i class="fas fa-search"></i></button>
+        </form>
+    </div>
+
+    <div class="student-table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Stream</th>
+                    <th>Joined Date</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            {% if student.profile.profile_pic %}
+                                <img src="{{ student.profile.profile_pic.url }}" class="user-avatar" alt="Avatar">
+                            {% else %}
+                                <img src="https://via.placeholder.com/40" class="user-avatar" alt="Avatar">
+                            {% endif %}
+                            <div>
+                                <span class="user-name">{{ student.first_name }} {{ student.last_name }}</span>
+                                <span class="user-email">{{ student.email }}</span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        <span style="color: #aaa;">{{ student.stream|default:"General" }}</span>
+                    </td>
+
+                    <td>
+                        <span style="color: #888;">{{ student.date_joined|date:"d M, Y" }}</span>
+                    </td>
+
+                    <td>
+                        {% if student.is_active %}
+                            <span class="status-badge status-active">Active</span>
+                        {% else %}
+                            <span class="status-badge status-blocked">Blocked</span>
+                        {% endif %}
+                    </td>
+
+                    <td style="text-align: right;">
+                        <a href="{% url 'admin_student_detail' student.id %}" class="btn-view">
+                            Manage <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                            <p>No students found matching your search.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center; color: #666; font-size: 0.9rem;">
+        Showing {{ students.count }} students
+    </div>
+
+</div>
+{% endblock %}

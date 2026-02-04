@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+    /* --- GLOBAL STYLES --- */
+    :root {
+        --bg-dark: #0a0a0f;
+        --panel-bg: #111;
+        --border-color: #333;
+        --accent-color: #00d4ff;
+        --text-color: #e0e0e0;
+    }
+
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-color);
+        user-select: none; /* Prevent Copy */
+    }
+
+    /* --- EXAM WRAPPER --- */
+    .quiz-wrapper {
+        max-width: 900px;
+        margin: 40px auto;
+        background: var(--panel-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        transition: 0.3s;
+    }
+
+    .blur-mode {
+        filter: blur(5px);
+        pointer-events: none;
+    }
+
+    /* Header */
+    .exam-header {
+        display: flex; justify-content: space-between; align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px; margin-bottom: 30px;
+    }
+    
+    .exam-title { font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0; }
+
+    .timer-badge {
+        background: rgba(255, 51, 102, 0.1);
+        border: 1px solid #ff3366;
+        color: #ff3366;
+        padding: 8px 15px;
+        border-radius: 5px;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: bold;
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Questions */
+    .q-box {
+        margin-bottom: 30px; padding-bottom: 20px;
+        border-bottom: 1px solid #222;
+    }
+    
+    .q-text {
+        font-size: 1.2rem; font-weight: 600; color: #fff; margin-bottom: 15px;
+    }
+
+    .option-label {
+        display: block;
+        padding: 12px 15px; margin-bottom: 10px;
+        background: #1a1a1a;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-size: 1rem; color: #ccc;
+    }
+    .option-label:hover {
+        border-color: var(--accent-color);
+        background: rgba(0, 212, 255, 0.05);
+        color: #fff;
+    }
+    
+    input[type="radio"] { margin-right: 10px; accent-color: var(--accent-color); }
+
+    /* Submit Button */
+    .submit-btn {
+        width: 100%; padding: 15px;
+        background: var(--accent-color); border: none;
+        color: #000; font-weight: bold; font-size: 1.1rem;
+        cursor: pointer; border-radius: 8px;
+        transition: 0.3s; text-transform: uppercase;
+    }
+    .submit-btn:hover { opacity: 0.9; box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
+
+    /* --- RULES MODAL (Clean Style) --- */
+    #rules-modal {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9); z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+    }
+    
+    .modal-card {
+        background: #111;
+        border: 1px solid var(--accent-color);
+        width: 550px; padding: 40px;
+        border-radius: 12px; text-align: center;
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    }
+    
+    .modal-title { font-size: 1.5rem; color: #fff; margin-bottom: 20px; font-weight: 700; }
+    
+    .rules-list { text-align: left; margin: 20px 0; color: #aaa; font-size: 0.95rem; line-height: 1.8; }
+    .rules-list li { margin-bottom: 8px; }
+    .rules-list i { color: #ff3366; width: 20px; }
+
+    .start-btn {
+        background: var(--accent-color); border: none;
+        color: #000; padding: 12px 30px; border-radius: 5px;
+        font-weight: bold; cursor: pointer; font-size: 1rem;
+    }
+
+    /* --- WARNING OVERLAY --- */
+    #warning-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: #000; z-index: 10000;
+        display: none; flex-direction: column;
+        align-items: center; justify-content: center;
+        border: 5px solid #ff3366;
+    }
+    .warning-icon { font-size: 5rem; color: #ff3366; margin-bottom: 20px; }
+    .warning-text { font-size: 2.5rem; color: #fff; font-weight: bold; }
+
+</style>
+
+<div id="rules-modal">
+    <div class="modal-card">
+        <i class="fas fa-file-contract" style="font-size: 3rem; color: var(--accent-color); margin-bottom: 15px;"></i>
+        <div class="modal-title">Exam Instructions</div>
+        
+        <ul class="rules-list">
+            <li><i class="fas fa-expand"></i> <b>Fullscreen Mode:</b> The exam works best in fullscreen.</li>
+            <li><i class="fas fa-exclamation-triangle"></i> <b>No Tab Switching:</b> Leaving the window will cancel the exam.</li>
+            <li><i class="fas fa-clock"></i> <b>Time Limit:</b> {{ exam.duration_minutes }} Minutes. Auto-submit on zero.</li>
+            <li><i class="fas fa-ban"></i> <b>Anti-Cheat:</b> Copying questions is disabled.</li>
+        </ul>
+
+        <button class="start-btn" onclick="startExam()">I Understand & Start</button>
+    </div>
+</div>
+
+<div id="warning-overlay">
+    <i class="fas fa-ban warning-icon"></i>
+    <div class="warning-text">EXAM TERMINATED</div>
+    <p style="color:#aaa; margin-top:10px;">Security violation detected (Tab Switch).</p>
+    <a href="{% url 'dashboard' %}" style="margin-top: 30px; color: #fff; text-decoration: underline;">Return to Dashboard</a>
+</div>
+
+<div class="quiz-wrapper blur-mode" id="quiz-box">
+    
+    <div class="exam-header">
+        <h2 class="exam-title">{{ exam.title }}</h2>
+        <div class="timer-badge">
+            <i class="fas fa-stopwatch"></i> <span id="time-display">00:00</span>
+        </div>
+    </div>
+
+    <form id="examForm" method="POST" action="{% url 'submit_quiz' exam.id %}">
+        {% csrf_token %}
+        
+        {% for q in exam.questions.all %}
+        <div class="q-box">
+            <div class="q-text">Q{{ forloop.counter }}. {{ q.question_text }}</div>
+            
+            <label class="option-label">
+                <input type="radio" name="q_{{ q.id }}" value="{{ q.option1 }}"> {{ q.option1 }}
+            </label>
+            <label class="option-label">
+                <input type="radio" name="q_{{ q.id }}" value="{{ q.option2 }}"> {{ q.option2 }}
+            </label>
+            <label class="option-label">
+                <input type="radio" name="q_{{ q.id }}" value="{{ q.option3 }}"> {{ q.option3 }}
+            </label>
+            <label class="option-label">
+                <input type="radio" name="q_{{ q.id }}" value="{{ q.option4 }}"> {{ q.option4 }}
+            </label>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="submit-btn">Submit Exam</button>
+    </form>
+
+</div>
+
+<script>
+    let timeLeft = {{ exam.duration_minutes }} * 60; 
+    let timerInterval;
+    let examActive = false;
+
+    // --- START ---
+    function startExam() {
+        document.getElementById('rules-modal').style.display = 'none';
+        const quizBox = document.getElementById('quiz-box');
+        quizBox.classList.remove('blur-mode');
+        
+        examActive = true;
+        enterFullScreen();
+        startTimer();
+    }
+
+    // --- TIMER ---
+    function startTimer() {
+        const display = document.getElementById('time-display');
+        
+        timerInterval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('examForm').submit();
+            } else {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                display.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                timeLeft--;
+                
+                // Red warning when < 1 min
+                if (timeLeft < 60) {
+                    display.parentElement.style.borderColor = "red";
+                    display.parentElement.style.color = "red";
+                }
+            }
+        }, 1000);
+    }
+
+    // --- SECURITY ---
+    document.addEventListener("visibilitychange", function() {
+        if (document.hidden && examActive) terminateExam();
+    });
+
+    window.onblur = function() {
+        if (examActive) terminateExam();
+    };
+
+    function terminateExam() {
+        examActive = false;
+        clearInterval(timerInterval);
+        document.getElementById('quiz-box').style.display = 'none';
+        document.getElementById('warning-overlay').style.display = 'flex';
+    }
+
+    // Anti-Cheat
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('copy', e => e.preventDefault());
+    document.addEventListener('paste', e => e.preventDefault());
+
+    function enterFullScreen() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) elem.requestFullscreen();
+    }
+</script>
+
+{% endblock %}

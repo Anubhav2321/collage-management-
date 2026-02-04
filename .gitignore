@@ -1,0 +1,20 @@
+# Environments (ভার্চুয়াল এনভায়রনমেন্ট বাদ দেওয়া)
+.env
+.venv
+.venv/
+venv/
+ENV/
+
+# Python cache (অপ্রয়োজনীয় ক্যাশ ফাইল)
+__pycache__/
+*.pyc
+
+# Database (লোকাল ডাটাবেস বাদ দেওয়া)
+db.sqlite3
+
+# Media Files (মিডিয়া ফোল্ডার বাদ দেওয়া)
+media/
+
+# OS generated files
+.DS_Store
+Thumbs.db

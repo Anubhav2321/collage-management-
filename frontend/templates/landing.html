@@ -1,0 +1,548 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning-365 | Future EdTech</title>
+     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        /* --- THEME CONFIGURATION --- */
+        :root {
+            --bg-dark: #020005;
+            --primary-cyan: #00e5ff;
+            --primary-purple: #9d00ff;
+            --primary-pink: #ff007a;
+            --text-white: #ffffff;
+            --text-muted: #b3b3b3;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --grad-cyan: linear-gradient(135deg, #00e5ff, #2979ff);
+            --grad-purple: linear-gradient(135deg, #651fff, #9d00ff);
+            --grad-pink: linear-gradient(135deg, #ff007a, #ff5252);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        html { scroll-behavior: smooth; overflow-x: hidden; }
+        body { background-color: var(--bg-dark); color: var(--text-white); overflow-x: hidden; }
+
+        /* --- BACKGROUND VFX --- */
+        .bg-glow-fixed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;
+            background: 
+                radial-gradient(circle at 15% 25%, rgba(157, 0, 255, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(0, 229, 255, 0.12) 0%, transparent 40%);
+            filter: blur(80px);
+        }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 5%; position: fixed; top: 0; width: 100%; z-index: 1000;
+            transition: 0.4s ease;
+        }
+        .navbar.scrolled {
+            padding: 15px 5%; background: rgba(2, 0, 5, 0.85);
+            backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border);
+        }
+        .logo { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: white; letter-spacing: 1px; }
+        .nav-btn-glow {
+            padding: 10px 30px; border-radius: 50px; font-weight: 600; text-decoration: none;
+            background: var(--grad-cyan); color: white; box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+            transition: 0.3s;
+        }
+        .nav-btn-glow:hover { box-shadow: 0 0 40px rgba(157, 0, 255, 0.5); transform: scale(1.05); }
+
+        /* =========================================
+           STEP 1: HERO SECTION
+           ========================================= */
+        .hero-section {
+            min-height: 90vh; display: flex; align-items: center; justify-content: center;
+            padding: 100px 5% 50px; position: relative;
+        }
+
+        .hero-grid {
+            display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 50px; align-items: center;
+            max-width: 1400px; width: 100%;
+        }
+
+        .hero-title {
+            font-size: 70px; line-height: 1.1; font-weight: 900; margin-bottom: 25px;
+            opacity: 0; 
+            transform: perspective(1000px) rotateX(20deg) translateY(30px);
+            animation: textReveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 0.3s;
+        }
+        @keyframes textReveal {
+            to { opacity: 1; transform: perspective(1000px) rotateX(0) translateY(0); }
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #fff 20%, var(--primary-cyan), var(--primary-purple));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 20px; color: var(--text-muted); margin-bottom: 40px; max-width: 600px;
+            opacity: 0; animation: fadeUp 1s ease forwards 0.6s;
+        }
+        .hero-btns { 
+            display: flex; gap: 20px; opacity: 0; animation: fadeUp 1s ease forwards 0.8s;
+        }
+
+        .btn-hero {
+            padding: 15px 40px; border-radius: 50px; font-size: 16px; font-weight: 700;
+            text-decoration: none; transition: 0.3s; cursor: pointer;
+        }
+        .btn-filled { background: var(--grad-cyan); color: white; box-shadow: 0 0 25px rgba(0, 229, 255, 0.3); }
+        .btn-filled:hover { transform: translateY(-3px); box-shadow: 0 0 50px rgba(157, 0, 255, 0.5); }
+        .btn-outline { border: 2px solid var(--glass-border); color: white; background: transparent; }
+        .btn-outline:hover { border-color: var(--primary-cyan); background: rgba(0, 229, 255, 0.05); }
+
+        .hero-logo-box {
+            display: flex; justify-content: center; align-items: center; position: relative;
+        }
+        .floating-logo {
+            font-size: 280px; 
+            background: var(--grad-cyan);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 20px 50px rgba(157, 0, 255, 0.4));
+            opacity: 0;
+            animation: logoEnter 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.5s, floatLogo 6s ease-in-out infinite 1.7s;
+        }
+        @keyframes logoEnter {
+            from { opacity: 0; transform: scale(0.5) rotate(-15deg); }
+            to { opacity: 1; transform: scale(1) rotate(0); }
+        }
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero-badge {
+            display: inline-block; padding: 8px 20px; border-radius: 50px;
+            background: rgba(0, 229, 255, 0.08); border: 1px solid var(--primary-cyan);
+            color: var(--primary-cyan); font-weight: 600; margin-bottom: 25px;
+            font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px;
+        }
+
+        /* =========================================
+           STEP 2: FEATURES (Pill Style)
+           ========================================= */
+        .features-section { padding: 120px 8%; position: relative; overflow: hidden; }
+        .section-header { text-align: center; margin-bottom: 80px; }
+        .section-header h2 { font-size: 45px; font-weight: 800; margin-bottom: 10px; }
+        .section-header p { color: var(--text-muted); font-size: 18px; }
+
+        .feature-row {
+            display: flex; align-items: center; gap: 60px; margin-bottom: 80px;
+            max-width: 1300px; margin-left: auto; margin-right: auto;
+        }
+
+        .feature-pill {
+            flex: 0.8; padding: 50px 40px; border-radius: 0 100px 100px 0; 
+            display: flex; align-items: center; justify-content: space-between;
+            color: white; box-shadow: 0 20px 50px rgba(0,0,0,0.3); position: relative;
+            opacity: 0; transform: translateX(-100px);
+            transition: 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .feature-row[data-aos="fade-right"] .feature-pill { opacity: 1; transform: translateX(0); }
+
+        .pill-content h3 { font-size: 28px; font-weight: 700; line-height: 1.3; }
+        .pill-content span { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
+        .pill-icon { font-size: 50px; background: rgba(255,255,255,0.2); padding: 20px; border-radius: 50%; }
+
+        .pill-cyan { background: var(--grad-cyan); }
+        .pill-purple { background: var(--grad-purple); }
+        .pill-pink { background: var(--grad-pink); }
+
+        .feature-list-box {
+            flex: 1; color: var(--text-muted); font-size: 18px;
+            opacity: 0; transform: translateX(50px);
+            transition: 0.6s 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .feature-row[data-aos="fade-right"] .feature-list-box { opacity: 1; transform: translateX(0); }
+
+        .feature-list-box ul { list-style: none; padding: 0; }
+        .feature-list-box li { margin-bottom: 15px; display: flex; align-items: center; gap: 15px; font-size: 20px; color: white; }
+        .feature-list-box li i { color: var(--primary-cyan); font-size: 16px; }
+        .feature-link {
+            display: inline-block; margin-top: 15px; color: var(--primary-cyan);
+            font-weight: 600; text-decoration: none; border-bottom: 2px solid transparent;
+        }
+        .feature-link:hover { border-color: var(--primary-cyan); }
+
+
+        /* =========================================
+           STEP 3: DEVELOPERS (Digii Slider Style)
+           ========================================= */
+        .dev-section {
+            padding: 100px 5%; position: relative;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 60%);
+        }
+
+        .dev-header { text-align: center; margin-bottom: 60px; }
+        .dev-header h2 { font-size: 48px; font-weight: 800; margin-bottom: 10px; }
+        
+        .dev-carousel-container {
+            max-width: 1200px; margin: 0 auto; position: relative; overflow: hidden;
+        }
+        .dev-track { display: flex; transition: transform 0.8s ease-in-out; }
+        .dev-slide { min-width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 20px; }
+
+        .dev-profile-card { display: flex; align-items: center; gap: 30px; background: transparent; }
+
+        .dev-img-box { position: relative; width: 180px; height: 180px; flex-shrink: 0; }
+        .dev-shape {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 0 100px 100px 0; z-index: 1;
+        }
+        .shape-cyan { background: var(--grad-cyan); }
+        .shape-purple { background: var(--grad-purple); }
+
+        .dev-img-box img {
+            position: relative; z-index: 2; width: 160px; height: 160px;
+            border-radius: 50%; object-fit: cover;
+            border: 4px solid var(--bg-dark);
+            box-shadow: 10px 10px 30px rgba(0,0,0,0.5);
+            margin-top: 10px; margin-left: 10px;
+        }
+
+        .dev-info h3 {
+            font-size: 24px; font-weight: 800; margin-bottom: 5px;
+            font-style: italic; letter-spacing: 0.5px;
+        }
+        .role-text { font-size: 22px; font-weight: 700; margin-bottom: 15px; display: block; }
+        
+        .txt-cyan { background: var(--grad-cyan); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .txt-purple { background: var(--grad-purple); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .dev-name-title { font-size: 18px; color: white; font-weight: 700; margin-top: 10px; }
+        .dev-role-small { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Social Icons Styles */
+        .dev-socials { display: flex; gap: 15px; margin-top: 15px; }
+        .dev-socials a {
+            color: var(--text-muted); font-size: 18px; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
+            width: 35px; height: 35px; border-radius: 50%;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+            text-decoration: none;
+        }
+        .dev-socials a:hover { transform: translateY(-3px); background: white; color: black; }
+        .dev-socials a:hover .fa-linkedin { color: #0077b5; }
+        .dev-socials a:hover .fa-envelope { color: #ea4335; }
+        .dev-socials a:hover .fa-instagram { color: #e4405f; }
+
+        .carousel-dots { display: flex; justify-content: center; gap: 10px; margin-top: 40px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.2); cursor: pointer; transition: 0.3s; }
+        .dot.active { background: var(--primary-cyan); transform: scale(1.2); }
+
+
+        /* =========================================
+           STEP 4: FOOTER
+           ========================================= */
+        footer {
+            padding: 80px 8% 30px; background: #010101; 
+            border-top: 1px solid var(--glass-border); margin-top: 100px;
+        }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 50px; margin-bottom: 60px; }
+        .f-col h4 { color: white; margin-bottom: 25px; font-size: 18px; font-weight: 700; }
+        .f-col a { 
+            display: block; color: var(--text-muted); text-decoration: none; 
+            margin-bottom: 12px; transition: 0.3s; font-size: 15px; 
+        }
+        .f-col a:hover { color: var(--primary-cyan); padding-left: 5px; }
+        .copyright { 
+            text-align: center; padding-top: 30px; border-top: 1px solid var(--glass-border); 
+            color: #555; font-size: 14px; 
+        }
+
+        /* Animation Helper */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 968px) {
+            .hero-grid { grid-template-columns: 1fr; text-align: center; }
+            .hero-title { font-size: 50px; }
+            .hero-logo-box { margin-top: 40px; }
+            .floating-logo { font-size: 150px; }
+            .feature-row { flex-direction: column; gap: 30px; }
+            .feature-pill { border-radius: 20px; width: 100%; }
+            .footer-grid { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+            
+            .dev-slide { grid-template-columns: 1fr; gap: 50px; }
+            .dev-profile-card { flex-direction: column; text-align: center; }
+            .dev-img-box { margin: 0 auto; }
+            .dev-socials { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow-fixed"></div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-graduation-cap" style="color:var(--primary-cyan);"></i> LEARNING-365
+        </div>
+        <a href="{% url 'register' %}" class="nav-btn-glow">Get Started</a>
+    </nav>
+
+    <section class="hero-section">
+        <div class="hero-grid">
+            <div class="hero-text-content">
+                <div class="hero-badge">🚀 Empowering Students</div>
+                <h1 class="hero-title">
+                    Unlock Your Potential with <br> 
+                    <span class="text-gradient">Advanced Education</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Join thousands of students learning AI, Coding, and Design. 
+                    Access live classes, AI-proctored exams, and a vast library.
+                </p>
+                <div class="hero-btns">
+                    <a href="{% url 'register' %}" class="btn-hero btn-filled">Start Learning</a>
+                    <a href="#features" class="btn-hero btn-outline">Explore Courses</a>
+                </div>
+            </div>
+            <div class="hero-logo-box">
+                <i class="fas fa-graduation-cap floating-logo"></i>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features-section">
+        <div class="section-header" data-aos="fade-up">
+            <h2>Our Core <span class="text-gradient">Features</span></h2>
+            <p>Experience the power of a digital campus.</p>
+        </div>
+
+        <div class="feature-row" data-aos="fade-right">
+            <div class="feature-pill pill-cyan">
+                <div class="pill-content">
+                    <span>It Works For</span>
+                    <h3>Interactive<br>Learning</h3>
+                </div>
+                <i class="fas fa-broadcast-tower pill-icon"></i>
+            </div>
+            <div class="feature-list-box">
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> 500+ Monthly Live Classes</li>
+                    <li><i class="fas fa-check-circle"></i> 1200+ Detailed Courses</li>
+                    <li><i class="fas fa-check-circle"></i> Doubt Clearing Sessions</li>
+                    <li><i class="fas fa-check-circle"></i> Real-time Interaction</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-row" data-aos="fade-right" data-aos-delay="200">
+            <div class="feature-pill pill-purple">
+                <div class="pill-content">
+                    <span>It Works For</span>
+                    <h3>Smart<br>Assessment</h3>
+                </div>
+                <i class="fas fa-brain pill-icon"></i>
+            </div>
+            <div class="feature-list-box">
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> 8500+ AI Proctored Exams</li>
+                    <li><i class="fas fa-check-circle"></i> Performance Analytics</li>
+                    <li><i class="fas fa-check-circle"></i> Instant Result Generation</li>
+                    <li><i class="fas fa-check-circle"></i> Question Bank Access</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-row" data-aos="fade-right" data-aos-delay="400">
+            <div class="feature-pill pill-pink">
+                <div class="pill-content">
+                    <span>It Works For</span>
+                    <h3>Resource<br>Library</h3>
+                </div>
+                <i class="fas fa-book-reader pill-icon"></i>
+            </div>
+            <div class="feature-list-box">
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> 50k+ Digital Resources</li>
+                    <li><i class="fas fa-check-circle"></i> Notes & Cheat Sheets</li>
+                    <li><i class="fas fa-check-circle"></i> Offline Access Mode</li>
+                    <li><i class="fas fa-check-circle"></i> Community Sharing</li>
+                </ul>
+            </div>
+        </section>
+
+    <section id="developers" class="dev-section">
+        <div class="dev-header" data-aos="fade-up">
+            <h2>Meet the <span class="text-gradient">Developers</span></h2>
+            <p>The brilliant minds behind Learning-365</p>
+        </div>
+
+        <div class="dev-carousel-container">
+            <div class="dev-track">
+                
+                <div class="dev-slide">
+                    <div class="dev-profile-card">
+                        <div class="dev-img-box">
+                            <div class="dev-shape shape-cyan"></div>
+                            <img src="{% static 'images/dev1.png' %}?v=3" alt="Soham">
+                        </div>
+                        <div class="dev-info">
+                            <span class="role-text txt-cyan">"Mastermind of UI"</span>
+                            <div class="dev-name-title">Soham Shyamal</div>
+                            <div class="dev-role-small">Lead Frontend Engineer</div>
+                            
+                            <div class="dev-socials">
+                                <a href="https://github.com/soham" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                                <a href="https://linkedin.com/in/soham" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                                <a href="mailto:soham@example.com" title="Email"><i class="fas fa-envelope"></i></a>
+                                <a href="https://instagram.com/soham" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dev-profile-card">
+                        <div class="dev-img-box">
+                            <div class="dev-shape shape-purple"></div>
+                            <img src="{% static 'images/dev2.png' %}?v=3" alt="Anubhav">
+                        </div>
+                        <div class="dev-info">
+                            <span class="role-text txt-purple">"Backend Wizard"</span>
+                            <div class="dev-name-title">Anubhav Samanta</div>
+                            <div class="dev-role-small">Full Stack Developer</div>
+
+                            <div class="dev-socials">
+                                <a href="https://github.com/Anubhav2321?tab=repositories" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                                <a href="https://www.linkedin.com/in/anubhav-samanta-187549379" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                                <a href="mailto:anubhav.samanta2321@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
+                                <a href="https://www.instagram.com/r.d.x___anubhav" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dev-slide">
+                    <div class="dev-profile-card">
+                        <div class="dev-img-box">
+                            <div class="dev-shape shape-cyan"></div>
+                            <img src="{% static 'images/dev3.png' %}?v=3" alt="Avik">
+                        </div>
+                        <div class="dev-info">
+                            <span class="role-text txt-cyan">"API Architect"</span>
+                            <div class="dev-name-title">Avik Kulavi</div>
+                            <div class="dev-role-small">Backend & API Lead</div>
+
+                            <div class="dev-socials">
+                                <a href="https://github.com/avik" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                                <a href="https://linkedin.com/in/avik" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                                <a href="mailto:avik@example.com" title="Email"><i class="fas fa-envelope"></i></a>
+                                <a href="https://instagram.com/avik" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dev-profile-card">
+                        <div class="dev-img-box">
+                            <div class="dev-shape shape-purple"></div>
+                            <img src="{% static 'images/dev4.png' %}?v=3" alt="Abhishek">
+                        </div>
+                        <div class="dev-info">
+                            <span class="role-text txt-purple">"Database Guru"</span>
+                            <div class="dev-name-title">Abhishek Chowdhury</div>
+                            <div class="dev-role-small">Database Administrator</div>
+
+                            <div class="dev-socials">
+                                <a href="https://github.com/abhishek" target="_blank" title="GitHub"><i class="fab fa-github"></i></a>
+                                <a href="https://linkedin.com/in/abhishek" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                                <a href="mailto:abhishek@example.com" title="Email"><i class="fas fa-envelope"></i></a>
+                                <a href="https://instagram.com/abhishek" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="carousel-dots">
+                <div class="dot active" onclick="moveSlide(0)"></div>
+                <div class="dot" onclick="moveSlide(1)"></div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="f-col">
+                <div class="logo" style="margin-bottom: 20px;">
+                    <i class="fas fa-graduation-cap" style="color:var(--primary-cyan);"></i> LEARNING-365
+                </div>
+                <p style="color: #777; line-height: 1.6;">Empowering the next generation of learners with advanced tools, community support, and expert guidance.</p>
+            </div>
+            <div class="f-col">
+                <h4>Platform</h4>
+                <a href="#">Browse Courses</a>
+                <a href="#">Live Classes</a>
+                <a href="#">AI Exams</a>
+            </div>
+            <div class="f-col">
+                <h4>Support</h4>
+                <a href="#">Help Center</a>
+                <a href="#">Terms of Use</a>
+                <a href="#">Contact Us</a>
+            </div>
+            <div class="f-col">
+                <h4>Legal</h4>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Cookie Policy</a>
+                <a href="#">Security</a>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2026 Learning-365. All Rights Reserved. Designed with <i class="fas fa-heart" style="color: #db2777;"></i> for Future Leaders.
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Init Animation
+        AOS.init({ offset: 120, duration: 800, once: true });
+
+        // Navbar Scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('.navbar');
+            if (window.scrollY > 50) nav.classList.add('scrolled');
+            else nav.classList.remove('scrolled');
+        });
+
+        // Carousel Logic
+        let currentSlide = 0;
+        const track = document.querySelector('.dev-track');
+        const dots = document.querySelectorAll('.dot');
+
+        function moveSlide(index) {
+            currentSlide = index;
+            const width = track.clientWidth;
+            track.style.transform = `translateX(-${index * width}px)`;
+            
+            // Update dots
+            dots.forEach(dot => dot.classList.remove('active'));
+            dots[index].classList.add('active');
+        }
+
+        // Auto slide every 5 seconds
+        setInterval(() => {
+            currentSlide = currentSlide === 0 ? 1 : 0;
+            moveSlide(currentSlide);
+        }, 5000);
+    </script>
+</body>
+</html>

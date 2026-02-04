@@ -1,0 +1,37 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+<div style="padding: 40px;">
+    <h2 style="color: #fff; margin-bottom: 20px;">Active Enrollments</h2>
+    
+    <div style="background: #111; border-radius: 15px; border: 1px solid #333; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; color: #ccc;">
+            <tr style="background: #1a1a1a; text-align: left;">
+                <th style="padding: 15px;">Student</th>
+                <th style="padding: 15px;">Course</th>
+                <th style="padding: 15px;">Progress</th>
+                <th style="padding: 15px;">Date</th>
+                <th style="padding: 15px; text-align: right;">Action</th>
+            </tr>
+            {% for enroll in enrollments %}
+            <tr style="border-bottom: 1px solid #222;">
+                <td style="padding: 15px; color: #fff;">{{ enroll.student.username }}</td>
+                <td style="padding: 15px;">{{ enroll.course.title }}</td>
+                <td style="padding: 15px;">
+                    <div style="width: 100px; height: 6px; background: #333; border-radius: 3px;">
+                        <div style="width: {{ enroll.progress }}%; height: 100%; background: #00d4ff;"></div>
+                    </div>
+                    <small>{{ enroll.progress }}%</small>
+                </td>
+                <td style="padding: 15px;">{{ enroll.enrolled_at|date:"d M, Y" }}</td>
+                <td style="padding: 15px; text-align: right;">
+                    <a href="{% url 'admin_delete_enrollment' enroll.id %}" onclick="return confirm('Revoke access for this student?')" style="color: #ff3366; text-decoration: none; border: 1px solid #ff3366; padding: 5px 10px; border-radius: 5px;">Revoke</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="padding: 30px; text-align: center;">No enrollments yet.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+{% endblock %}

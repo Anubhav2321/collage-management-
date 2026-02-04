@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+    /* --- GLOBAL THEME --- */
+    :root {
+        --bg-dark: #0a0a0f;
+        --card-bg: #13131a;
+        --border-color: #2a2a35;
+        --neon-blue: #00f3ff;
+        --neon-purple: #bc13fe;
+        --text-main: #e0e0e0;
+        --glass: rgba(19, 19, 26, 0.95);
+    }
+
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background-color: var(--bg-dark);
+        /* Graph/Grid background removed for a clean look */
+        color: var(--text-main);
+    }
+
+    .dashboard-container {
+        padding: 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* --- ANIMATIONS --- */
+    .fade-in-up {
+        animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    
+    @keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- WELCOME BANNER (With Notification Bell) --- */
+    .welcome-banner {
+        background: linear-gradient(90deg, #13131a 0%, #1a1a24 100%);
+        border: 1px solid var(--border-color);
+        border-left: 5px solid var(--neon-blue);
+        border-radius: 15px; /* Curved */
+        padding: 30px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        margin-bottom: 40px;
+        position: relative;
+    }
+
+    .user-info h1 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2.2rem;
+        margin: 0;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    .user-info h1 span { color: var(--neon-blue); }
+    
+    .level-badge {
+        background: rgba(0, 243, 255, 0.1);
+        color: var(--neon-blue);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: 1px solid rgba(0, 243, 255, 0.3);
+        margin-top: 10px;
+        display: inline-block;
+    }
+
+    /* Notification Trigger (Top Right) */
+    .notif-bell {
+        position: relative;
+        width: 50px; height: 50px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        display: flex; justify-content: center; align-items: center;
+        cursor: pointer;
+        border: 1px solid var(--border-color);
+        transition: 0.3s;
+    }
+    .notif-bell:hover {
+        background: var(--neon-blue);
+        color: #000;
+        box-shadow: 0 0 15px var(--neon-blue);
+    }
+    .notif-bell i { font-size: 1.2rem; }
+    
+    /* Red Dot if unread */
+    .badge-dot {
+        position: absolute; top: 10px; right: 12px;
+        width: 8px; height: 8px;
+        background: #ff4757; border-radius: 50%;
+        border: 1px solid #fff;
+    }
+
+    /* --- COURSES SECTION (Full Width Layout) --- */
+    .section-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.5rem; color: #fff; margin-bottom: 25px;
+        display: flex; align-items: center; gap: 10px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+    }
+    
+    .courses-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+    }
+
+    .course-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px; /* Curved */
+        padding: 20px;
+        transition: 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Hover Glow Only (No Scale/Move) */
+    .course-card:hover {
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+    }
+
+    .card-thumb {
+        width: 100%; height: 160px; background: #000;
+        border-radius: 12px; object-fit: cover; margin-bottom: 20px;
+        border: 1px solid #222;
+    }
+
+    .course-title { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .course-meta { color: #888; font-size: 0.9rem; margin-bottom: 20px; display: flex; justify-content: space-between; }
+
+    .progress-track { height: 6px; background: #222; width: 100%; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+    .progress-bar { height: 100%; background: var(--neon-blue); width: 0%; box-shadow: 0 0 10px var(--neon-blue); }
+
+    .btn-action {
+        display: block; width: 100%; padding: 12px 0;
+        background: transparent; border: 1px solid var(--border-color);
+        color: var(--text-main); text-align: center; text-decoration: none;
+        font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+        border-radius: 8px; transition: 0.3s;
+    }
+    .btn-action:hover {
+        background: var(--neon-blue); color: #000; border-color: var(--neon-blue);
+    }
+
+    /* --- NOTIFICATION MODAL (Curved & Animated) --- */
+    .modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.8); z-index: 9999;
+        justify-content: center; align-items: center;
+        backdrop-filter: blur(5px);
+    }
+    
+    .modal-box {
+        background: #161616;
+        border: 1px solid var(--neon-blue);
+        width: 500px;
+        border-radius: 25px; /* Highly Curved */
+        padding: 30px;
+        box-shadow: 0 0 50px rgba(0, 243, 255, 0.15);
+        position: relative;
+        transform: scale(0.8); opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    /* Open Animation State */
+    .modal-open .modal-box {
+        transform: scale(1); opacity: 1;
+    }
+
+    .modal-header {
+        font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: var(--neon-blue);
+        margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .notice-list-modal { max-height: 400px; overflow-y: auto; padding-right: 10px; }
+    .notice-list-modal::-webkit-scrollbar { width: 4px; }
+    .notice-list-modal::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+    .notice-item {
+        background: rgba(255,255,255,0.03);
+        padding: 15px; border-radius: 12px; margin-bottom: 15px;
+        border-left: 4px solid var(--neon-purple);
+        transition: 0.2s;
+    }
+    .notice-item:hover { background: rgba(255,255,255,0.06); }
+    .n-title { font-weight: 700; font-size: 1rem; color: #fff; margin-bottom: 5px; }
+    .n-body { font-size: 0.9rem; color: #aaa; line-height: 1.5; }
+    .n-date { font-size: 0.8rem; color: #666; margin-top: 10px; display: block; text-align: right; }
+
+    /* Chatbot Fab */
+    .ai-fab {
+        position: fixed; bottom: 30px; right: 30px;
+        width: 60px; height: 60px; background: #000;
+        border: 2px solid var(--neon-blue); border-radius: 50%;
+        display: flex; justify-content: center; align-items: center;
+        cursor: pointer; z-index: 1000; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+        transition: 0.3s;
+    }
+    .ai-fab:hover { background: var(--neon-blue); color: #000; }
+    .ai-fab i { font-size: 24px; color: inherit; }
+
+</style>
+
+<div class="dashboard-container">
+
+    <div class="welcome-banner fade-in-up">
+        <div class="user-info">
+            <h1>Welcome, <span>{{ request.user.first_name }}</span></h1>
+            <div class="level-badge">LEVEL: {{ request.user.student_level }}</div>
+        </div>
+        
+        <div class="notif-bell" onclick="openNotificationModal()" title="View Notifications">
+            <i class="fas fa-bell"></i>
+            {% if notifications %}<div class="badge-dot"></div>{% endif %}
+        </div>
+    </div>
+
+    <div class="fade-in-up" style="animation-delay: 0.2s;">
+        <div class="section-title">
+            <i class="fas fa-layer-group" style="color:var(--neon-blue)"></i> My Active Courses
+        </div>
+        
+        <div class="courses-grid">
+            {% if enrollments %}
+                {% for enrollment in enrollments %}
+                <div class="course-card">
+                    {% if enrollment.course.thumbnail %}
+                        <img src="{{ enrollment.course.thumbnail.url }}" class="card-thumb" alt="Course">
+                    {% else %}
+                        <div class="card-thumb" style="display:flex;align-items:center;justify-content:center;background:#050505;">
+                            <i class="fas fa-code fa-3x" style="color:#333;"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="course-title">{{ enrollment.course.title }}</div>
+                    <div class="course-meta">
+                        <span><i class="fas fa-cube"></i> {{ enrollment.course.total_modules }} Modules</span>
+                        <span style="color: var(--neon-blue);">In Progress</span>
+                    </div>
+
+                    <div class="progress-track">
+                        <div class="progress-bar" style="width: {{ enrollment.progress }}%;"></div>
+                    </div>
+
+                    <a href="{% url 'course_watch' enrollment.course.id %}" class="btn-action">
+                        Continue Learning
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="grid-column: 1/-1; text-align: center; padding: 80px; border: 1px dashed #333; border-radius: 15px;">
+                    <i class="fas fa-rocket" style="font-size: 3rem; color: #333; margin-bottom: 20px;"></i>
+                    <h3 style="color: #666;">No active courses found.</h3>
+                    <a href="{% url 'all_courses' %}" style="color: var(--neon-blue); text-decoration: none; font-weight: bold;">Browse Library &rarr;</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-overlay" id="notifModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span><i class="fas fa-bell"></i> NOTIFICATIONS</span>
+            <i class="fas fa-times" onclick="closeNotificationModal()" style="cursor:pointer; color:#fff;"></i>
+        </div>
+        <div class="notice-list-modal">
+            {% for notice in notifications %}
+            <div class="notice-item">
+                <div class="n-title">{{ notice.title }}</div>
+                <div class="n-body">{{ notice.message }}</div>
+                <span class="n-date">{{ notice.created_at|date:"d M, Y • h:i A" }}</span>
+            </div>
+            {% empty %}
+                <p style="color: #666; text-align: center; padding: 20px;">No new notifications.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="ai-fab" onclick="toggleChat()">
+    <i class="fas fa-robot"></i>
+</div>
+
+<div class="chat-interface" id="chatWin" style="display:none; position:fixed; bottom:100px; right:30px; width:350px; height:500px; background:#111; border:1px solid #333; z-index:9999; flex-direction:column; border-radius:15px; overflow:hidden;">
+    <div style="padding:15px; background:#222; border-bottom:1px solid #333; font-weight:bold; color:white; display:flex; justify-content:space-between;">
+        <span>AI Assistant</span>
+        <span onclick="toggleChat()" style="cursor:pointer;">&times;</span>
+    </div>
+    <div id="chatMsgs" style="flex:1; padding:15px; color:white; overflow-y:auto;">
+        <div style="background:#333; padding:10px; border-radius:8px; display:inline-block; margin-bottom:10px;">
+            Hello! I am your AI Study Companion. Ready to solve some mysteries today? 🚀
+        </div>
+    </div>
+    <div style="padding:15px; display:flex;">
+        <input type="text" id="chatIn" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:white; border-radius:5px;" placeholder="Type...">
+        <button onclick="sendMsg()" style="padding:10px 15px; background:var(--neon-blue); border:none; cursor:pointer; border-radius:5px; margin-left:10px;"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script>
+    // Notification Modal Logic
+    function openNotificationModal() {
+        const modal = document.getElementById('notifModal');
+        modal.style.display = 'flex';
+        // Small delay to allow CSS transition
+        setTimeout(() => {
+            modal.classList.add('modal-open');
+        }, 10);
+    }
+
+    function closeNotificationModal() {
+        const modal = document.getElementById('notifModal');
+        modal.classList.remove('modal-open');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300); // Wait for transition
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(e) {
+        if(e.target == document.getElementById('notifModal')) {
+            closeNotificationModal();
+        }
+    }
+
+    // Chat Logic
+    function toggleChat() {
+        var w = document.getElementById('chatWin');
+        w.style.display = w.style.display === 'none' ? 'flex' : 'none';
+    }
+    
+    function sendMsg() {
+        var i = document.getElementById('chatIn');
+        var t = i.value;
+        if(!t) return;
+        
+        var d = document.createElement('div');
+        d.style.cssText = "background:var(--neon-blue); color:black; padding:10px; border-radius:8px; align-self:flex-end; margin-bottom:10px; max-width:80%; margin-left:auto;";
+        d.innerText = t;
+        document.getElementById('chatMsgs').appendChild(d);
+        i.value = '';
+        
+        fetch('/api/ai-chat/', {method:'POST', body:JSON.stringify({question:t})})
+        .then(r=>r.json())
+        .then(data=>{
+            var r = document.createElement('div');
+            r.style.cssText = "background:#333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; max-width:80%;";
+            r.innerText = data.answer;
+            document.getElementById('chatMsgs').appendChild(r);
+        });
+    }
+</script>
+
+{% endblock %}

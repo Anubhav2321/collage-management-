@@ -1,0 +1,269 @@
+{% extends 'base_admin.html' %} 
+{% load static %}
+
+{% block content %}
+<style>
+    /* --- Dashboard Specific Styles --- */
+    .dashboard-container { padding: 30px; }
+
+    /* Stats Grid */
+    .dashboard-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-bottom: 40px;
+    }
+    .stat-card {
+        background: #111; padding: 25px; border-radius: 15px;
+        border: 1px solid #222; border-left: 5px solid #00d4ff;
+        text-decoration: none; display: block; transition: 0.3s;
+    }
+    .stat-card:hover { transform: translateY(-5px); background: #161616; border-color: #444; }
+    .stat-card h3 { font-size: 2.5rem; margin-bottom: 5px; color: #fff; }
+    .stat-card p { color: #aaa; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+
+    /* Forms Layout */
+    .forms-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 40px;
+    }
+    .form-box {
+        background: #111; padding: 30px; border-radius: 15px; border: 1px solid #222;
+    }
+    .form-title { 
+        color: #fff; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; font-size: 1.2rem;
+        display: flex; align-items: center; gap: 10px;
+    }
+    
+    /* Form Inputs */
+    form label { color: #ccc; font-size: 0.9rem; margin-bottom: 8px; display: block; }
+    form input, form textarea, form select {
+        width: 100%; padding: 12px; background: #000; border: 1px solid #333;
+        border-radius: 8px; color: white; margin-bottom: 20px; outline: none;
+    }
+    form input:focus, form textarea:focus { border-color: #00d4ff; }
+    
+    .btn-submit {
+        width: 100%; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer;
+        transition: 0.3s; font-size: 1rem;
+    }
+
+    /* Library List */
+    .lib-item {
+        display: flex; align-items: center; justify-content: space-between;
+        background: #1a1a1a; padding: 15px; margin-bottom: 10px; border-radius: 10px; border: 1px solid #333;
+    }
+    .quiz-btn {
+        padding: 8px 15px; background: rgba(0, 229, 255, 0.1); color: #00d4ff; 
+        border: 1px solid #00d4ff; border-radius: 6px; cursor: pointer; transition: 0.3s;
+    }
+    .quiz-btn:hover { background: #00d4ff; color: #000; }
+</style>
+
+<div class="dashboard-container">
+    
+    <div class="dashboard-grid">
+        <a href="{% url 'admin_student_list' %}" class="stat-card" style="border-left-color: #00d4ff;">
+            <h3>{{ total_students }}</h3>
+            <p><i class="fas fa-users"></i> Students</p>
+        </a>
+        <a href="{% url 'admin_course_list' %}" class="stat-card" style="border-left-color: #ff3366;">
+            <h3>{{ total_courses }}</h3>
+            <p><i class="fas fa-book"></i> Courses</p>
+        </a>
+        <a href="{% url 'admin_enrollment_list' %}" class="stat-card" style="border-left-color: #f1c40f;">
+            <h3>{{ total_enrollments }}</h3>
+            <p><i class="fas fa-user-check"></i> Enrollments</p>
+        </a>
+        <a href="{% url 'admin_document_list' %}" class="stat-card" style="border-left-color: #a55eea;">
+            <h3>{{ total_docs }}</h3>
+            <p><i class="fas fa-file-alt"></i> Documents</p>
+        </a>
+    </div>
+
+    <div class="forms-grid">
+        
+        <div class="form-box">
+            <h4 class="form-title" style="color: #00d4ff;"><i class="fas fa-plus-circle"></i> Add New Course</h4>
+            <form action="{% url 'admin_create_course' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ course_form.as_p }}
+                <button type="submit" class="btn-submit" style="background: #00d4ff; color: #000;">Create Course</button>
+            </form>
+        </div>
+
+        <div class="form-box">
+            <h4 class="form-title" style="color: #ff3366;"><i class="fas fa-video"></i> Schedule Live Class</h4>
+            <form action="{% url 'admin_create_live_class' %}" method="POST">
+                {% csrf_token %}
+                {{ class_form.as_p }}
+                <button type="submit" class="btn-submit" style="background: #ff3366;">Schedule Class</button>
+            </form>
+        </div>
+
+        <div class="form-box">
+            <h4 class="form-title" style="color: #f1c40f;"><i class="fas fa-bullhorn"></i> Post Notice</h4>
+            <form action="{% url 'admin_create_notice' %}" method="POST">
+                {% csrf_token %}
+                {{ notice_form.as_p }}
+                <button type="submit" class="btn-submit" style="background: #f1c40f; color: #000;">Post Notice</button>
+            </form>
+        </div>
+        
+        <div class="form-box">
+            <h4 class="form-title" style="color: #2ecc71;"><i class="fas fa-clipboard-check"></i> Create Exam (Manual)</h4>
+            <form action="{% url 'admin_create_exam' %}" method="POST">
+                {% csrf_token %}
+                {{ exam_form.as_p }}
+                <button type="submit" class="btn-submit" style="background: #2ecc71; color: #000;">Create Exam</button>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="form-box" style="border: 1px solid #a55eea; margin-bottom: 40px;">
+        <h4 class="form-title" style="color: #a55eea;"><i class="fas fa-brain"></i> Library & AI Quiz Generator</h4>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+            
+            <div>
+                <h5 style="color:#aaa; margin-bottom:15px;">Upload Study Material (PDF/DOCX)</h5>
+                <form action="{% url 'add_library' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ library_form.as_p }}
+                    <button type="submit" class="btn-submit" style="background: #a55eea;">Upload File</button>
+                </form>
+            </div>
+
+            <div>
+                <h5 style="color:#aaa; margin-bottom:15px;">Available Documents (Click to Make Quiz)</h5>
+                <div style="max-height: 400px; overflow-y: auto;">
+                    {% for doc in documents %}
+                    <div class="lib-item">
+                        <div>
+                            <div style="color: white; font-weight: bold;">{{ doc.title }}</div>
+                            <div style="color: #666; font-size: 0.8rem;">{{ doc.uploaded_at|date:"M d, Y" }}</div>
+                        </div>
+                        <button class="quiz-btn" onclick="openQuizModal({{ doc.id }}, '{{ doc.title|escapejs }}')">
+                            <i class="fas fa-magic"></i> AI Quiz
+                        </button>
+                    </div>
+                    {% empty %}
+                    <p style="color: #666;">No documents uploaded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div id="quizModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#111; width:90%; max-width:800px; max-height:90vh; border-radius:15px; border:1px solid #333; display:flex; flex-direction:column;">
+        
+        <div style="padding: 20px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#00d4ff; margin:0;">Generating Quiz: <span id="modalDocTitle"></span></h3>
+            <span onclick="document.getElementById('quizModal').style.display='none'" style="color:#fff; cursor:pointer; font-size:24px;">&times;</span>
+        </div>
+
+        <div id="quizLoader" style="text-align:center; padding:50px; display:none;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #00d4ff;"></i>
+            <p style="color:#fff; margin-top: 15px;">AI is analyzing the document...</p>
+        </div>
+        
+        <div id="quizContent" style="flex:1; overflow-y:auto; padding: 20px; color:white;"></div>
+
+        <div style="padding: 20px; border-top: 1px solid #333; text-align:right;">
+            <button id="saveQuizBtn" onclick="saveQuizToDB()" style="padding:10px 20px; background:#00ff88; border:none; border-radius:5px; cursor:pointer; font-weight:bold; display:none;">
+                Save to Exams
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- AI Quiz Logic ---
+    let currentQuestions = [];
+    let currentDocTitle = "";
+
+    async function openQuizModal(docId, title) {
+        const modal = document.getElementById('quizModal');
+        const loader = document.getElementById('quizLoader');
+        const content = document.getElementById('quizContent');
+        const saveBtn = document.getElementById('saveQuizBtn');
+
+        modal.style.display = 'flex';
+        document.getElementById('modalDocTitle').innerText = title;
+        content.innerHTML = '';
+        loader.style.display = 'block';
+        saveBtn.style.display = 'none';
+        currentDocTitle = title;
+
+        // Creating FormData to send doc_id
+        const formData = new FormData();
+        formData.append('doc_id', docId);
+
+        try {
+            const response = await fetch("{% url 'generate_quiz' %}", {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await response.json();
+            loader.style.display = 'none';
+
+            if (data.status === 'success') {
+                currentQuestions = data.quiz;
+                saveBtn.style.display = 'inline-block';
+                renderQuestions(data.quiz);
+            } else {
+                content.innerHTML = `<p style="color:red; text-align:center;">Error: ${data.message}</p>`;
+            }
+        } catch (error) {
+            loader.style.display = 'none';
+            content.innerHTML = `<p style="color:red; text-align:center;">Network Error or Server Timeout.</p>`;
+        }
+    }
+
+    function renderQuestions(questions) {
+        const content = document.getElementById('quizContent');
+        let html = '';
+        questions.forEach((q, i) => {
+            html += `<div style="background:#222; padding:15px; margin-bottom:10px; border-radius:8px; border:1px solid #333;">
+                        <h4 style="color:#00d4ff; margin-bottom:10px;">Q${i+1}: ${q.question}</h4>
+                        <ul style="padding-left:20px;">${q.options.map(o => `<li style="color:#ccc; margin-bottom:5px;">${o}</li>`).join('')}</ul>
+                        <p style="color:#00ff88; font-size:0.9rem; margin-top:10px; font-weight:bold;">Correct Answer: ${q.options[q.answer]}</p>
+                     </div>`;
+        });
+        content.innerHTML = html;
+    }
+
+    async function saveQuizToDB() {
+        if (!currentQuestions.length) return;
+        
+        // Disable button to prevent double click
+        const btn = document.getElementById('saveQuizBtn');
+        btn.innerText = "Saving...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch("{% url 'save_quiz' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ title: currentDocTitle, questions: currentQuestions })
+            });
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                alert("Quiz Saved Successfully!");
+                document.getElementById('quizModal').style.display = 'none';
+            } else {
+                alert("Error saving quiz: " + data.message);
+            }
+        } catch (e) { 
+            alert("Network Error during save."); 
+        } finally {
+            btn.innerText = "Save to Exams";
+            btn.disabled = false;
+        }
+    }
+</script>
+
+{% endblock %}

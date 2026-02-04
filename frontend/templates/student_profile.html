@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+    /* --- GLOBAL THEME --- */
+    :root {
+        --bg-dark: #0a0a0f;
+        --card-bg: #13131a;
+        --border-color: #2a2a35;
+        --neon-cyan: #00f3ff;
+        --neon-purple: #bc13fe;
+        --text-main: #e0e0e0;
+    }
+
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+    }
+
+    .profile-container {
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* --- ANIMATIONS --- */
+    .fade-in-up {
+        animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* --- PROFILE HEADER CARD --- */
+    .profile-header {
+        background: linear-gradient(135deg, rgba(19, 19, 26, 0.9), rgba(10, 10, 15, 0.95));
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 50px;
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    /* Animated Top Border */
+    .profile-header::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+        background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+        box-shadow: 0 0 20px var(--neon-cyan);
+    }
+
+    /* --- AVATAR SECTION --- */
+    .img-wrapper {
+        position: relative;
+        width: 160px; height: 160px;
+        margin: 0 auto 25px;
+    }
+    
+    .profile-img {
+        width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+        border: 4px solid var(--card-bg);
+        box-shadow: 0 0 0 4px var(--neon-cyan), 0 0 30px rgba(0, 243, 255, 0.4);
+        transition: 0.3s;
+    }
+    .profile-img:hover { transform: scale(1.05); box-shadow: 0 0 0 4px var(--neon-purple), 0 0 40px rgba(188, 19, 254, 0.6); }
+
+    .profile-initials {
+        width: 100%; height: 100%; border-radius: 50%;
+        background: var(--card-bg); color: var(--neon-cyan);
+        display: flex; justify-content: center; align-items: center;
+        font-size: 4rem; font-family: 'Orbitron', sans-serif; font-weight: bold;
+        border: 3px solid var(--neon-cyan);
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+    }
+
+    /* Camera Button */
+    .camera-btn {
+        position: absolute; bottom: 5px; right: 5px;
+        background: var(--neon-cyan); color: #000;
+        width: 40px; height: 40px; border-radius: 50%;
+        display: flex; justify-content: center; align-items: center;
+        cursor: pointer; border: 3px solid var(--card-bg);
+        transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+    .camera-btn:hover { background: #fff; transform: scale(1.1) rotate(15deg); }
+
+    /* Text Info */
+    .user-name {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2.5rem; color: #fff; margin: 0 0 10px;
+        text-transform: uppercase; letter-spacing: 2px;
+        text-shadow: 0 0 20px rgba(255,255,255,0.1);
+    }
+    
+    .user-role { 
+        display: inline-block;
+        background: rgba(0, 243, 255, 0.1);
+        border: 1px solid var(--neon-cyan);
+        color: var(--neon-cyan);
+        padding: 6px 20px; border-radius: 30px;
+        font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    /* --- INFO GRID --- */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    .info-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 15px; padding: 30px;
+        position: relative; transition: 0.3s;
+    }
+    .info-card:hover {
+        border-color: var(--neon-purple);
+        box-shadow: 0 0 20px rgba(188, 19, 254, 0.1);
+        transform: translateY(-5px);
+    }
+
+    .card-header {
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 25px; padding-bottom: 15px;
+        border-bottom: 1px dashed var(--border-color);
+    }
+    .card-header h3 {
+        font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: #fff; margin: 0;
+    }
+    .card-header i { color: var(--neon-cyan); font-size: 1.2rem; }
+
+    .data-row {
+        display: flex; justify-content: space-between;
+        padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .data-row:last-child { border-bottom: none; }
+    
+    .label { color: #888; font-size: 0.95rem; }
+    .value { color: #fff; font-weight: 500; font-size: 1rem; }
+    .highlight { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
+
+    /* --- ENROLLED COURSES --- */
+    .section-title {
+        font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: #fff;
+        margin-bottom: 25px; display: flex; align-items: center; gap: 10px;
+    }
+    
+    .course-item {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--border-color);
+        border-radius: 12px; padding: 20px;
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 15px; transition: 0.3s;
+    }
+    .course-item:hover {
+        background: rgba(255,255,255,0.05);
+        border-color: var(--neon-cyan);
+    }
+
+    .course-info h4 { margin: 0 0 5px; color: #fff; font-size: 1.2rem; }
+    .course-info small { color: #666; font-size: 0.85rem; }
+
+    .btn-continue {
+        background: transparent; border: 1px solid var(--neon-cyan);
+        color: var(--neon-cyan); padding: 10px 20px;
+        border-radius: 6px; text-decoration: none;
+        font-weight: 600; font-size: 0.9rem; transition: 0.3s;
+        text-transform: uppercase; letter-spacing: 1px;
+    }
+    .btn-continue:hover {
+        background: var(--neon-cyan); color: #000;
+        box-shadow: 0 0 15px var(--neon-cyan);
+    }
+
+    .empty-msg {
+        text-align: center; padding: 40px; border: 1px dashed var(--border-color);
+        border-radius: 12px; color: #666;
+    }
+
+</style>
+
+<div class="profile-container">
+
+    <div class="profile-header fade-in-up">
+        
+        <div class="img-wrapper">
+            {% if user.profile.profile_pic and user.profile.profile_pic.name != 'profile_pics/default.png' %}
+                <img src="{{ user.profile.profile_pic.url }}" alt="Profile" class="profile-img">
+            {% else %}
+                <div class="profile-initials">{{ user.username.0|upper }}</div>
+            {% endif %}
+
+            <label for="id_profile_pic" class="camera-btn" title="Change Photo">
+                <i class="fas fa-camera"></i>
+            </label>
+        </div>
+
+        <h1 class="user-name">{{ user.first_name }} {{ user.last_name }}</h1>
+        
+        <div class="user-role">
+            {% if user.is_student %}Student Account{% else %}Instructor{% endif %}
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="avatar-form" style="display: none;">
+            {% csrf_token %}
+            {{ form.profile_pic }}
+        </form>
+    </div>
+
+    <div class="info-grid fade-in-up" style="animation-delay: 0.2s;">
+        
+        <div class="info-card">
+            <div class="card-header">
+                <i class="fas fa-user-astronaut"></i>
+                <h3>PERSONAL IDENTITY</h3>
+            </div>
+            
+            <div class="data-row">
+                <span class="label">Username</span>
+                <span class="value">@{{ user.username }}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Email</span>
+                <span class="value">{{ user.email }}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Joined Date</span>
+                <span class="value">{{ user.date_joined|date:"d M, Y" }}</span>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="card-header">
+                <i class="fas fa-graduation-cap"></i>
+                <h3>ACADEMIC STATUS</h3>
+            </div>
+            
+            <div class="data-row">
+                <span class="label">Student ID</span>
+                <span class="value highlight">#STU-{{ user.id|stringformat:"04d" }}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Stream</span>
+                <span class="value">{{ user.stream|default:"General" }}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Level</span>
+                <span class="value">{{ user.student_level }}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Status</span>
+                <span class="value" style="color: #00ff9d;">● Active</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="fade-in-up" style="animation-delay: 0.3s;">
+        <div class="section-title">
+            <i class="fas fa-layer-group" style="color:var(--neon-cyan)"></i>
+            Enrolled Courses ({{ enrollments.count }})
+        </div>
+
+        {% if enrollments %}
+            {% for enrollment in enrollments %}
+            <div class="course-item">
+                <div class="course-info">
+                    <h4>{{ enrollment.course.title }}</h4>
+                    <small>Enrolled: {{ enrollment.enrolled_at|date:"d M, Y" }}</small>
+                </div>
+                <a href="{% url 'course_watch' enrollment.course.id %}" class="btn-continue">
+                    RESUME <i class="fas fa-play" style="margin-left:5px; font-size:0.8rem;"></i>
+                </a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-msg">
+                <p>No active enrollments found.</p>
+                <a href="{% url 'all_courses' %}" style="color:var(--neon-cyan);">Browse Library</a>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    // Auto-submit form when image selected
+    document.getElementById('id_profile_pic').onchange = function() {
+        document.getElementById('avatar-form').submit();
+    };
+</script>
+
+{% endblock %}

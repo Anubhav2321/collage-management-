@@ -1,0 +1,104 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+<div style="padding: 40px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <div>
+            <h2 style="color: #fff; margin-bottom: 5px;">Manage Library Documents</h2>
+            <p style="color: #888;">View, edit, or delete study materials.</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" style="color: #aaa; text-decoration: none; border: 1px solid #444; padding: 8px 15px; border-radius: 5px;">
+            &larr; Back to Dashboard
+        </a>
+    </div>
+
+    <div style="background: #111; border-radius: 15px; border: 1px solid #333; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; color: #ccc;">
+            <thead>
+                <tr style="background: #1a1a1a; border-bottom: 1px solid #333;">
+                    <th style="padding: 20px; text-align: left;">Document Title</th>
+                    <th style="padding: 20px; text-align: left;">Category</th>
+                    <th style="padding: 20px; text-align: left;">Current File</th>
+                    <th style="padding: 20px; text-align: left;">Uploaded Date</th>
+                    <th style="padding: 20px; text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doc in documents %}
+                <tr style="border-bottom: 1px solid #222;">
+                    <td style="padding: 20px;">
+                        <div style="color: #fff; font-weight: bold;">
+                            <i class="fas fa-file-pdf" style="color: #ff3366; margin-right: 8px;"></i>
+                            {{ doc.title }}
+                        </div>
+                    </td>
+                    <td style="padding: 20px;">
+                        <span style="background: rgba(0, 212, 255, 0.1); color: #00d4ff; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">
+                            {{ doc.category }}
+                        </span>
+                    </td>
+                    <td style="padding: 20px;">
+                        <a href="{{ doc.file.url }}" target="_blank" style="color: #aaa; text-decoration: underline;">View File</a>
+                    </td>
+                    <td style="padding: 20px; color: #666;">{{ doc.uploaded_at|date:"d M, Y" }}</td>
+                    
+                    <td style="padding: 20px; text-align: right;">
+                        <button onclick="document.getElementById('edit-modal-{{ doc.id }}').style.display='block'" 
+                                style="background: #222; color: #fff; border: 1px solid #444; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-right: 5px;">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+
+                        <form action="{% url 'admin_delete_document' doc.id %}" method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <button onclick="return confirm('Are you sure you want to delete {{ doc.title }}?')" 
+                                    style="background: rgba(255, 51, 102, 0.1); color: #ff3366; border: none; padding: 9px 15px; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+
+                <div id="edit-modal-{{ doc.id }}" class="w3-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto;">
+                    <div style="background: #1a1a1a; width: 90%; max-width: 500px; margin: 50px auto; padding: 40px; border-radius: 15px; position: relative; border: 1px solid #333;">
+                        
+                        <span onclick="document.getElementById('edit-modal-{{ doc.id }}').style.display='none'" 
+                              style="position: absolute; top: 15px; right: 20px; color: #fff; cursor: pointer; font-size: 2rem;">&times;</span>
+                        
+                        <h3 style="color: #a55eea; margin-bottom: 25px;">Edit Document</h3>
+                        
+                        <form action="{% url 'admin_edit_document' doc.id %}" method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <label style="color: #ccc; display: block; margin-bottom: 5px;">Title</label>
+                            <input type="text" name="title" value="{{ doc.title }}" required 
+                                   style="width: 100%; padding: 10px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; margin-bottom: 15px;">
+
+                            <label style="color: #ccc; display: block; margin-bottom: 5px;">Category</label>
+                            <input type="text" name="category" value="{{ doc.category }}" required 
+                                   style="width: 100%; padding: 10px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; margin-bottom: 15px;">
+
+                            <label style="color: #ccc; display: block; margin-bottom: 5px;">Replace File (Optional)</label>
+                            <input type="file" name="file" 
+                                   style="width: 100%; padding: 10px; background: #000; border: 1px solid #444; color: #fff; border-radius: 5px; margin-bottom: 20px;">
+                            
+                            <p style="color: #666; font-size: 0.8rem; margin-bottom: 20px;">Current: {{ doc.file.name }}</p>
+
+                            <button type="submit" style="width: 100%; padding: 12px; background: #a55eea; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 50px; color: #666;">
+                        No documents found in the library.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

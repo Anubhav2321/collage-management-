@@ -1,0 +1,38 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+<div style="padding: 40px; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 700px;">
+        
+        <div style="margin-bottom: 20px;">
+            <a href="{% url 'admin_course_list' %}" style="color: #aaa; text-decoration: none;">&larr; Back to Course List</a>
+        </div>
+
+        <div style="background: #111; padding: 40px; border-radius: 15px; border: 1px solid #333;">
+            <h2 style="color: #00d4ff; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px;">
+                <i class="fas fa-edit"></i> Edit Course: <span style="color: #fff;">{{ course.title }}</span>
+            </h2>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <style>
+                    label { display: block; color: #ccc; margin-bottom: 8px; font-weight: bold; }
+                    input[type="text"], input[type="number"], textarea, select {
+                        width: 100%; padding: 12px; background: #000; border: 1px solid #444;
+                        border-radius: 8px; color: #fff; margin-bottom: 20px; outline: none;
+                    }
+                    input:focus, textarea:focus { border-color: #00d4ff; }
+                    .helptext { display: none; } /* Hide django help text */
+                </style>
+
+                {{ form.as_p }}
+
+                <button type="submit" style="width: 100%; padding: 15px; background: #00d4ff; color: #000; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
+                    Update Course Details
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+
+<style>
+    .detail-container {
+        padding: 40px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    /* Top Profile Card */
+    .profile-card {
+        background: #111;
+        border-radius: 15px;
+        padding: 30px;
+        border: 1px solid #333;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    .big-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #00d4ff;
+    }
+
+    .profile-info h2 {
+        color: #fff;
+        margin-bottom: 5px;
+        font-size: 2rem;
+    }
+
+    .profile-info p {
+        color: #aaa;
+        font-size: 1rem;
+    }
+
+    .id-badge {
+        background: #222;
+        color: #888;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        border: 1px solid #444;
+        margin-top: 10px;
+        display: inline-block;
+    }
+
+    /* Grid Layout */
+    .admin-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+
+    .section-card {
+        background: #111;
+        border-radius: 15px;
+        padding: 25px;
+        border: 1px solid #333;
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        color: #fff;
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #222;
+        padding-bottom: 10px;
+    }
+
+    /* Action Buttons */
+    .action-btn {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-bottom: 15px;
+        text-align: left;
+        transition: 0.3s;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-decoration: none;
+    }
+
+    .btn-block {
+        background: #ff9f43;
+        color: #000;
+    }
+    .btn-block:hover { background: #e67e22; }
+
+    .btn-delete {
+        background: #ff3366;
+        color: #fff;
+    }
+    .btn-delete:hover { background: #d63031; }
+
+    .btn-password {
+        background: #333;
+        color: #fff;
+        border: 1px solid #444;
+    }
+    .btn-password:hover { background: #444; }
+
+    /* Enrollment List */
+    .enroll-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px;
+        border-bottom: 1px solid #222;
+        color: #ccc;
+    }
+    .enroll-item:last-child { border-bottom: none; }
+    
+    .progress-text {
+        color: #00d4ff;
+        font-weight: bold;
+    }
+</style>
+
+<div class="detail-container">
+    
+    <a href="{% url 'admin_student_list' %}" style="color: #888; text-decoration: none; margin-bottom: 20px; display: inline-block;">
+        <i class="fas fa-arrow-left"></i> Back to Student List
+    </a>
+
+    <div class="profile-card">
+        {% if student.profile.profile_pic %}
+            <img src="{{ student.profile.profile_pic.url }}" class="big-avatar" alt="Profile">
+        {% else %}
+            <img src="https://via.placeholder.com/100" class="big-avatar" alt="Profile">
+        {% endif %}
+        
+        <div class="profile-info">
+            <h2>{{ student.first_name }} {{ student.last_name }}</h2>
+            <p>{{ student.email }}</p>
+            <div class="id-badge">User ID: #{{ student.id }}</div>
+            <div class="id-badge" style="margin-left: 10px;">Joined: {{ student.date_joined|date:"d M, Y" }}</div>
+        </div>
+    </div>
+
+    <div class="admin-grid">
+        
+        <div class="main-column">
+            
+            <div class="section-card">
+                <h3 class="section-title"><i class="fas fa-book"></i> Enrolled Courses ({{ enrollments.count }})</h3>
+                {% for enroll in enrollments %}
+                <div class="enroll-item">
+                    <span>{{ enroll.course.title }}</span>
+                    <span class="progress-text">{{ enroll.progress }}% Complete</span>
+                </div>
+                {% empty %}
+                <p style="color: #666; text-align: center; padding: 20px;">No active enrollments.</p>
+                {% endfor %}
+            </div>
+
+            <div class="section-card">
+                <h3 class="section-title"><i class="fas fa-info-circle"></i> Personal Information</h3>
+                <p style="color: #aaa; margin-bottom: 10px;"><strong>Phone:</strong> {{ student.profile.phone|default:"Not Provided" }}</p>
+                <p style="color: #aaa; margin-bottom: 10px;"><strong>Stream:</strong> {{ student.stream|default:"General" }}</p>
+                <p style="color: #aaa; margin-bottom: 10px;"><strong>Level:</strong> {{ student.student_level }}</p>
+                <p style="color: #aaa;"><strong>Bio:</strong> {{ student.profile.bio|default:"No bio available." }}</p>
+            </div>
+        </div>
+
+        <div class="action-column">
+            <div class="section-card" style="border-color: #444;">
+                <h3 class="section-title" style="color: #ff3366;">Admin Actions</h3>
+                
+                <a href="{% url 'admin_toggle_block' student.id %}" class="action-btn btn-block">
+                    {% if student.is_active %}
+                        <span><i class="fas fa-ban"></i> Block User</span>
+                    {% else %}
+                        <span><i class="fas fa-check"></i> Unblock User</span>
+                    {% endif %}
+                </a>
+
+                <form action="{% url 'admin_reset_password' student.id %}" method="POST" style="margin-bottom: 15px;">
+                    {% csrf_token %}
+                    <input type="text" name="new_password" placeholder="New Password" required style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; margin-bottom: 5px;">
+                    <button type="submit" class="action-btn btn-password">
+                        <span><i class="fas fa-key"></i> Reset Password</span>
+                    </button>
+                </form>
+
+                <a href="{% url 'admin_delete_student' student.id %}" class="action-btn btn-delete" onclick="return confirm('Are you sure? This will delete all student data permanently!');">
+                    <span><i class="fas fa-trash"></i> Delete Account</span>
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

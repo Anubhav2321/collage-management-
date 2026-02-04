@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning-365 | Student Panel</title>
+    
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- GLOBAL VARIABLES --- */
+        :root {
+            --bg-dark: #0a0a0f;
+            --sidebar-bg: #050507; /* Darker sidebar */
+            --border-color: #1f1f25;
+            --accent-cyan: #00d4ff;
+            --text-main: #e0e0e0;
+            --text-muted: #888;
+            --danger-color: #ff3366;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR DESIGN (Clean & Simple) --- */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            flex-shrink: 0;
+            transition: 0.3s ease;
+            position: relative;
+            z-index: 1000;
+        }
+
+        /* Brand Logo (Exactly as requested) */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 50px;
+            padding-left: 10px;
+        }
+        
+        .brand-icon {
+            font-size: 2rem;
+            color: var(--accent-cyan);
+        }
+
+        .brand-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+        
+        .brand-text span {
+            color: var(--accent-cyan);
+        }
+
+        /* Navigation Links */
+        .nav-links {
+            list-style: none;
+            flex: 1;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .nav-item a {
+            display: flex; align-items: center; gap: 15px;
+            padding: 12px 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Hover State (Simple) */
+        .nav-item a:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Active State (Your Screenshot Style) */
+        .nav-item a.active {
+            background: rgba(0, 212, 255, 0.1); /* Subtle Cyan Tint */
+            color: var(--accent-cyan);
+            border-left: 3px solid var(--accent-cyan); /* Simple accent line */
+        }
+
+        .nav-item a i { 
+            width: 25px; text-align: center; 
+            font-size: 1.2rem;
+        }
+
+        /* Logout Button (Bottom) */
+        .logout-container {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .logout-btn {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 20px;
+            color: var(--danger-color);
+            text-decoration: none;
+            font-weight: 700;
+            border: 1px solid rgba(255, 51, 102, 0.2);
+            border-radius: 10px;
+            transition: 0.2s;
+            background: rgba(255, 51, 102, 0.05);
+            justify-content: center;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 51, 102, 0.1);
+            border-color: var(--danger-color);
+        }
+
+        /* --- MAIN CONTENT AREA --- */
+        .main-content {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
+            position: relative;
+            background-color: var(--bg-dark); /* Solid clean background */
+        }
+
+        /* Scrollbar Styling */
+        .main-content::-webkit-scrollbar { width: 8px; }
+        .main-content::-webkit-scrollbar-track { background: var(--bg-dark); }
+        .main-content::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .main-content::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Mobile Toggle */
+        .menu-toggle {
+            display: none;
+            position: fixed; top: 20px; right: 20px; z-index: 2000;
+            background: #111; color: #fff; border: 1px solid #333;
+            padding: 10px; border-radius: 8px; cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed; left: -260px; height: 100%; box-shadow: 10px 0 30px rgba(0,0,0,0.8);
+            }
+            .sidebar.active { left: 0; }
+            .menu-toggle { display: block; }
+            .main-content { width: 100%; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <i class="fas fa-graduation-cap brand-icon"></i>
+            <div class="brand-text">Learning-<span>365</span></div>
+        </div>
+
+        <ul class="nav-links">
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'all_courses' %}" class="{% if request.resolver_match.url_name == 'all_courses' %}active{% endif %}">
+                    <i class="fas fa-book-open"></i> All Courses
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'live_classes' %}" class="{% if request.resolver_match.url_name == 'live_classes' %}active{% endif %}">
+                    <i class="fas fa-video"></i> Live Classes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'library' %}" class="{% if request.resolver_match.url_name == 'library' %}active{% endif %}">
+                    <i class="fas fa-folder"></i> Library
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'exams' %}" class="{% if request.resolver_match.url_name == 'exams' %}active{% endif %}">
+                    <i class="fas fa-edit"></i> AI Exams
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+            </li>
+        </ul>
+
+        <div class="logout-container">
+            <a href="{% url 'logout' %}" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+    </script>
+
+</body>
+</html>
