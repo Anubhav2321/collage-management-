@@ -55,10 +55,10 @@ class LessonAdmin(admin.ModelAdmin):
 # ==========================================
 # 3. Exam & Question Admin (Updated Logic)
 # ==========================================
-# যেহেতু Choice মডেল নেই, তাই Question এর ভেতরেই অপশন থাকবে
+# Inline for Questions within Exam
 class QuestionInline(admin.StackedInline):
     model = Question
-    extra = 1  # ডিফল্ট ১টি প্রশ্ন দেখাবে
+    extra = 1  # Default will show 1 question.
 
 @admin.register(Exam)
 class ExamAdmin(admin.ModelAdmin):

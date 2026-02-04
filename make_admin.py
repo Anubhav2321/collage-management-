@@ -1,32 +1,32 @@
 import os
 import django
 
-# Django সেটআপ
+# Django setup
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'lms_core.settings')
 django.setup()
 
 from students.models import User
 
 def fix_admin_accounts():
-    # যে ইমেইলগুলোকে অ্যাডমিন বানাতে চান
+    # Emails you want to make admin
     target_emails = ['admin@gmail.com', 'anubhva@l365.com']
 
     print("🚀 Starting Admin Fix Process...")
     print("-" * 50)
 
     for email in target_emails:
-        # filter() ব্যবহার করছি যাতে একাধিক ইউজার থাকলেও সমস্যা না হয়
+        # I am using filter() so that there is no problem even if there are multiple users.
         users = User.objects.filter(email=email)
         
         if users.exists():
             for user in users:
                 try:
-                    # ১. অ্যাডমিন রোল ও পারমিশন দেওয়া
+                    # 1. Granting admin roles and permissions
                     user.role = 'admin'
                     user.is_staff = True
                     user.is_superuser = True
                     
-                    # ২. পাসওয়ার্ড রিসেট করে 'admin' করা (যাতে আপনি লগইন করতে পারেন)
+                    # 2. Reset the password to 'admin' (so you can login)
                     user.set_password('admin')
                     user.save()
                     
