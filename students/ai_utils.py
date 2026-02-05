@@ -68,7 +68,7 @@ def generate_quiz_from_text(text, num_questions=5):
                         
                         # Formulate question
                         question_text = f"What {key} {definition}?"
-                        if len(subject.split()) > 4: # Subject যদি খুব বড় হয়, তাহলে উল্টে দেব
+                        if len(subject.split()) > 4: # Subject যদি খুব বড় হয়, তাহলে উল্টে দেব
                             question_text = f"{subject} {key} _____________."
                             correct_ans = definition
                         else:

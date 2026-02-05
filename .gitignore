@@ -1,18 +1,18 @@
-# Environments (ভার্চুয়াল এনভায়রনমেন্ট বাদ দেওয়া)
+# Environments (remove the virtual environment )
 .env
 .venv
 .venv/
 venv/
 ENV/
 
-# Python cache (অপ্রয়োজনীয় ক্যাশ ফাইল)
+# Python cache (Unnecessary cache files)
 __pycache__/
 *.pyc
 
-# Database (লোকাল ডাটাবেস বাদ দেওয়া)
+# Database (Excluding local database)
 db.sqlite3
 
-# Media Files (মিডিয়া ফোল্ডার বাদ দেওয়া)
+# Media Files (Excluding media folders)
 media/
 
 # OS generated files

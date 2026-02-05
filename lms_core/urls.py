@@ -156,7 +156,7 @@ urlpatterns = [
 # ==============================
 # Media & Static Files Configuration
 # ==============================
-# এই অংশটি প্রোফাইল পিকচারের জন্য খুবই জরুরি
+# This part is very important for the profile picture.
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     if settings.STATICFILES_DIRS:
