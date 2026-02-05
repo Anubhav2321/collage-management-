@@ -91,7 +91,7 @@ def generate_quiz_from_text(text, num_questions=5):
                 except:
                     continue
 
-    # যদি ফাইল থেকে যথেষ্ট প্রশ্ন না পাওয়া যায়, তবে কিছু ডিফল্ট প্রশ্ন দেওয়া হবে
+    # if not enough questions are generated, add a fallback question
     if len(questions) < 2:
         questions.append({
             'question': 'Could not extract enough context. Select the topic type:',
