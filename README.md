@@ -70,22 +70,25 @@ It is highly recommended to isolate package dependencies.
 
 For Windows:
 PowerShell
+```
 python -m venv .venv
 .venv\Scripts\activate
+```
 (You will see (.venv) at the start of your terminal line once activated.)
 
 ### Step 3: Install Dependencies
 Install all required libraries/packages from the requirements file:
 Bash
+```
 pip install -r requirements.txt
-
+```
 ### Step 4: Configure Environment Variables
 Create a file named .env in the root directory (where manage.py is located) and add the following configuration:
 
 Code snippet
-DEBUG=True
+```DEBUG=True
 SECRET_KEY=django-insecure-your-secret-key-here
-
+```
 
 # Add any other API keys here if needed
 
@@ -93,25 +96,30 @@ SECRET_KEY=django-insecure-your-secret-key-here
 Apply migrations to create the database schema:
 
 Bash
+```
 python manage.py makemigrations
 python manage.py migrate
-
+```
 ### Step 6: Create Admin User
 Create a superuser to access the Django admin panel:
 
 Bash
+```
 python manage.py createsuperuser
+```
 (Follow the prompts to set a username, email, and password.)
 
 ### Step 7: Run the Server
 Start the local development server:
 
 Bash
+```
 python manage.py runserver
-
+```
 
 ### 📂 Project Structure
 Here is an overview of the file structure for the project:
+```
 Learning-365/
 │
 ├── .venv/                # Virtual Environment (Ignored in Git)
@@ -133,14 +141,12 @@ Learning-365/
 ├── requirements.txt      # List of dependencies
 ├── .env                  # Environment Variables (Ignored in Git)
 └── README.md             # Project Documentation
-
+```
 📞 Contact & Support
 If you have any questions, feedback, or need support running this project, feel free to reach out:
 
 Developer: Anubhav Samanta
-
 GitHub: @Anubhav2321
-
 Email: anubhavsamanta2005@gmail.com
 
-<div align="center"> <p>Made with ❤️ by Anubhav Samanta</p> <p>If you like this project, please give it a ⭐ star on GitHub!</p> </div>
+          
