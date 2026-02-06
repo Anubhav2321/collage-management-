@@ -145,8 +145,13 @@ Learning-365/
 📞 Contact & Support
 If you have any questions, feedback, or need support running this project, feel free to reach out:
 
-Developer: Anubhav Samanta
-GitHub: @Anubhav2321
+Developer: 
+Anubhav Samanta
+
+GitHub: 
+```
+https://github.com/Anubhav2321?tab=repositories
+```
 Email: anubhavsamanta2005@gmail.com
 
           
