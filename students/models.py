@@ -1,4 +1,5 @@
 import os
+import re  # <--- CRITICAL IMPORT: Video fix er jonno eta must lagbe
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.text import slugify
@@ -64,6 +65,10 @@ class Course(models.Model):
     title = models.CharField(max_length=200, unique=True)
     slug = models.SlugField(max_length=250, unique=True, blank=True, help_text="Auto-generated from title")
     description = models.TextField()
+    
+    # --- Faculty Name ---
+    faculty_name = models.CharField(max_length=100, default="Expert Faculty") 
+    
     thumbnail = models.ImageField(upload_to='course_thumbnails/', blank=True, null=True)
     
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -92,7 +97,7 @@ class Course(models.Model):
 
 
 # ==========================================
-# 4. LESSON MODEL
+# 4. LESSON MODEL (CRITICAL UPDATE HERE)
 # ==========================================
 class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
@@ -100,11 +105,17 @@ class Lesson(models.Model):
     slug = models.SlugField(max_length=250, blank=True)
     
     video_file = models.FileField(upload_to='lessons/videos/', blank=True, null=True)
-    video_url = models.URLField(blank=True, null=True)
+    video_url = models.URLField(blank=True, null=True, help_text="Paste YouTube or Video Link here") 
+    
     content = models.TextField(blank=True, null=True)
     
+    duration = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. 10:30") 
     order = models.PositiveIntegerField(default=1)
     is_preview = models.BooleanField(default=False)
+    
+    # Tracking field
+    is_completed = models.BooleanField(default=False) 
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -114,10 +125,34 @@ class Lesson(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+        # Trim whitespace from URL if present to avoid errors
+        if self.video_url: 
+            self.video_url = self.video_url.strip()
         super(Lesson, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.order}. {self.title}"
+
+    # --- ADVANCED YOUTUBE ID EXTRACTOR (Fixes Error 153) ---
+    def get_youtube_embed_url(self):
+        if not self.video_url:
+            return ""
+        
+        # Strip whitespace again just in case
+        url = self.video_url.strip()
+        
+        # Regex to handle: standard, share, embed, shorts, mobile links
+        regex = r'(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})'
+        
+        match = re.search(regex, url)
+        
+        if match:
+            # If ID found (e.g. dQw4w9WgXcQ), convert to Embed URL
+            # rel=0 means show related videos from same channel only
+            return f"https://www.youtube.com/embed/{match.group(1)}?rel=0"
+        
+        # Fallback: Return original URL if it doesn't match standard patterns
+        return url
 
 
 # ==========================================
@@ -230,6 +265,7 @@ class LiveClass(models.Model):
         return self.title
 
 class LibraryDocument(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='documents', null=True, blank=True)
     title = models.CharField(max_length=200)
     category = models.CharField(max_length=100, default='General')
     file = models.FileField(upload_to='library_docs/')
@@ -238,6 +274,69 @@ class LibraryDocument(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# ==========================================
+# 9. AI FEATURES MODELS
+# ==========================================
+
+# 1. AI Code Reviewer & Optimizer
+class AICodeSubmission(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True)
+    code_content = models.TextField()
+    language = models.CharField(max_length=50, default='Python')
+    
+    # AI Response fields
+    ai_feedback = models.TextField(blank=True, null=True)
+    optimized_code = models.TextField(blank=True, null=True)
+    suggestions = models.TextField(blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Code Review: {self.student.username} ({self.language})"
+
+# 2. AI Personalized Study Roadmap
+class StudyRoadmap(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    target_skill = models.CharField(max_length=200, help_text="e.g. Full Stack Python")
+    duration_weeks = models.IntegerField(default=4)
+    
+    # Stores the generated JSON roadmap
+    roadmap_data = models.TextField(help_text="Stores JSON data of the schedule")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Roadmap for {self.student.username}: {self.target_skill}"
+
+# 3. AI Proctoring Logs (For Exams)
+class ProctoringLog(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    
+    violation_type = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    screenshot = models.ImageField(upload_to='proctoring_proofs/', blank=True, null=True)
+    
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Violation: {self.student.username} in {self.exam.title}"
+
+# 4. Smart Video Notes (Magic Notes)
+class AIVideoNote(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    
+    summary = models.TextField(help_text="AI Generated Summary")
+    key_points = models.TextField(help_text="Bullet points extracted from video")
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notes for {self.lesson.title} - {self.student.username}"
 
 
 # ==========================================

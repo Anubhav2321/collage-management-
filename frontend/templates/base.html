@@ -205,7 +205,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{% url 'exams' %}" class="{% if request.resolver_match.url_name == 'exams' %}active{% endif %}">
+                <a href="{% url 'student_exam_list' %}" class="{% if request.resolver_match.url_name == 'student_exam_list' or request.resolver_match.url_name == 'take_exam' %}active{% endif %}">
                     <i class="fas fa-edit"></i> AI Exams
                 </a>
             </li>

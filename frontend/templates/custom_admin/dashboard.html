@@ -83,7 +83,25 @@
             <h4 class="form-title" style="color: #00d4ff;"><i class="fas fa-plus-circle"></i> Add New Course</h4>
             <form action="{% url 'admin_create_course' %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ course_form.as_p }}
+                
+                <label>Title</label> {{ course_form.title }}
+                <label>Description</label> {{ course_form.description }}
+                
+                <label>Faculty Name</label> {{ course_form.faculty_name }}
+                
+                <label>Thumbnail</label> {{ course_form.thumbnail }}
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div><label>Price</label> {{ course_form.price }}</div>
+                    <div><label>Modules</label> {{ course_form.total_modules }}</div>
+                </div>
+
+                <label>Difficulty</label> {{ course_form.difficulty_level }}
+                
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                    {{ course_form.is_published }} <label style="margin:0;">Publish Immediately</label>
+                </div>
+
                 <button type="submit" class="btn-submit" style="background: #00d4ff; color: #000;">Create Course</button>
             </form>
         </div>
@@ -110,7 +128,23 @@
             <h4 class="form-title" style="color: #2ecc71;"><i class="fas fa-clipboard-check"></i> Create Exam (Manual)</h4>
             <form action="{% url 'admin_create_exam' %}" method="POST">
                 {% csrf_token %}
-                {{ exam_form.as_p }}
+                
+                <label>Title</label> {{ exam_form.title }}
+                
+                <label>Link to Course (Optional)</label> {{ exam_form.course }}
+                
+                <label>External Link</label> {{ exam_form.exam_link }}
+                <label>Description</label> {{ exam_form.description }}
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div><label>Deadline</label> {{ exam_form.deadline }}</div>
+                    <div><label>Duration (mins)</label> {{ exam_form.duration_minutes }}</div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                    {{ exam_form.is_active }} <label style="margin:0;">Active</label>
+                </div>
+
                 <button type="submit" class="btn-submit" style="background: #2ecc71; color: #000;">Create Exam</button>
             </form>
         </div>
@@ -138,9 +172,17 @@
                     <div class="lib-item">
                         <div>
                             <div style="color: white; font-weight: bold;">{{ doc.title }}</div>
-                            <div style="color: #666; font-size: 0.8rem;">{{ doc.uploaded_at|date:"M d, Y" }}</div>
+                            <div style="font-size: 0.8rem; color: #888;">
+                                {% if doc.course %}
+                                    <span style="color: #a55eea;">{{ doc.course.title }}</span>
+                                {% else %}
+                                    <span style="color: #555;">No Course Linked</span>
+                                {% endif %}
+                                | {{ doc.uploaded_at|date:"M d, Y" }}
+                            </div>
                         </div>
-                        <button class="quiz-btn" onclick="openQuizModal({{ doc.id }}, '{{ doc.title|escapejs }}')">
+                        
+                        <button class="quiz-btn" onclick="openQuizModal({{ doc.id }}, '{{ doc.title|escapejs }}', {% if doc.course %}{{ doc.course.id }}{% else %}null{% endif %})">
                             <i class="fas fa-magic"></i> AI Quiz
                         </button>
                     </div>
@@ -182,21 +224,28 @@
     // --- AI Quiz Logic ---
     let currentQuestions = [];
     let currentDocTitle = "";
+    let currentCourseId = null;
 
-    async function openQuizModal(docId, title) {
+    async function openQuizModal(docId, title, courseId) {
         const modal = document.getElementById('quizModal');
         const loader = document.getElementById('quizLoader');
         const content = document.getElementById('quizContent');
         const saveBtn = document.getElementById('saveQuizBtn');
+
+        currentDocTitle = title;
+        currentCourseId = courseId;
+        currentQuestions = [];
+
+        if (!currentCourseId) {
+            alert("Warning: This document is not linked to any course. The exam might not be visible to students.");
+        }
 
         modal.style.display = 'flex';
         document.getElementById('modalDocTitle').innerText = title;
         content.innerHTML = '';
         loader.style.display = 'block';
         saveBtn.style.display = 'none';
-        currentDocTitle = title;
 
-        // Creating FormData to send doc_id
         const formData = new FormData();
         formData.append('doc_id', docId);
 
@@ -238,7 +287,6 @@
     async function saveQuizToDB() {
         if (!currentQuestions.length) return;
         
-        // Disable button to prevent double click
         const btn = document.getElementById('saveQuizBtn');
         btn.innerText = "Saving...";
         btn.disabled = true;
@@ -247,13 +295,18 @@
             const response = await fetch("{% url 'save_quiz' %}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-                body: JSON.stringify({ title: currentDocTitle, questions: currentQuestions })
+                body: JSON.stringify({ 
+                    title: currentDocTitle, 
+                    questions: currentQuestions,
+                    course_id: currentCourseId 
+                })
             });
             const data = await response.json();
             
             if (data.status === 'success') {
                 alert("Quiz Saved Successfully!");
                 document.getElementById('quizModal').style.display = 'none';
+                location.reload();
             } else {
                 alert("Error saving quiz: " + data.message);
             }

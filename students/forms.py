@@ -8,18 +8,32 @@ from .models import (
     LiveClass, 
     Exam, 
     LibraryDocument, 
-    Profile
+    Profile,
+    Lesson # Need to import Lesson model for the new form
 )
 
 User = get_user_model()
 
 # ==========================================
-# 1. STUDENT REGISTRATION FORM (WITH VALIDATION)
+# 1. STUDENT REGISTRATION FORM (UPDATED LOGIC)
 # ==========================================
 class StudentRegistrationForm(forms.ModelForm):
+    first_name = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
+        required=True
+    )
+    last_name = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
+        required=True
+    )
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'}),
+        required=True
+    )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter Password'}),
-        label="Password"
+        label="Password",
+        help_text="Minimum 8 characters required."
     )
     confirm_password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirm Password'}),
@@ -28,12 +42,9 @@ class StudentRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'username', 'password', 'confirm_password', 'stream', 'student_level']
+        # Removed 'username' from fields
+        fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'stream', 'student_level']
         widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'}),
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Choose Username'}),
             'stream': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Science, Arts'}),
             'student_level': forms.Select(choices=[
                 ('Beginner', 'Beginner'), 
@@ -43,27 +54,40 @@ class StudentRegistrationForm(forms.ModelForm):
         }
 
     def clean_email(self):
-        """Logic: Check if email already exists."""
+        """Logic: Check if email already exists (Unique Identifier)."""
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
             raise ValidationError("This email is already registered. Please login.")
         return email
 
     def clean(self):
-        """Logic: Check if passwords match."""
+        """Logic: Check password match AND length (min 8 chars)."""
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
 
-        if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', "Passwords do not match!")
+        if password and confirm_password:
+            if password != confirm_password:
+                self.add_error('confirm_password', "Passwords do not match!")
+            
+            if len(password) < 8:
+                self.add_error('password', "Password must be at least 8 characters long.")
+                
         return cleaned_data
 
     def save(self, commit=True):
+        """Logic: Auto-generate username from email."""
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password"])
+        
+        # Set Username same as Email (since username is required by Django)
+        user.username = self.cleaned_data["email"]
+        
         if commit:
             user.save()
+            # Auto-create Profile
+            if not hasattr(user, 'profile'):
+                Profile.objects.create(user=user)
         return user
 
 
@@ -73,10 +97,13 @@ class StudentRegistrationForm(forms.ModelForm):
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ['title', 'description', 'thumbnail', 'price', 'total_modules', 'difficulty_level', 'is_published']
+        # --- UPDATED: Added 'faculty_name' to fields ---
+        fields = ['title', 'description', 'faculty_name', 'thumbnail', 'price', 'total_modules', 'difficulty_level', 'is_published']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Course Title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Detailed Course Description'}),
+            # --- NEW WIDGET FOR FACULTY NAME ---
+            'faculty_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Instructor Name'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Course Price (0 for Free)'}),
             'total_modules': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Number of Modules'}),
             'difficulty_level': forms.Select(attrs={'class': 'form-control'}),
@@ -97,6 +124,22 @@ class CourseForm(forms.ModelForm):
             if thumbnail.size > 2 * 1024 * 1024: # 2MB limit
                 raise ValidationError("Image file too large ( > 2mb ).")
         return thumbnail
+
+
+# ==========================================
+# 2.1. LESSON CREATION FORM (NEW)
+# ==========================================
+class LessonForm(forms.ModelForm):
+    class Meta:
+        model = Lesson
+        fields = ['course', 'title', 'video_url', 'duration', 'order']
+        widgets = {
+            'course': forms.Select(attrs={'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Lesson Title'}),
+            'video_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://youtube.com/...'}), 
+            'duration': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '10:00'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
 
 
 # ==========================================
@@ -160,8 +203,9 @@ class ExamForm(forms.ModelForm):
 class LibraryDocumentForm(forms.ModelForm):
     class Meta:
         model = LibraryDocument
-        fields = ['title', 'category', 'file']
+        fields = ['course', 'title', 'category', 'file']
         widgets = {
+            'course': forms.Select(attrs={'class': 'form-control'}), 
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Document Title'}),
             'category': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Category (e.g. Notes, Syllabus)'}),
             'file': forms.FileInput(attrs={'class': 'form-control'}),

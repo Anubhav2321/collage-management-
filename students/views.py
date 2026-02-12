@@ -1,22 +1,21 @@
 import json
 import datetime
-import random
 import time
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.db.models import Q, Avg
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.core.paginator import Paginator
 
-# Import AI Logic (From the new ai_utils.py file)
+# Import AI Logic (From your ai_utils.py file)
 from .ai_utils import extract_text_from_file, generate_quiz_from_text
 
-# Import Forms (Including the new ProfilePictureForm)
+# Import Forms
 from .forms import (
     StudentRegistrationForm,
     CourseForm,
@@ -24,7 +23,8 @@ from .forms import (
     LibraryDocumentForm,
     LiveClassForm,
     ExamForm,
-    ProfilePictureForm 
+    ProfilePictureForm,
+    LessonForm  # <--- UPDATE 1: Added LessonForm to imports
 )
 
 # Import Models
@@ -37,7 +37,7 @@ from .models import (
     Exam,
     Profile,
     Lesson,
-    Quiz,
+    Quiz, # If unused, can be removed
     Question,
     QuizResult
 )
@@ -87,7 +87,7 @@ def contact_developers_view(request):
 
 def register_view(request):
     """
-    Handles Student Registration.
+    Handles Student Registration (UPDATED: Uses First Name in success message).
     """
     if request.user.is_authenticated:
         messages.info(request, "You are already logged in.")
@@ -97,11 +97,14 @@ def register_view(request):
         form = StudentRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f"Account created for {username}! Please login to continue.")
+            # UPDATE: Use first_name instead of username for friendly message
+            messages.success(request, f"Account created successfully for {user.first_name}! Please login.")
             return redirect('login')
         else:
-            messages.error(request, "Registration failed. Please correct the errors below.")
+            # Show specific form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{error}")
     else:
         form = StudentRegistrationForm()
     
@@ -121,10 +124,10 @@ def login_view(request):
         identifier = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Try authenticating as Username first
+        # Try authenticating as Username (which is now Email in backend) first
         user = authenticate(request, username=identifier, password=password)
         
-        # If failed, try finding user by Email
+        # If failed, try finding user by Email explicitly (fallback)
         if user is None:
             try:
                 user_obj = User.objects.get(email=identifier)
@@ -141,14 +144,14 @@ def login_view(request):
             else:
                 return redirect('dashboard')
         else:
-            messages.error(request, "Invalid Credentials! Please check your username/email and password.")
+            messages.error(request, "Invalid Credentials! Please check your email and password.")
 
     return render(request, 'login.html')
 
 
 def logout_view(request):
     logout(request)
-    messages.info(request, "You have been logged out successfully.")
+    messages.success(request, "You have been logged out successfully.")
     return redirect('login')
 
 
@@ -188,8 +191,7 @@ def student_dashboard(request):
 @login_required
 def profile_view(request):
     """
-    Student Profile View (Updated).
-    Features: Profile Picture Upload, View Enrolled Courses, Removed Phone.
+    Student Profile View.
     """
     user = request.user
     
@@ -333,11 +335,21 @@ def course_watch(request, course_id, lesson_id=None):
             
             # Progress Calculation
             new_progress = ((idx + 1) / len(lesson_list)) * 100
+            
+            # Update progress if the new progress is higher
             if new_progress > enrollment.progress:
-                enrollment.update_progress(new_progress)
+                # Check if the model has a custom method, otherwise update field directly
+                if hasattr(enrollment, 'update_progress'):
+                    enrollment.update_progress(new_progress)
+                else:
+                    enrollment.progress = new_progress
+                    enrollment.save()
 
         except ValueError:
             pass
+
+    # --- FIX: Calculate integer progress here to prevent TemplateSyntaxError ---
+    progress_int = int(enrollment.progress) if enrollment.progress else 0
 
     context = {
         'course': course,
@@ -345,21 +357,42 @@ def course_watch(request, course_id, lesson_id=None):
         'current_lesson': current_lesson,
         'next_lesson': next_lesson,
         'prev_lesson': prev_lesson,
-        'progress': enrollment.progress
+        'progress': progress_int  # Passing integer directly
     }
     return render(request, 'course_watch.html', context)
 
 
 @login_required
 def live_classes(request):
+    """
+    Live Classes View: Filtered STRICTLY by Enrolled Courses
+    """
     now = timezone.now()
-    classes = LiveClass.objects.filter(date_time__gte=now - datetime.timedelta(hours=1)).order_by('date_time')
+    
+    # 1. Get IDs of courses the student is enrolled in
+    enrolled_course_ids = Enrollment.objects.filter(student=request.user).values_list('course_id', flat=True)
+    
+    # 2. Filter Live Classes belonging ONLY to these courses
+    classes = LiveClass.objects.filter(
+        course__id__in=enrolled_course_ids,
+        date_time__gte=now - datetime.timedelta(hours=1)
+    ).order_by('date_time')
+    
     return render(request, 'student_classes.html', {'classes': classes})
 
 
 @login_required
 def library_view(request):
-    documents = LibraryDocument.objects.all().order_by('-uploaded_at')
+    """
+    Library View: Filtered STRICTLY by Enrolled Courses
+    """
+    # 1. Get IDs of courses the student is enrolled in
+    enrolled_course_ids = Enrollment.objects.filter(student=request.user).values_list('course_id', flat=True)
+    
+    # 2. Filter documents belonging ONLY to these courses
+    documents = LibraryDocument.objects.filter(
+        course__id__in=enrolled_course_ids
+    ).order_by('-uploaded_at')
     
     query = request.GET.get('search')
     if query:
@@ -369,40 +402,64 @@ def library_view(request):
 
 
 # ====================================================
-# 5. QUIZ & EXAMS (AI GENERATION + LOGIC)
+# 5. QUIZ & EXAMS (UPDATED LOGIC)
 # ====================================================
 
 @login_required
-def exams_view(request):
+def student_exam_list(request):
     """
-    Exams List with Tabs Logic (Active vs History).
+    Shows Active Exams AND Exam History/Results.
     """
-    # 1. Fetch all active exams
-    all_active_exams = Exam.objects.filter(is_active=True).order_by('-created_at')
+    # 1. Get IDs of courses the student is enrolled in
+    enrolled_courses = Enrollment.objects.filter(student=request.user).values_list('course', flat=True)
     
-    # 2. Fetch History (Results for this student)
-    attempted_results = QuizResult.objects.filter(student=request.user).select_related('exam').order_by('-taken_at')
-    
-    # 3. Get IDs of exams already attempted
-    attempted_exam_ids = attempted_results.values_list('exam_id', flat=True)
-    
-    # 4. Filter Available Exams (Active - Attempted)
-    available_exams = all_active_exams.exclude(id__in=attempted_exam_ids)
+    # 2. Filter exams: ONLY those linked to enrolled courses (Active Exams)
+    available_exams = Exam.objects.filter(
+        course__in=enrolled_courses, 
+        is_active=True
+    ).order_by('-created_at')
+
+    # 3. Fetch History/Results (New Addition for the History Tab)
+    past_results = QuizResult.objects.filter(student=request.user).select_related('exam').order_by('-taken_at')
 
     context = {
-        'available_exams': available_exams,   # Tab 1: Active
-        'attempted_results': attempted_results, # Tab 2: History
-        'total_attempted': attempted_results.count(),
-        'total_pending': available_exams.count()
+        'exams': available_exams,
+        'results': past_results # Passing results to the template
     }
-    return render(request, 'student_exams.html', context)
+    return render(request, 'exam_list.html', context) 
+
+@login_required
+def take_exam(request, exam_id):
+    """
+    Exam Taking Page with Enrolled Check.
+    """
+    exam = get_object_or_404(Exam, id=exam_id)
+    
+    # 1. If exam is linked to a course, check enrollment
+    if exam.course:
+        is_enrolled = Enrollment.objects.filter(student=request.user, course=exam.course).exists()
+        if not is_enrolled:
+            messages.error(request, 'You must enroll in this course to take the exam.')
+            return redirect('dashboard')
+
+    # 2. Render exam page using your EXISTING take_quiz.html
+    context = {
+        'exam': exam,
+        'questions': exam.questions.all()
+    }
+    return render(request, 'take_quiz.html', context)
+
+
+@login_required
+def exams_view(request):
+    # Redirect old 'exams_view' to the new 'student_exam_list' logic
+    return student_exam_list(request)
 
 
 @login_required
 def generate_quiz_view(request):
     """
-    AI Quiz Generator (Real Logic).
-    Reads the selected Library Document and generates questions from it.
+    AI Quiz Generator.
     """
     if request.method == "POST":
         try:
@@ -440,24 +497,30 @@ def generate_quiz_view(request):
 @login_required
 def save_quiz_view(request):
     """
-    Saves the AI Generated Quiz to the Database.
+    Saves the AI Generated Quiz AND Links it to a Course.
     """
     if request.method == "POST":
         try:
             data = json.loads(request.body)
             title = data.get('title', 'AI Generated Quiz')
             questions = data.get('questions', [])
+            course_id = data.get('course_id')  # <--- NEW: Get Course ID from frontend
             
-            # 1. Create Exam Object
+            course_obj = None
+            if course_id:
+                course_obj = get_object_or_404(Course, id=course_id)
+
+            # NOTE: Linking to the course
             exam = Exam.objects.create(
                 title=title,
+                course=course_obj,  # <--- LINKED HERE
                 description="Generated by AI Assistant",
                 duration_minutes=20, 
                 is_active=True,
-                total_marks=len(questions) # Set total marks based on question count
+                total_marks=len(questions)
             )
             
-            # 2. Create Questions
+            # Create Questions
             for q in questions:
                 opts = q.get('options', [])
                 correct_idx = q.get('answer', 0)
@@ -486,8 +549,8 @@ def take_quiz_view(request, exam_id):
     """
     Renders the Quiz Taking Interface.
     """
-    exam = get_object_or_404(Exam, id=exam_id)
-    return render(request, 'take_quiz.html', {'exam': exam})
+    # Using the new logic now
+    return take_exam(request, exam_id)
 
 
 @login_required
@@ -524,20 +587,21 @@ def submit_quiz_view(request, exam_id):
                 total_marks=total_questions
             )
         except TypeError:
-             # Fallback if total_marks is removed from model
+             # Fallback
              QuizResult.objects.create(
                 student=request.user,
                 exam=exam,
                 score=score
             )
         
-        percentage = (score / total_questions) * 100 if total_questions > 0 else 0
+        # --- FIXED HERE: Added int() to remove float issues in template ---
+        percentage = int((score / total_questions) * 100) if total_questions > 0 else 0
         
         context = {
             'exam': exam,
             'score': score,
             'total': total_questions,
-            'percentage': round(percentage, 2),
+            'percentage': percentage, # Now it's an integer
             'user_answers': user_answers
         }
         return render(request, 'quiz_result.html', context)
@@ -604,7 +668,8 @@ def admin_dashboard(request):
         'notice_form': NotificationForm(),
         'class_form': LiveClassForm(),
         'exam_form': ExamForm(),
-        'library_form': LibraryDocumentForm()
+        'library_form': LibraryDocumentForm(),
+        'lesson_form': LessonForm(), # Keeping this here if you use it in dashboard too
     }
     return render(request, 'custom_admin/dashboard.html', context)
 
@@ -666,6 +731,30 @@ def add_library_view(request):
         else:
             messages.error(request, "Upload failed. Check file type (PDF/Doc only).")
     return redirect('admin_dashboard')
+
+# --- UPDATE 2: NEW VIEW: Admin Add Lesson (SEPARATE PAGE) ---
+@staff_member_required
+def admin_add_lesson(request, course_id):
+    """
+    Renders a separate page to add a lesson.
+    """
+    course = get_object_or_404(Course, id=course_id)
+    
+    if request.method == 'POST':
+        form = LessonForm(request.POST, request.FILES)
+        if form.is_valid():
+            lesson = form.save(commit=False)
+            lesson.course = course # Link to course
+            lesson.save()
+            messages.success(request, f"Lesson '{lesson.title}' added successfully!")
+            return redirect('admin_course_list') # Redirect back to list
+        else:
+            messages.error(request, "Error adding lesson. Please check inputs.")
+    else:
+        # Pre-fill course (optional, handled by view logic usually)
+        form = LessonForm(initial={'course': course})
+    
+    return render(request, 'custom_admin/add_lesson.html', {'form': form, 'course': course})
 
 # --- Admin Student Management Views ---
 
@@ -752,7 +841,12 @@ def admin_reset_password(request, user_id):
 @staff_member_required
 def admin_course_list(request):
     courses = Course.objects.all().order_by('-created_at')
-    return render(request, 'custom_admin/course_list.html', {'courses': courses})
+    
+    # --- UPDATE 3: NO Form passed, just rendering the list
+    context = {
+        'courses': courses,
+    }
+    return render(request, 'custom_admin/course_list.html', context)
 
 @staff_member_required
 def admin_edit_course(request, course_id):

@@ -1,0 +1,228 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+<style>
+    /* --- Animations --- */
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes neonPulse {
+        0% { box-shadow: 0 0 5px rgba(0, 212, 255, 0.2); }
+        50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
+        100% { box-shadow: 0 0 5px rgba(0, 212, 255, 0.2); }
+    }
+
+    /* --- Layout --- */
+    .form-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 85vh;
+        padding: 20px;
+    }
+
+    /* --- Card Design --- */
+    .form-container {
+        width: 100%;
+        max-width: 650px;
+        background: rgba(18, 18, 24, 0.95);
+        padding: 45px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        backdrop-filter: blur(10px);
+        
+        /* Entry Animation */
+        animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* --- Header --- */
+    .form-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+    }
+    
+    .form-header h2 {
+        color: #fff;
+        font-weight: 800;
+        font-size: 2rem;
+        margin: 0 0 10px 0;
+        letter-spacing: 1px;
+    }
+
+    .course-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0, 240, 255, 0.1);
+        color: #00f0ff;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: 1px solid rgba(0, 240, 255, 0.3);
+        margin-top: 10px;
+    }
+
+    /* --- Inputs --- */
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    label {
+        display: block;
+        color: #a0a0b0;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: color 0.3s;
+    }
+
+    /* Input Styling */
+    .form-container input[type="text"], 
+    .form-container input[type="url"], 
+    .form-container input[type="number"], 
+    .form-container textarea {
+        width: 100%;
+        padding: 16px;
+        background: #0b0b12 !important;
+        border: 1px solid #333 !important;
+        border-radius: 12px;
+        color: white !important;
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+
+    .form-container input:focus {
+        border-color: #00f0ff !important;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        background: #12121a !important;
+        transform: translateY(-2px);
+    }
+
+    .form-group:focus-within label {
+        color: #00f0ff;
+    }
+
+    .help-text {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* --- Action Buttons --- */
+    .btn-submit {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #00d4ff, #0072ff);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 25px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px -10px rgba(0, 114, 255, 0.5);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px -10px rgba(0, 212, 255, 0.6);
+        background: linear-gradient(135deg, #00e5ff, #008cff);
+    }
+
+    .btn-back {
+        display: block;
+        text-align: center;
+        margin-top: 25px;
+        color: #777;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: 0.3s;
+    }
+    .btn-back:hover {
+        color: #fff;
+        text-decoration: underline;
+    }
+
+    /* Grid Layout */
+    .input-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+    }
+</style>
+
+<div class="form-wrapper">
+    <div class="form-container">
+        
+        <div class="form-header">
+            <h2><i class="fas fa-play-circle" style="color: #00f0ff; margin-right: 10px;"></i> Add New Lesson</h2>
+            <div class="course-badge">
+                <i class="fas fa-layer-group"></i> Course: {{ course.title }}
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Lesson Title</label>
+                {{ form.title }}
+            </div>
+
+            <div class="form-group">
+                <label>YouTube Video Link</label>
+                {{ form.video_url }}
+                <div class="help-text">
+                    <i class="fas fa-link"></i> Paste any YouTube URL (Standard, Share, or Mobile)
+                </div>
+            </div>
+
+            <div class="input-grid">
+                <div class="form-group">
+                    <label>Duration (e.g. 10:30)</label>
+                    {{ form.duration }}
+                </div>
+                <div class="form-group">
+                    <label>Serial Number</label>
+                    {{ form.order }}
+                </div>
+            </div>
+
+            <div style="display:none;">{{ form.course }}</div>
+
+            <button type="submit" class="btn-submit">
+                Save Video Lesson
+            </button>
+            
+            <a href="{% url 'admin_course_list' %}" class="btn-back">Cancel & Go Back</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputs = document.querySelectorAll('.form-container input');
+        inputs.forEach(input => {
+            if (input.type !== 'submit' && input.type !== 'checkbox') {
+                input.style.backgroundColor = "#0b0b12";
+                input.style.color = "white";
+                input.style.border = "1px solid #333";
+            }
+        });
+    });
+</script>
+
+{% endblock %}

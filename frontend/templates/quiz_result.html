@@ -1,112 +1,203 @@
 {% extends 'base.html' %}
-{% block content %}
+{% load static %}
 
+{% block content %}
 <style>
-    .result-wrapper {
-        max-width: 800px; margin: 40px auto; padding: 20px;
+    .result-container {
+        padding: 50px 8%;
+        min-height: 80vh;
+        background-color: #030005;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
     /* Score Card */
     .score-card {
-        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-        padding: 40px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1);
-        margin-bottom: 40px; backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        width: 100%;
+        max-width: 600px;
+        backdrop-filter: blur(10px);
+        margin-bottom: 40px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
     }
-    
+
     .score-circle {
-        width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 20px;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        border: 5px solid #333; position: relative;
-    }
-    
-    .score-text { font-size: 36px; font-weight: 800; color: white; }
-    .total-text { font-size: 14px; color: #aaa; }
-    
-    .pass-status {
-        font-size: 24px; font-weight: bold; margin-top: 15px; text-transform: uppercase; letter-spacing: 2px;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 20px auto;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: white;
+        border: 5px solid;
     }
 
-    /* Review Section */
-    .review-item {
-        background: #151525; padding: 20px; margin-bottom: 15px; border-radius: 10px;
-        border-left: 5px solid #333;
+    /* Dynamic Classes for Score Circle */
+    .score-pass {
+        border-color: #00e676;
+        box-shadow: 0 0 20px rgba(0, 230, 118, 0.4);
     }
-    .correct-border { border-left-color: #00ff88; background: rgba(0, 255, 136, 0.05); }
-    .wrong-border { border-left-color: #ff4d4d; background: rgba(255, 77, 77, 0.05); }
+    .score-fail {
+        border-color: #ff1744;
+        box-shadow: 0 0 20px rgba(255, 23, 68, 0.4);
+    }
 
-    .q-review-text { color: white; font-weight: 600; margin-bottom: 10px; font-size: 16px; }
-    
-    .ans-row { display: flex; justify-content: space-between; font-size: 14px; margin-top: 5px; }
-    .user-ans { color: #ccc; }
-    .correct-ans { color: #00ff88; font-weight: bold; }
-    
-    .btn-back {
-        display: inline-block; padding: 12px 30px; background: #9d00ff; color: white; 
-        text-decoration: none; border-radius: 50px; font-weight: bold; transition: 0.3s;
+    .result-title {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        font-family: 'Rajdhani', sans-serif;
     }
-    .btn-back:hover { background: #00e5ff; color: black; }
+
+    .text-success { color: #00e676; }
+    .text-danger { color: #ff1744; }
+
+    .result-msg {
+        color: #aaa;
+        margin-bottom: 30px;
+    }
+
+    /* Actions */
+    .action-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .btn-action {
+        padding: 12px 25px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        text-transform: uppercase;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-home {
+        background: transparent;
+        border: 1px solid #555;
+        color: #ccc;
+    }
+    .btn-home:hover {
+        border-color: white;
+        color: white;
+    }
+
+    .btn-retry {
+        background: linear-gradient(90deg, #00f3ff, #0066ff);
+        color: black;
+        border: none;
+    }
+    .btn-retry:hover {
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+    }
+
+    /* Answer Review */
+    .review-section {
+        width: 100%;
+        max-width: 800px;
+    }
+    .review-header {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 10px;
+        font-size: 1.5rem;
+    }
+
+    .review-card {
+        background: rgba(255,255,255,0.03);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid #333;
+    }
+    
+    .correct-card { border-left-color: #00e676; }
+    .wrong-card { border-left-color: #ff1744; }
+
+    .question-text {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+        color: white;
+        font-weight: 500;
+    }
+
+    .answer-details {
+        font-size: 0.9rem;
+        color: #ccc;
+    }
+    
+    .ans-correct { color: #00e676; font-weight: bold; }
+    .ans-wrong { color: #ff1744; font-weight: bold; }
+
 </style>
 
-<div class="result-wrapper">
-    
-    <div class="score-card" style="border-top: 3px solid {% if percentage >= 40 %}#00ff88{% else %}#ff4d4d{% endif %};">
-        <h2 style="color: white; margin-bottom: 30px;">Quiz Result</h2>
-        
-        <div class="score-circle" style="border-color: {% if percentage >= 40 %}#00ff88{% else %}#ff4d4d{% endif %}; box-shadow: 0 0 30px {% if percentage >= 40 %}rgba(0,255,136,0.2){% else %}rgba(255,77,77,0.2){% endif %};">
-            <span class="score-text">{{ score }}</span>
-            <span class="total-text">out of {{ total }}</span>
+<div class="result-container">
+
+    <div class="score-card">
+        <div class="score-circle {% if percentage >= 50 %}score-pass{% else %}score-fail{% endif %}">
+            {{ percentage }}%
         </div>
 
-        <p style="color: #ccc; font-size: 18px;">Score: {{ percentage }}%</p>
-        
-        <div class="pass-status" style="color: {% if percentage >= 40 %}#00ff88{% else %}#ff4d4d{% endif %};">
-            {% if percentage >= 40 %}PASSED <i class="fas fa-check-circle"></i>{% else %}FAILED <i class="fas fa-times-circle"></i>{% endif %}
-        </div>
-
-        <div style="margin-top: 30px;">
-            <a href="{% url 'exams' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Exams</a>
-        </div>
-    </div>
-
-    <h3 style="color: white; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">
-        Detailed Analysis
-    </h3>
-
-    {% for res in results %}
-    <div class="review-item {% if res.is_correct %}correct-border{% else %}wrong-border{% endif %}">
-        <div class="q-review-text">{{ forloop.counter }}. {{ res.question.text }}</div>
-        
-        <div style="margin-top: 10px;">
-            <div class="ans-row">
-                <span class="user-ans">
-                    Your Answer: 
-                    <span style="color: {% if res.is_correct %}#00ff88{% else %}#ff4d4d{% endif %}; font-weight: bold;">
-                        {% if res.selected == 0 %}{{ res.question.option1 }}
-                        {% elif res.selected == 1 %}{{ res.question.option2 }}
-                        {% elif res.selected == 2 %}{{ res.question.option3 }}
-                        {% elif res.selected == 3 %}{{ res.question.option4 }}
-                        {% else %}Skipped{% endif %}
-                    </span>
-                    {% if res.is_correct %} <i class="fas fa-check" style="color:#00ff88;"></i>{% else %} <i class="fas fa-times" style="color:#ff4d4d;"></i>{% endif %}
-                </span>
-            </div>
-
-            {% if not res.is_correct %}
-            <div class="ans-row">
-                <span class="correct-ans">
-                    Correct Answer: 
-                    {% if res.question.correct_answer == 0 %}{{ res.question.option1 }}
-                    {% elif res.question.correct_answer == 1 %}{{ res.question.option2 }}
-                    {% elif res.question.correct_answer == 2 %}{{ res.question.option3 }}
-                    {% elif res.question.correct_answer == 3 %}{{ res.question.option4 }}
-                    {% endif %}
-                </span>
-            </div>
+        <h1 class="result-title">
+            {% if percentage >= 50 %}
+                <span class="text-success">Excellent Job!</span>
+            {% else %}
+                <span class="text-danger">Needs Improvement</span>
             {% endif %}
+        </h1>
+
+        <p class="result-msg">
+            You scored <strong>{{ score }}</strong> out of <strong>{{ total }}</strong>
+        </p>
+
+        <div class="action-buttons">
+            <a href="{% url 'dashboard' %}" class="btn-action btn-home">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            <a href="{% url 'student_exam_list' %}" class="btn-action btn-retry">
+                <i class="fas fa-list"></i> All Exams
+            </a>
         </div>
     </div>
-    {% endfor %}
+
+    <div class="review-section">
+        <h3 class="review-header">Answer Review</h3>
+
+        {% for q_id, data in user_answers.items %}
+        <div class="review-card {% if data.is_correct %}correct-card{% else %}wrong-card{% endif %}">
+            <p class="question-text">
+                <strong>Q:</strong> {{ data.question }}
+            </p>
+            
+            <div class="answer-details">
+                <p>Your Answer: 
+                    <span class="{% if data.is_correct %}ans-correct{% else %}ans-wrong{% endif %}">
+                        {{ data.selected }}
+                    </span>
+                </p>
+                {% if not data.is_correct %}
+                <p>Correct Answer: 
+                    <span class="ans-correct">
+                        {{ data.correct }}
+                    </span>
+                </p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 
 </div>
-
 {% endblock %}

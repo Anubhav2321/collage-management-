@@ -145,7 +145,7 @@
     .course-meta { color: #888; font-size: 0.9rem; margin-bottom: 20px; display: flex; justify-content: space-between; }
 
     .progress-track { height: 6px; background: #222; width: 100%; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
-    .progress-bar { height: 100%; background: var(--neon-blue); width: 0%; box-shadow: 0 0 10px var(--neon-blue); }
+    .progress-bar { height: 100%; background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
 
     .btn-action {
         display: block; width: 100%; padding: 12px 0;
@@ -174,13 +174,15 @@
         padding: 30px;
         box-shadow: 0 0 50px rgba(0, 243, 255, 0.15);
         position: relative;
-        transform: scale(0.8); opacity: 0;
+        transform: scale(0.8);
+        opacity: 0;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     
     /* Open Animation State */
-    .modal-open .modal-box {
-        transform: scale(1); opacity: 1;
+    .modal-overlay.modal-open .modal-box {
+        transform: scale(1);
+        opacity: 1;
     }
 
     .modal-header {

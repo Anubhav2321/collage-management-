@@ -21,7 +21,6 @@ from students.views import (
     course_watch,       
     live_classes, 
     library_view, 
-    exams_view, 
     profile_view,       # <--- Profile View (Updated)
 
     # 4. Payment System
@@ -29,9 +28,11 @@ from students.views import (
     process_payment,
 
     # 5. Quiz & AI
+    student_exam_list,  # <--- NEW: Exam List View
+    take_exam,          # <--- NEW: Take Exam View
     generate_quiz_view, 
     save_quiz_view, 
-    take_quiz_view,
+    # take_quiz_view,   # Renamed/Replaced by take_exam but keeping if used elsewhere
     submit_quiz_view,   
     ai_chat,
 
@@ -62,7 +63,8 @@ from students.views import (
     admin_create_notice,
     admin_create_live_class,
     admin_create_exam,
-    add_library_view
+    add_library_view,
+    admin_add_lesson # <--- UPDATE 1: Imported the new Lesson View
 )
 
 urlpatterns = [
@@ -105,15 +107,20 @@ urlpatterns = [
     # Core Features
     path('live-classes/', live_classes, name='live_classes'),
     path('library/', library_view, name='library'),
-    path('exams/', exams_view, name='exams'),
-
+    
     # ==============================
-    # 5. Quiz & AI System
+    # 5. Quiz & AI System (UPDATED)
     # ==============================
+    
+    # New Exam Logic (Course Linked)
+    path('my-exams/', student_exam_list, name='student_exam_list'), # <--- NEW
+    path('take-exam/<int:exam_id>/', take_exam, name='take_exam'), # <--- NEW
+    
+    # AI Quiz Generation
     path('quiz/generate/', generate_quiz_view, name='generate_quiz'),
     path('quiz/save/', save_quiz_view, name='save_quiz'),
-    path('quiz/take/<int:exam_id>/', take_quiz_view, name='take_quiz'),
     path('quiz/submit/<int:exam_id>/', submit_quiz_view, name='submit_quiz'), 
+    path('take-exam/<int:exam_id>/', take_exam, name='take_exam'), # <--- NAME IS 'take_exam'
     
     # AI Chatbot Endpoint
     path('api/ai-chat/', ai_chat, name='ai_chat'),
@@ -151,6 +158,9 @@ urlpatterns = [
     path('admin-panel/create-class/', admin_create_live_class, name='admin_create_live_class'),
     path('admin-panel/create-exam/', admin_create_exam, name='admin_create_exam'),
     path('admin-panel/library/add/', add_library_view, name='add_library'),
+    
+    # --- F. Lesson Management (NEW) ---
+    path('admin-panel/course/<int:course_id>/add-lesson/', admin_add_lesson, name='admin_add_lesson'), # <--- UPDATE 2: Added path for Lesson Modal
 ]
 
 # ==============================

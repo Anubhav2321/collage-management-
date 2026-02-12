@@ -27,10 +27,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-x: hidden;
             position: relative;
             background-color: #0a0a0f;
-            padding: 40px 20px; /* Space for mobile */
+            padding: 40px 20px;
         }
 
         /* --- BACKGROUND IMAGE WITH BLUR --- */
@@ -60,7 +60,7 @@
             padding: 40px;
             border-radius: 20px;
             width: 100%;
-            max-width: 850px; /* Wider for 2 columns */
+            max-width: 850px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.6);
             z-index: 1;
             animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -85,7 +85,7 @@
         /* Form Grid System */
         .form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* 2 Columns */
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -114,6 +114,21 @@
             border-color: var(--accent-cyan);
             box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
             background: rgba(0, 0, 0, 0.6);
+        }
+
+        /* Full Width Span */
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Helper Text */
+        .helper-text {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         /* Button */
@@ -156,7 +171,7 @@
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; } /* Stack on mobile */
+            .form-grid { grid-template-columns: 1fr; }
             .register-card { padding: 30px 20px; }
         }
 
@@ -194,16 +209,11 @@
                     {{ form.last_name }}
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Username</label>
-                    {{ form.username }}
-                    {% if form.username.errors %}<small style="color:#ff3366">{{ form.username.errors.0 }}</small>{% endif %}
-                </div>
-
-                <div class="form-group">
+                <div class="form-group full-width">
                     <label class="form-label">Email Address</label>
                     {{ form.email }}
                     {% if form.email.errors %}<small style="color:#ff3366">{{ form.email.errors.0 }}</small>{% endif %}
+                    <span class="helper-text">This will be your unique login ID.</span>
                 </div>
 
                 <div class="form-group">
@@ -219,6 +229,7 @@
                 <div class="form-group">
                     <label class="form-label">Password</label>
                     {{ form.password }}
+                    <span class="helper-text"><i class="fas fa-info-circle"></i> Minimum 8 characters required.</span>
                 </div>
 
                 <div class="form-group">

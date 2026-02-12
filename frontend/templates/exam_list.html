@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+    /* --- CSS VARIABLES (Matches Screenshot) --- */
+    :root {
+        --neon-cyan: #00d4ff;  /* The specific blue from your screenshot */
+        --card-bg: #13131f;    /* Dark card background */
+        --text-grey: #888899;
+        --border-dark: #2a2a35;
+    }
+
+    .page-container {
+        padding: 40px;
+        max-width: 1400px;
+        margin: 0 auto;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    /* --- 1. ASSESSMENT HEADER (Exact Match) --- */
+    .assessment-header {
+        background: linear-gradient(90deg, #13131f 0%, #0a0a0f 100%);
+        border-radius: 16px;
+        padding: 35px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--border-dark);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        margin-bottom: 40px;
+    }
+
+    /* Neon Border Left */
+    .assessment-header::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 6px;
+        background: var(--neon-cyan);
+        box-shadow: 0 0 25px var(--neon-cyan); /* Glowing effect */
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+    }
+
+    .header-title h1 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        margin: 0;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .header-title i { color: var(--neon-cyan); }
+
+    /* --- 2. PILL TABS (Exact Match) --- */
+    .tabs-wrapper {
+        background: #0f0f13; /* Very dark pill container */
+        padding: 5px;
+        border-radius: 50px;
+        border: 1px solid #333;
+        display: flex;
+        gap: 5px;
+    }
+
+    .tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-grey);
+        padding: 10px 25px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Active Tab Style */
+    .tab-btn.active {
+        background: var(--neon-cyan);
+        color: #000; /* Black text on blue bg */
+        font-weight: 700;
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+    }
+
+    .tab-btn:hover:not(.active) { color: white; }
+
+    .badge {
+        font-size: 0.75rem;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 2px 8px;
+        border-radius: 10px;
+        color: inherit;
+    }
+    .tab-btn.active .badge {
+        background: rgba(0, 0, 0, 0.2); /* Darker badge on active */
+    }
+
+    /* --- 3. EMPTY STATE (Dashed Box) --- */
+    .empty-state-box {
+        border: 2px dashed #333;
+        border-radius: 20px;
+        padding: 100px 0;
+        text-align: center;
+        background: rgba(19, 19, 31, 0.3);
+        margin-top: 20px;
+        transition: 0.3s;
+    }
+    .empty-state-box:hover {
+        border-color: #444;
+        background: rgba(19, 19, 31, 0.5);
+    }
+
+    .check-circle {
+        width: 70px; height: 70px;
+        background: #1a1a25;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        color: #555;
+        font-size: 2rem;
+    }
+
+    .empty-title {
+        font-family: 'Orbitron', sans-serif;
+        color: #bbb;
+        font-size: 1.4rem;
+        margin-bottom: 5px;
+    }
+    .empty-desc { color: #666; font-size: 0.95rem; }
+
+    /* --- 4. EXAM CARDS GRID --- */
+    .exam-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 25px;
+        margin-top: 20px;
+    }
+
+    .exam-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-dark);
+        border-radius: 16px;
+        padding: 25px;
+        position: relative;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .exam-card:hover {
+        border-color: var(--neon-cyan);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 212, 255, 0.15);
+    }
+
+    .card-badge {
+        position: absolute; top: 20px; right: 20px;
+        font-size: 0.7rem; border: 1px solid var(--neon-cyan); color: var(--neon-cyan);
+        padding: 4px 10px; border-radius: 20px; text-transform: uppercase; font-weight: 700;
+        background: rgba(0, 212, 255, 0.05);
+    }
+
+    .brain-icon {
+        font-size: 2rem; color: var(--neon-cyan); margin-bottom: 15px;
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+    }
+
+    .exam-name {
+        font-family: 'Orbitron', sans-serif; font-size: 1.3rem; color: white; margin-bottom: 10px;
+    }
+
+    .exam-meta {
+        display: flex; gap: 15px; color: var(--text-grey); font-size: 0.9rem; margin-bottom: 25px;
+    }
+
+    .start-btn {
+        display: block; width: 100%; padding: 12px;
+        background: var(--neon-cyan); color: #000;
+        text-align: center; border-radius: 8px; font-weight: 800;
+        text-decoration: none; text-transform: uppercase; letter-spacing: 1px;
+        font-family: 'Orbitron', sans-serif;
+        transition: 0.3s;
+    }
+    .start-btn:hover {
+        background: #00b8dd; box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+    }
+
+    /* --- HISTORY LIST --- */
+    .history-item {
+        background: var(--card-bg); border: 1px solid var(--border-dark);
+        padding: 20px 30px; border-radius: 12px; margin-bottom: 15px;
+        display: flex; align-items: center; justify-content: space-between;
+        transition: 0.3s;
+    }
+    .history-item:hover { border-color: #444; background: #181825; }
+
+    .score-box {
+        font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: var(--neon-cyan);
+    }
+    .score-box small { font-size: 0.9rem; color: #666; }
+
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .hidden { display: none; }
+
+</style>
+
+<div class="page-container">
+
+    <div class="assessment-header">
+        <div class="header-title">
+            <h1><i class="fas fa-brain"></i> ASSESSMENT CENTER</h1>
+        </div>
+
+        <div class="tabs-wrapper">
+            <button class="tab-btn active" onclick="switchView('active', this)">
+                Active Exams <span class="badge">{{ exams.count }}</span>
+            </button>
+            <button class="tab-btn" onclick="switchView('history', this)">
+                Result History <span class="badge">{{ results.count }}</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="view-active">
+        {% if exams %}
+            <div class="exam-grid">
+                {% for exam in exams %}
+                <div class="exam-card">
+                    <div class="card-badge">
+                        {% if exam.course %} COURSE EXAM {% else %} AI GENERATED {% endif %}
+                    </div>
+                    <div class="brain-icon"><i class="fas fa-atom"></i></div>
+                    
+                    <div class="exam-name">{{ exam.title }}</div>
+                    
+                    <div class="exam-meta">
+                        <span><i class="far fa-clock"></i> {{ exam.duration_minutes }} min</span>
+                        <span><i class="fas fa-star"></i> {{ exam.total_marks }} marks</span>
+                    </div>
+
+                    <a href="{% url 'take_exam' exam.id %}" class="start-btn">
+                        START EXAM <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state-box">
+                <div class="check-circle"><i class="fas fa-check"></i></div>
+                <div class="empty-title">All Caught Up!</div>
+                <div class="empty-desc">No pending exams at the moment.</div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div id="view-history" class="hidden">
+        {% if results %}
+            <div style="animation: fadeIn 0.5s ease-out;">
+                {% for result in results %}
+                <div class="history-item">
+                    <div>
+                        <h3 style="color: white; margin-bottom: 5px;">{{ result.exam.title }}</h3>
+                        <span style="color: #666; font-size: 0.9rem;"><i class="far fa-calendar"></i> {{ result.taken_at|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="score-box">
+                        {{ result.score|floatformat:0 }}<small>/{{ result.total_marks }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state-box">
+                <div class="check-circle"><i class="fas fa-history"></i></div>
+                <div class="empty-title">No History</div>
+                <div class="empty-desc">You haven't taken any exams yet.</div>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    function switchView(viewName, btn) {
+        // Hide all views
+        document.getElementById('view-active').classList.add('hidden');
+        document.getElementById('view-history').classList.add('hidden');
+        
+        // Reset buttons
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+        // Show target view & activate button
+        document.getElementById('view-' + viewName).classList.remove('hidden');
+        btn.classList.add('active');
+    }
+</script>
+
+{% endblock %}

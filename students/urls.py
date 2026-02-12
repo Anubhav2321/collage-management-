@@ -5,7 +5,7 @@ urlpatterns = [
     # ==========================
     # Authentication
     # ==========================
-    path('', views.login_view, name='login'),  # রুট URL এ লগইন পেজ
+    path('', views.login_view, name='login'),  # Default to login page
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),

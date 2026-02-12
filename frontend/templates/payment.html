@@ -2,221 +2,346 @@
 {% load static %}
 
 {% block content %}
+
+<audio id="sound-processing" src="https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a73467.mp3" preload="auto"></audio>
+<audio id="sound-success" src="https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3" preload="auto"></audio>
+
 <style>
-    /* --- Layout Styles --- */
-    .checkout-container {
-        min-height: 85vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+    /* --- GLOBAL STYLES --- */
+    body {
+        background-color: #050505;
+        font-family: 'Inter', sans-serif;
+        overflow-x: hidden;
     }
-    .payment-wrapper {
-        background: #111; width: 100%; max-width: 1000px; border-radius: 15px;
-        display: grid; grid-template-columns: 280px 1fr; overflow: hidden;
-        border: 1px solid #333; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+
+    .checkout-wrapper {
+        min-height: 90vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+        background-image: radial-gradient(circle at 50% 50%, rgba(0, 255, 136, 0.05) 0%, transparent 60%);
     }
-    .payment-methods { background: #161616; border-right: 1px solid #333; padding: 20px 0; }
+
+    /* --- GLASSMORPHISM CARD --- */
+    .pay-card {
+        width: 1000px;
+        background: rgba(20, 20, 25, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        overflow: hidden;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    }
+
+    /* --- SIDEBAR --- */
+    .sidebar {
+        background: rgba(0,0,0,0.3);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 30px 0;
+    }
     
-    .method-btn {
-        width: 100%; padding: 18px 25px; background: transparent; border: none;
-        color: #aaa; text-align: left; font-size: 1rem; cursor: pointer;
-        display: flex; align-items: center; gap: 15px; transition: 0.3s;
-        border-left: 4px solid transparent;
-    }
-    .method-btn:hover { background: #1a1a1a; color: #fff; }
-    .method-btn.active { background: #222; color: #fff; border-left-color: #00d4ff; font-weight: bold; }
-    
-    .payment-content { padding: 40px; position: relative; }
-    
-    .order-summary {
-        background: rgba(255,255,255,0.03); padding: 15px 20px; border-radius: 10px;
-        margin-bottom: 30px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center;
-    }
-
-    .tab-content { display: none; animation: fadeIn 0.3s ease; }
-    .tab-content.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* Inputs */
-    label { display: block; color: #ccc; margin-bottom: 8px; font-size: 0.9rem; }
-    input, select {
-        width: 100%; padding: 12px; background: #000; border: 1px solid #444;
-        border-radius: 6px; color: white; margin-bottom: 20px; outline: none; transition: 0.3s;
-    }
-    input:focus { border-color: #00d4ff; }
-
-    /* Buttons & Grids */
-    .pay-btn {
-        width: 100%; padding: 15px; background: #00ff88; color: #000; border: none;
-        border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px;
-    }
-    .pay-btn:hover { opacity: 0.9; transform: scale(1.01); }
-
-    .upi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
-    .upi-app {
-        background: #222; padding: 15px; border-radius: 8px; border: 1px solid #333;
-        cursor: pointer; display: flex; align-items: center; gap: 10px; color: #fff; transition: 0.2s;
-    }
-    .upi-app:hover { border-color: #00ff88; background: #1a1a1a; }
-
-    /* ========================================= */
-    /* COOL PAYMENT ANIMATION STYLES (GPay)    */
-    /* ========================================= */
-    #payment-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.95); z-index: 9999;
-        display: none; align-items: center; justify-content: center; flex-direction: column;
-    }
-
-    /* 1. Processing Pulse */
-    .processing-circle {
-        width: 80px; height: 80px; border-radius: 50%;
-        border: 4px solid rgba(0, 212, 255, 0.3);
-        border-top: 4px solid #00d4ff;
-        animation: spin 1s linear infinite;
+    .sidebar h3 {
+        color: #666;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        padding-left: 30px;
         margin-bottom: 20px;
     }
 
-    /* 2. Success Checkmark (Hidden initially) */
-    .checkmark-wrapper { display: none; margin-bottom: 20px; }
-    .checkmark {
-        width: 80px; height: 80px; border-radius: 50%;
-        display: block; stroke-width: 2; stroke: #fff; stroke-miterlimit: 10;
-        box-shadow: inset 0px 0px 0px #00ff88;
-        animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+    .method-item {
+        padding: 18px 30px;
+        color: #aaa;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-weight: 500;
+        border-left: 3px solid transparent;
     }
-    .checkmark__circle {
-        stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 2;
-        stroke-miterlimit: 10; stroke: #00ff88; fill: none;
-        animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+    
+    .method-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
     }
-    .checkmark__check {
-        transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48;
-        animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+    
+    .method-item.active {
+        background: linear-gradient(90deg, rgba(0, 255, 136, 0.1), transparent);
+        color: #00ff88;
+        border-left-color: #00ff88;
     }
 
+    /* --- MAIN CONTENT --- */
+    .main-content {
+        padding: 40px;
+        position: relative;
+    }
+
+    /* Summary Header */
+    .summary-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 30px;
+    }
+    .price-tag {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #00ff88;
+        text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    }
+
+    /* Inputs */
+    .form-group label {
+        display: block;
+        color: #ccc;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+    .input-field {
+        width: 100%;
+        padding: 14px;
+        background: #0a0a0f;
+        border: 1px solid #333;
+        border-radius: 10px;
+        color: white;
+        margin-bottom: 20px;
+        outline: none;
+        transition: 0.3s;
+        font-family: monospace;
+        font-size: 1rem;
+    }
+    .input-field:focus {
+        border-color: #00ff88;
+        box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);
+    }
+
+    /* Pay Button */
+    .btn-pay {
+        width: 100%;
+        padding: 16px;
+        background: #00ff88;
+        color: #000;
+        border: none;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-top: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .btn-pay:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 255, 136, 0.2);
+    }
+
+    /* Tabs Logic */
+    .tab-view { display: none; animation: slideUp 0.4s ease; }
+    .tab-view.active { display: block; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* UPI Grid */
+    .upi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+    .upi-box {
+        background: #111; padding: 15px; border-radius: 12px; border: 1px solid #333;
+        cursor: pointer; display: flex; align-items: center; gap: 10px; color: #fff; transition: 0.3s;
+    }
+    .upi-box:hover { border-color: #00ff88; transform: translateY(-3px); }
+
+    /* ========================================= */
+    /* --- SUPER COOL ANIMATION OVERLAY --- */
+    /* ========================================= */
+    #overlay-screen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95); z-index: 9999;
+        display: none; align-items: center; justify-content: center;
+        flex-direction: column; backdrop-filter: blur(15px);
+        overflow: hidden; /* For Confetti */
+    }
+
+    /* 1. Processing Loader */
+    .loader {
+        width: 100px; height: 100px;
+        border: 3px solid transparent;
+        border-top-color: #00ff88;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        position: relative;
+    }
+    .loader::before {
+        content: ""; position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px;
+        border: 3px solid transparent; border-top-color: #00d4ff; border-radius: 50%;
+        animation: spin 2s linear infinite;
+    }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes stroke { 100% { stroke-dashoffset: 0; } }
-    @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
-    @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 50px #00ff88; } }
 
-    /* Text Animation */
-    .status-text { color: #fff; font-size: 1.2rem; font-weight: bold; letter-spacing: 1px; }
+    /* 2. Success Animation */
+    .success-container { text-align: center; display: none; transform: scale(0.5); opacity: 0; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .success-container.show { transform: scale(1); opacity: 1; }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-        .payment-wrapper { grid-template-columns: 1fr; }
-        .payment-methods { display: flex; overflow-x: auto; border-bottom: 1px solid #333; border-right: none; padding: 0; }
-        .method-btn { padding: 15px; white-space: nowrap; border-left: none; border-bottom: 4px solid transparent; }
-        .method-btn.active { border-left: none; border-bottom-color: #00d4ff; }
+    .check-icon {
+        width: 120px; height: 120px; background: #00ff88;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 30px; box-shadow: 0 0 60px rgba(0, 255, 136, 0.6);
+        animation: pulse 1.5s infinite;
     }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,255,136, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(0,255,136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0,255,136, 0); } }
+    
+    .check-icon i { color: #000; font-size: 4rem; }
+
+    .status-msg { color: #fff; font-size: 2rem; font-weight: 800; margin-bottom: 10px; letter-spacing: 1px; }
+    .sub-msg { color: #aaa; font-size: 1rem; }
+
+    /* 3. Money Rain / Confetti */
+    .money-bill {
+        position: absolute;
+        top: -100px;
+        font-size: 30px;
+        animation: fall linear forwards;
+        z-index: 10000; /* Above everything */
+        opacity: 0.9;
+    }
+    @keyframes fall {
+        0% { transform: translateY(0) rotate(0deg); }
+        100% { transform: translateY(110vh) rotate(360deg); }
+    }
+
 </style>
 
-<div id="payment-overlay">
+<div id="overlay-screen">
     
-    <div id="processing-state" style="text-align: center;">
-        <div class="processing-circle"></div>
-        <div class="status-text">Processing Payment...</div>
-        <p style="color: #888; margin-top: 10px; font-size: 0.9rem;">Do not close this window</p>
+    <div id="state-processing" style="text-align:center;">
+        <div class="loader"></div>
+        <h2 style="color:white; margin-top:30px; font-family:'Orbitron', sans-serif; letter-spacing:2px; font-size: 1.5rem;">PROCESSING</h2>
+        <p style="color:#00ff88; font-size:0.9rem; margin-top: 10px;" id="loading-text">Securely connecting to bank...</p>
     </div>
 
-    <div id="success-state" style="text-align: center; display: none;">
-        <div class="checkmark-wrapper" style="display: block;">
-            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-            </svg>
+    <div id="state-success" class="success-container">
+        <div class="check-icon">
+            <i class="fas fa-check"></i>
         </div>
-        <div class="status-text" style="font-size: 1.5rem;">Payment Successful!</div>
-        <p style="color: #ccc; margin-top: 10px;">Redirecting to dashboard...</p>
+        <div class="status-msg">PAYMENT SUCCESSFUL!</div>
+        <div class="sub-msg">Transaction ID: #TXN{{ course.id }}8829</div>
     </div>
 
 </div>
 
-<div class="checkout-container">
-    <div class="payment-wrapper">
+<div class="checkout-wrapper">
+    <div class="pay-card">
         
-        <div class="payment-methods">
-            <h4 style="color: #666; padding: 0 25px 15px; font-size: 0.85rem; text-transform: uppercase;">Payment Options</h4>
-            <button class="method-btn active" onclick="switchTab('card')"><i class="far fa-credit-card"></i> Card</button>
-            <button class="method-btn" onclick="switchTab('upi')"><i class="fas fa-mobile-alt"></i> UPI / QR</button>
-            <button class="method-btn" onclick="switchTab('netbanking')"><i class="fas fa-university"></i> Net Banking</button>
-            <button class="method-btn" onclick="switchTab('wallet')"><i class="fas fa-wallet"></i> Wallet</button>
+        <div class="sidebar">
+            <h3>Payment Method</h3>
+            <div class="method-item active" onclick="setTab('card', this)">
+                <i class="far fa-credit-card"></i> Credit / Debit Card
+            </div>
+            <div class="method-item" onclick="setTab('upi', this)">
+                <i class="fas fa-mobile-alt"></i> UPI / GPay
+            </div>
+            <div class="method-item" onclick="setTab('net', this)">
+                <i class="fas fa-university"></i> Net Banking
+            </div>
+            <div class="method-item" onclick="setTab('qr', this)">
+                <i class="fas fa-qrcode"></i> Scan QR
+            </div>
         </div>
 
-        <div class="payment-content">
+        <div class="main-content">
             
-            <div class="order-summary">
+            <div class="summary-box">
                 <div>
-                    <div style="color: #888; font-size: 0.9rem;">Paying for</div>
-                    <div style="color: #fff; font-weight: bold; font-size: 1.1rem;">{{ course.title }}</div>
+                    <div style="color:#888; font-size:0.8rem; margin-bottom:5px;">PAYING FOR</div>
+                    <div style="color:#fff; font-weight:bold; font-size:1.1rem;">{{ course.title }}</div>
                 </div>
-                <div style="text-align: right;">
-                    <div style="color: #888; font-size: 0.9rem;">Amount</div>
-                    <div style="color: #00ff88; font-weight: bold; font-size: 1.4rem;">₹{{ course.price }}</div>
+                <div>
+                    <div style="color:#888; font-size:0.8rem; margin-bottom:5px; text-align:right;">TOTAL</div>
+                    <div class="price-tag">₹{{ course.price }}</div>
                 </div>
             </div>
 
-            <div id="card" class="tab-content active">
-                <h3 style="color: #fff; margin-bottom: 20px;">Enter Card Details</h3>
-                <form id="form-card" action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return startAnimation(event, this)">
+            <div id="tab-card" class="tab-view active">
+                <h3 style="color:white; margin-bottom:20px;">Enter Card Details</h3>
+                <form action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return handlePayment(event, this)">
                     {% csrf_token %}
-                    <label>Card Number</label>
-                    <input type="text" placeholder="0000 0000 0000 0000" maxlength="19" required>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div><label>Expiry</label><input type="text" placeholder="MM/YY" required></div>
-                        <div><label>CVV</label><input type="password" placeholder="123" required></div>
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input type="text" class="input-field" placeholder="0000 0000 0000 0000" maxlength="19" required>
                     </div>
-                    <label>Card Holder Name</label><input type="text" placeholder="Name" required>
-                    <button class="pay-btn">Pay ₹{{ course.price }}</button>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" class="input-field" placeholder="MM / YY" required>
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="password" class="input-field" placeholder="123" maxlength="3" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Card Holder Name</label>
+                        <input type="text" class="input-field" placeholder="Name on card" required>
+                    </div>
+                    <button class="btn-pay">PAY ₹{{ course.price }}</button>
                 </form>
             </div>
 
-            <div id="upi" class="tab-content">
-                <h3 style="color: #fff; margin-bottom: 20px;">Pay via UPI</h3>
-                
+            <div id="tab-upi" class="tab-view">
+                <h3 style="color:white; margin-bottom:20px;">Pay via UPI App</h3>
                 <div class="upi-grid">
-                    <div class="upi-app" onclick="triggerDirectPay()"><i class="fab fa-google-pay"></i> GPay</div>
-                    <div class="upi-app" onclick="triggerDirectPay()"><i class="fas fa-rupee-sign"></i> PhonePe</div>
-                    <div class="upi-app" onclick="triggerDirectPay()"><i class="fas fa-wallet"></i> Paytm</div>
-                    <div class="upi-app" onclick="triggerDirectPay()"><i class="fas fa-mobile"></i> BHIM</div>
+                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fab fa-google-pay" style="color:#fff;"></i> Google Pay</div>
+                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fas fa-rupee-sign" style="color:#5f259f;"></i> PhonePe</div>
+                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fas fa-wallet" style="color:#00baf2;"></i> Paytm</div>
+                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fas fa-mobile" style="color:#f26522;"></i> BHIM</div>
                 </div>
-
-                <div style="text-align: center; margin: 20px 0; color: #666;">-- OR --</div>
                 
-                <form id="form-upi-direct" action="{% url 'process_payment' course.id %}" method="POST" style="display:none;">
+                <p style="text-align:center; color:#666; margin:20px 0;">-- OR ENTER UPI ID --</p>
+                
+                <form action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return handlePayment(event, this)">
                     {% csrf_token %}
-                </form>
-
-                <form id="form-upi-id" action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return startAnimation(event, this)">
-                    {% csrf_token %}
-                    <label>UPI ID</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" placeholder="mobile@upi" required style="margin:0;">
-                        <button class="pay-btn" style="width: 100px; margin:0;">Verify</button>
+                    <div class="form-group">
+                        <label>UPI ID</label>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" class="input-field" placeholder="mobileNumber@upi" style="margin:0;" required>
+                            <button class="btn-pay" style="width:120px; margin:0;">VERIFY</button>
+                        </div>
                     </div>
                 </form>
+                
+                <form id="hidden-form" action="{% url 'process_payment' course.id %}" method="POST" style="display:none;">{% csrf_token %}</form>
             </div>
 
-            <div id="netbanking" class="tab-content">
-                <h3 style="color: #fff; margin-bottom: 20px;">Net Banking</h3>
-                <form id="form-net" action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return startAnimation(event, this)">
+            <div id="tab-net" class="tab-view">
+                <h3 style="color:white; margin-bottom:20px;">Select Bank</h3>
+                <form action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return handlePayment(event, this)">
                     {% csrf_token %}
-                    <label>Select Bank</label>
-                    <select><option>SBI</option><option>HDFC</option><option>ICICI</option></select>
-                    <button class="pay-btn">Pay ₹{{ course.price }}</button>
+                    <div class="form-group">
+                        <select class="input-field" style="cursor:pointer;">
+                            <option>State Bank of India</option>
+                            <option>HDFC Bank</option>
+                            <option>ICICI Bank</option>
+                            <option>Axis Bank</option>
+                        </select>
+                    </div>
+                    <button class="btn-pay">PAY ₹{{ course.price }}</button>
                 </form>
             </div>
 
-            <div id="wallet" class="tab-content">
-                <h3 style="color: #fff; margin-bottom: 20px;">Wallets</h3>
-                <form id="form-wallet" action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return startAnimation(event, this)">
-                    {% csrf_token %}
-                    <label style="background: #222; padding: 15px; border-radius: 8px; display: block; margin-bottom: 10px; cursor: pointer;">
-                        <input type="radio" name="w" checked style="width:auto; margin-right: 10px;"> Airtel Money
-                    </label>
-                    <label style="background: #222; padding: 15px; border-radius: 8px; display: block; margin-bottom: 10px; cursor: pointer;">
-                        <input type="radio" name="w" style="width:auto; margin-right: 10px;"> Freecharge
-                    </label>
-                    <button class="pay-btn">Pay ₹{{ course.price }}</button>
-                </form>
+            <div id="tab-qr" class="tab-view" style="text-align:center;">
+                <h3 style="color:white; margin-bottom:20px;">Scan QR to Pay</h3>
+                <div style="background:white; padding:15px; display:inline-block; border-radius:10px;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=learning365@upi&pn=Learning365&am={{ course.price }}" alt="QR">
+                </div>
+                <p style="color:#00ff88; margin-top:20px; font-weight:bold;">Waiting for payment...</p>
+                <button class="btn-pay" onclick="handlePayment(event, document.getElementById('hidden-form'))" style="margin-top:20px;">I Have Paid</button>
             </div>
 
         </div>
@@ -224,50 +349,89 @@
 </div>
 
 <script>
-    // Tab Switching
-    function switchTab(tabId) {
-        document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
+    // --- Tabs Logic ---
+    function setTab(id, btn) {
+        document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.method-item').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById('tab-' + id).classList.add('active');
+        btn.classList.add('active');
     }
 
-    // --- MAIN ANIMATION LOGIC ---
-    function startAnimation(event, form) {
-        event.preventDefault(); // Stop immediate submission
-        
-        const overlay = document.getElementById('payment-overlay');
-        const processing = document.getElementById('processing-state');
-        const success = document.getElementById('success-state');
-        
-        // 1. Show Processing Spinner
-        overlay.style.display = 'flex';
-        processing.style.display = 'block';
-        success.style.display = 'none';
+    // --- PAYMENT ANIMATION LOGIC ---
+    function handlePayment(e, form) {
+        e.preventDefault(); // Stop form submit
 
-        // 2. Wait 2.5 seconds, then Show Success Checkmark
+        const overlay = document.getElementById('overlay-screen');
+        const processing = document.getElementById('state-processing');
+        const success = document.getElementById('state-success');
+        const text = document.getElementById('loading-text');
+        
+        // Sounds
+        const processSound = document.getElementById('sound-processing');
+        const successSound = document.getElementById('sound-success');
+
+        // 1. Start Processing Phase
+        overlay.style.display = 'flex';
+        processSound.volume = 0.5;
+        processSound.play().catch(e => console.log("Audio play failed (browser policy):", e));
+
+        // Simulate Bank Connection Steps
+        setTimeout(() => { text.innerText = "Verifying Credentials..."; }, 1500);
+        setTimeout(() => { text.innerText = "Requesting Bank Authorization..."; }, 3000);
+
+        // 2. Success Phase (After 4.5 seconds)
         setTimeout(() => {
             processing.style.display = 'none';
             success.style.display = 'block';
+            setTimeout(() => success.classList.add('show'), 50); // Pop effect
             
-            // 3. Wait 2 more seconds, then Submit Form
+            // Stop processing sound & Play Success "Ding"
+            processSound.pause();
+            processSound.currentTime = 0;
+            successSound.play();
+
+            // Vibration (if mobile)
+            if (navigator.vibrate) navigator.vibrate([200]);
+
+            // Trigger Money Rain
+            createMoneyRain();
+
+            // 3. Final Redirect (After animation)
             setTimeout(() => {
                 form.submit();
-            }, 2000);
-            
-        }, 2500);
+            }, 3500);
+
+        }, 4500);
 
         return false;
     }
 
-    // For Direct UPI Apps (GPay, PhonePe click)
     function triggerDirectPay() {
-        if(confirm("Open App to Pay?")) {
-            const form = document.getElementById('form-upi-direct');
-            // Reuse the animation logic
-            const fakeEvent = { preventDefault: () => {} };
-            startAnimation(fakeEvent, form);
+        if(confirm("Open App to complete payment?")) {
+            const form = document.getElementById('hidden-form');
+            handlePayment({ preventDefault: () => {} }, form);
+        }
+    }
+
+    // --- MONEY RAIN ANIMATION ---
+    function createMoneyRain() {
+        const symbols = ['💵', '💰', '✨', '🎉', '💸', '🤑'];
+        const overlay = document.getElementById('overlay-screen');
+
+        for (let i = 0; i < 60; i++) {
+            const el = document.createElement('div');
+            el.classList.add('money-bill');
+            el.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+            
+            // Random positioning
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = (Math.random() * 1.5 + 1) + 's'; // Speed
+            el.style.fontSize = (Math.random() * 30 + 20) + 'px'; // Size
+            
+            overlay.appendChild(el);
         }
     }
 </script>
+
 {% endblock %}

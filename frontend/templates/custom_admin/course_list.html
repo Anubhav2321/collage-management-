@@ -1,69 +1,85 @@
 {% extends 'base_admin.html' %}
 
 {% block content %}
+<style>
+    /* --- Page & Table Styling --- */
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 0 10px; }
+    .table-container { background: #13131f; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; }
+    .custom-table { width: 100%; border-collapse: collapse; color: #e0e0e0; }
+    .custom-table th { background: #1a1a2e; color: #a0a0b0; text-transform: uppercase; font-size: 0.85rem; padding: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+    .custom-table td { padding: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); vertical-align: middle; }
+    .custom-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+    
+    /* --- Buttons --- */
+    .btn-action { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+    .btn-add-video { background: rgba(0, 240, 255, 0.1); color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.2); }
+    .btn-add-video:hover { background: #00f0ff; color: #000; }
+    .btn-edit { background: rgba(255, 255, 255, 0.05); color: #ccc; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .btn-edit:hover { background: #fff; color: #000; }
+    .btn-delete { background: rgba(255, 51, 102, 0.1); color: #ff3366; border: 1px solid rgba(255, 51, 102, 0.2); }
+    .btn-delete:hover { background: #ff3366; color: #fff; }
+</style>
+
 <div style="padding: 40px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    
+    <div class="page-header">
         <div>
-            <h2 style="color: #fff; margin-bottom: 5px;">Manage Courses</h2>
-            <p style="color: #888;">Edit or delete existing courses.</p>
+            <h2 style="color: white; font-weight: 700; margin: 0;">Manage Courses</h2>
+            <p style="color: #888; margin-top: 5px;">Create, edit, and manage your course content.</p>
         </div>
-        <a href="{% url 'admin_dashboard' %}" style="color: #aaa; text-decoration: none; border: 1px solid #444; padding: 8px 15px; border-radius: 5px;">
-            &larr; Back to Dashboard
+        <a href="{% url 'admin_dashboard' %}" class="btn-action btn-edit">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
     </div>
 
-    <div style="background: #111; border-radius: 15px; border: 1px solid #333; overflow: hidden;">
-        <table style="width: 100%; border-collapse: collapse; color: #ccc;">
+    {% if messages %}
+        {% for message in messages %}
+            <div style="background: rgba(0, 240, 255, 0.1); color: #00f0ff; border: 1px solid #00f0ff; padding: 12px; border-radius: 8px; margin-bottom: 25px;">
+                <i class="fas fa-info-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="table-container">
+        <table class="custom-table">
             <thead>
-                <tr style="background: #1a1a1a; border-bottom: 1px solid #333;">
-                    <th style="padding: 20px; text-align: left;">Course Title</th>
-                    <th style="padding: 20px; text-align: left;">Price</th>
-                    <th style="padding: 20px; text-align: left;">Modules</th>
-                    <th style="padding: 20px; text-align: left;">Status</th>
-                    <th style="padding: 20px; text-align: right;">Actions</th>
+                <tr>
+                    <th>Course Info</th>
+                    <th>Pricing</th>
+                    <th>Structure</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for course in courses %}
-                <tr style="border-bottom: 1px solid #222; transition: 0.2s;">
-                    <td style="padding: 20px;">
-                        <div style="font-weight: bold; color: #fff; font-size: 1.1rem;">{{ course.title }}</div>
-                        <small style="color: #666;">Created: {{ course.created_at|date:"M d, Y" }}</small>
+                <tr>
+                    <td>
+                        <div style="color: white; font-size: 1.1rem; font-weight: 600;">{{ course.title }}</div>
+                        <div style="color: #666; font-size: 0.85rem; margin-top: 4px;">{{ course.created_at|date:"M d, Y" }}</div>
                     </td>
-                    <td style="padding: 20px;">
-                        {% if course.price > 0 %}
-                            <span style="color: #00d4ff;">₹{{ course.price }}</span>
-                        {% else %}
-                            <span style="color: #00ff88;">Free</span>
-                        {% endif %}
+                    <td>
+                        {% if course.price > 0 %} <span style="color: #00f0ff; font-weight: bold;">₹{{ course.price }}</span>
+                        {% else %} <span style="color: #00ff88; font-weight: bold;">Free</span> {% endif %}
                     </td>
-                    <td style="padding: 20px;">{{ course.total_modules }} Modules</td>
-                    <td style="padding: 20px;">
-                        {% if course.is_published %}
-                            <span style="background: rgba(0, 255, 136, 0.1); color: #00ff88; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">Published</span>
-                        {% else %}
-                            <span style="background: rgba(255, 51, 102, 0.1); color: #ff3366; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem;">Draft</span>
-                        {% endif %}
+                    <td><span style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; color: #aaa;">{{ course.total_modules }} Modules</span></td>
+                    <td>
+                        {% if course.is_published %} <span style="color: #00ff88;">Published</span>
+                        {% else %} <span style="color: #ff3366;">Draft</span> {% endif %}
                     </td>
-                    <td style="padding: 20px; text-align: right;">
-                        <a href="{% url 'admin_edit_course' course.id %}" style="background: #222; color: #fff; padding: 8px 15px; border-radius: 5px; text-decoration: none; margin-right: 5px; border: 1px solid #444;">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                        <form action="{% url 'admin_delete_course' course.id %}" method="POST" style="display:inline;">
-                            {% csrf_token %}
-                            <button onclick="return confirm('Are you sure you want to delete {{ course.title }}? This cannot be undone!');" 
-                                    style="background: #ff3366; color: #fff; border: none; padding: 9px 15px; border-radius: 5px; cursor: pointer;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
+                    <td style="text-align: right;">
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <a href="{% url 'admin_add_lesson' course.id %}" class="btn-action btn-add-video"><i class="fas fa-video"></i> Add Video</a>
+                            <a href="{% url 'admin_edit_course' course.id %}" class="btn-action btn-edit"><i class="fas fa-edit"></i></a>
+                            <form action="{% url 'admin_delete_course' course.id %}" method="POST" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-action btn-delete" onclick="return confirm('Delete?');"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
-                <tr>
-                    <td colspan="5" style="text-align: center; padding: 50px; color: #666;">
-                        No courses found. Add one from the dashboard!
-                    </td>
-                </tr>
+                <tr><td colspan="5" style="text-align: center; padding: 60px; color: #666;">No courses available.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

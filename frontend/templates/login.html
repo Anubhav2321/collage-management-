@@ -16,7 +16,9 @@
         :root {
             --accent-cyan: #00d4ff;
             --text-main: #e0e0e0;
-            --bg-overlay: rgba(0, 0, 0, 0.6); /* Slightly lighter overlay to see image */
+            --bg-overlay: rgba(0, 0, 0, 0.6);
+            --success-green: #00ff88;
+            --error-red: #ff3366;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -29,7 +31,7 @@
             align-items: center;
             overflow: hidden;
             position: relative;
-            background-color: #0a0a0f; /* Fallback color */
+            background-color: #0a0a0f;
         }
 
         /* --- BACKGROUND IMAGE WITH BLUR --- */
@@ -37,11 +39,10 @@
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            /* ইমেজের নাম 'projectp.jpg' এখানে ব্যবহার করা হয়েছে */
             background: url("{% static 'images/projectp.jpg' %}") no-repeat center center/cover;
-            filter: blur(4px); /* ব্লার ইফেক্ট */
+            filter: blur(4px);
             z-index: -1;
-            transform: scale(1.02); /* সাদা বর্ডার এড়াতে একটু জুম */
+            transform: scale(1.02);
         }
 
         .overlay {
@@ -52,9 +53,52 @@
             z-index: 0;
         }
 
+        /* --- MESSAGE NOTIFICATION AREA (FIXED TOP RIGHT) --- */
+        .message-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 350px;
+        }
+
+        .alert-box {
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            animation: slideIn 0.5s ease-out, fadeOut 0.5s ease-in 4s forwards;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Success Message (Green) */
+        .alert-success {
+            background: rgba(0, 255, 136, 0.15);
+            border: 1px solid var(--success-green);
+            color: var(--success-green);
+        }
+
+        /* Error/Warning Message (Red) */
+        .alert-error {
+            background: rgba(255, 51, 102, 0.15);
+            border: 1px solid var(--error-red);
+            color: var(--error-red);
+        }
+
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
+
         /* --- LOGIN CARD --- */
         .login-card {
-            background: rgba(17, 17, 22, 0.85); /* Glass Effect */
+            background: rgba(17, 17, 22, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
             padding: 40px;
@@ -72,7 +116,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Logo Area */
         .brand-logo {
             font-family: 'Orbitron', sans-serif;
             font-size: 2rem;
@@ -85,18 +128,6 @@
             color: #888;
             margin-bottom: 30px;
             font-size: 1.1rem;
-        }
-
-        /* Error Message Box */
-        .alert-box {
-            background: rgba(255, 51, 102, 0.1);
-            border: 1px solid #ff3366;
-            color: #ff3366;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
 
         /* Form Inputs */
@@ -166,17 +197,24 @@
     <div class="bg-image"></div>
     <div class="overlay"></div>
 
+    <div class="message-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-box {% if 'success' in message.tags %}alert-success{% else %}alert-error{% endif %}">
+                    {% if 'success' in message.tags %}
+                        <i class="fas fa-check-circle"></i>
+                    {% else %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% endif %}
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
     <div class="login-card">
         <div class="brand-logo">Learning-<span>365</span></div>
         <p class="welcome-text">Welcome Back</p>
-
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert-box">
-                <i class="fas fa-exclamation-circle"></i> {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
 
         <form method="POST">
             {% csrf_token %}
@@ -200,6 +238,15 @@
             <a href="{% url 'home' %}">← Back to Home</a>
         </div>
     </div>
+
+    <script>
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert-box');
+            alerts.forEach(alert => {
+                alert.style.display = 'none';
+            });
+        }, 4500); 
+    </script>
 
 </body>
 </html>
