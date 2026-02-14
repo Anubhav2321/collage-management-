@@ -9,13 +9,14 @@ from .models import (
     Exam, 
     LibraryDocument, 
     Profile,
-    Lesson # Need to import Lesson model for the new form
+    Lesson,
+    LessonComment # <--- UPDATE: Imported LessonComment Model
 )
 
 User = get_user_model()
 
 # ==========================================
-# 1. STUDENT REGISTRATION FORM (UPDATED LOGIC)
+# 1. STUDENT REGISTRATION FORM
 # ==========================================
 class StudentRegistrationForm(forms.ModelForm):
     first_name = forms.CharField(
@@ -42,7 +43,6 @@ class StudentRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        # Removed 'username' from fields
         fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'stream', 'student_level']
         widgets = {
             'stream': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Science, Arts'}),
@@ -54,14 +54,12 @@ class StudentRegistrationForm(forms.ModelForm):
         }
 
     def clean_email(self):
-        """Logic: Check if email already exists (Unique Identifier)."""
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
             raise ValidationError("This email is already registered. Please login.")
         return email
 
     def clean(self):
-        """Logic: Check password match AND length (min 8 chars)."""
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
         confirm_password = cleaned_data.get("confirm_password")
@@ -76,16 +74,12 @@ class StudentRegistrationForm(forms.ModelForm):
         return cleaned_data
 
     def save(self, commit=True):
-        """Logic: Auto-generate username from email."""
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password"])
-        
-        # Set Username same as Email (since username is required by Django)
         user.username = self.cleaned_data["email"]
         
         if commit:
             user.save()
-            # Auto-create Profile
             if not hasattr(user, 'profile'):
                 Profile.objects.create(user=user)
         return user
@@ -97,12 +91,10 @@ class StudentRegistrationForm(forms.ModelForm):
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        # --- UPDATED: Added 'faculty_name' to fields ---
         fields = ['title', 'description', 'faculty_name', 'thumbnail', 'price', 'total_modules', 'difficulty_level', 'is_published']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Course Title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Detailed Course Description'}),
-            # --- NEW WIDGET FOR FACULTY NAME ---
             'faculty_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Instructor Name'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Course Price (0 for Free)'}),
             'total_modules': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Number of Modules'}),
@@ -111,14 +103,12 @@ class CourseForm(forms.ModelForm):
         }
 
     def clean_price(self):
-        """Logic: Price cannot be negative."""
         price = self.cleaned_data.get('price')
         if price < 0:
             raise ValidationError("Price cannot be negative.")
         return price
 
     def clean_thumbnail(self):
-        """Logic: Validate image size (Max 2MB)."""
         thumbnail = self.cleaned_data.get('thumbnail')
         if thumbnail:
             if thumbnail.size > 2 * 1024 * 1024: # 2MB limit
@@ -127,7 +117,7 @@ class CourseForm(forms.ModelForm):
 
 
 # ==========================================
-# 2.1. LESSON CREATION FORM (NEW)
+# 2.1. LESSON CREATION FORM
 # ==========================================
 class LessonForm(forms.ModelForm):
     class Meta:
@@ -157,7 +147,7 @@ class NotificationForm(forms.ModelForm):
 
 
 # ==========================================
-# 4. LIVE CLASS FORM (DATE LOGIC)
+# 4. LIVE CLASS FORM
 # ==========================================
 class LiveClassForm(forms.ModelForm):
     class Meta:
@@ -172,7 +162,6 @@ class LiveClassForm(forms.ModelForm):
         }
 
     def clean_date_time(self):
-        """Logic: Class date cannot be in the past."""
         date_time = self.cleaned_data.get('date_time')
         if date_time < timezone.now():
             raise ValidationError("Meeting time cannot be in the past!")
@@ -212,7 +201,6 @@ class LibraryDocumentForm(forms.ModelForm):
         }
 
     def clean_file(self):
-        """Logic: Restrict file types (PDF, Docx only)."""
         file = self.cleaned_data.get('file')
         if file:
             ext = file.name.split('.')[-1].lower()
@@ -223,7 +211,7 @@ class LibraryDocumentForm(forms.ModelForm):
 
 
 # ==========================================
-# 7. PROFILE PICTURE FORM (NEW ADDITION)
+# 7. PROFILE PICTURE FORM
 # ==========================================
 class ProfilePictureForm(forms.ModelForm):
     class Meta:
@@ -231,4 +219,20 @@ class ProfilePictureForm(forms.ModelForm):
         fields = ['profile_pic']
         widgets = {
            'profile_pic': forms.FileInput(attrs={'class': 'form-control', 'id': 'id_profile_pic'})
+        }
+
+
+# ==========================================
+# 8. LESSON COMMENT FORM (NEW ADDITION)
+# ==========================================
+class LessonCommentForm(forms.ModelForm):
+    class Meta:
+        model = LessonComment
+        fields = ['text']
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'class': 'comment-input', 
+                'rows': 3, 
+                'placeholder': 'Ask a doubt or share your thoughts...'
+            }),
         }

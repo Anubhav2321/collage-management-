@@ -276,6 +276,17 @@ class LibraryDocument(models.Model):
         return self.title
 
 
+# --- NEW: Lesson Comment Model (ADDED HERE) ---
+class LessonComment(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='comments')
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.student.username} on {self.lesson.title}"
+
+
 # ==========================================
 # 9. AI FEATURES MODELS
 # ==========================================

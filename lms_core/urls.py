@@ -21,18 +21,17 @@ from students.views import (
     course_watch,       
     live_classes, 
     library_view, 
-    profile_view,       # <--- Profile View (Updated)
+    profile_view,       # <--- Profile View
 
     # 4. Payment System
     payment_page,
     process_payment,
 
     # 5. Quiz & AI
-    student_exam_list,  # <--- NEW: Exam List View
-    take_exam,          # <--- NEW: Take Exam View
+    student_exam_list,  # <--- Exam List View
+    take_exam,          # <--- Take Exam View
     generate_quiz_view, 
     save_quiz_view, 
-    # take_quiz_view,   # Renamed/Replaced by take_exam but keeping if used elsewhere
     submit_quiz_view,   
     ai_chat,
 
@@ -64,7 +63,7 @@ from students.views import (
     admin_create_live_class,
     admin_create_exam,
     add_library_view,
-    admin_add_lesson # <--- UPDATE 1: Imported the new Lesson View
+    admin_add_lesson # <--- Lesson View
 )
 
 urlpatterns = [
@@ -90,7 +89,7 @@ urlpatterns = [
     # 4. Student Dashboard & Features
     # ==============================
     path('dashboard/', student_dashboard, name='dashboard'),
-    path('profile/', profile_view, name='profile'), # <--- Profile Path
+    path('profile/', profile_view, name='profile'), 
 
     # Courses
     path('courses/', all_courses, name='all_courses'),
@@ -100,27 +99,26 @@ urlpatterns = [
     path('courses/payment/<int:course_id>/', payment_page, name='payment_page'),
     path('courses/payment/<int:course_id>/process/', process_payment, name='process_payment'),
 
-    # Watch Course
+    # Watch Course (FIXED HERE: Both names are now 'course_watch')
     path('courses/watch/<int:course_id>/', course_watch, name='course_watch'),
-    path('courses/watch/<int:course_id>/<int:lesson_id>/', course_watch, name='course_watch_lesson'),
+    path('courses/watch/<int:course_id>/<int:lesson_id>/', course_watch, name='course_watch'),
 
     # Core Features
     path('live-classes/', live_classes, name='live_classes'),
     path('library/', library_view, name='library'),
     
     # ==============================
-    # 5. Quiz & AI System (UPDATED)
+    # 5. Quiz & AI System
     # ==============================
     
     # New Exam Logic (Course Linked)
-    path('my-exams/', student_exam_list, name='student_exam_list'), # <--- NEW
-    path('take-exam/<int:exam_id>/', take_exam, name='take_exam'), # <--- NEW
+    path('my-exams/', student_exam_list, name='student_exam_list'), 
+    path('take-exam/<int:exam_id>/', take_exam, name='take_exam'), 
     
     # AI Quiz Generation
     path('quiz/generate/', generate_quiz_view, name='generate_quiz'),
     path('quiz/save/', save_quiz_view, name='save_quiz'),
     path('quiz/submit/<int:exam_id>/', submit_quiz_view, name='submit_quiz'), 
-    path('take-exam/<int:exam_id>/', take_exam, name='take_exam'), # <--- NAME IS 'take_exam'
     
     # AI Chatbot Endpoint
     path('api/ai-chat/', ai_chat, name='ai_chat'),
@@ -159,14 +157,13 @@ urlpatterns = [
     path('admin-panel/create-exam/', admin_create_exam, name='admin_create_exam'),
     path('admin-panel/library/add/', add_library_view, name='add_library'),
     
-    # --- F. Lesson Management (NEW) ---
-    path('admin-panel/course/<int:course_id>/add-lesson/', admin_add_lesson, name='admin_add_lesson'), # <--- UPDATE 2: Added path for Lesson Modal
+    # --- F. Lesson Management ---
+    path('admin-panel/course/<int:course_id>/add-lesson/', admin_add_lesson, name='admin_add_lesson'),
 ]
 
 # ==============================
 # Media & Static Files Configuration
 # ==============================
-# This part is very important for the profile picture.
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     if settings.STATICFILES_DIRS:

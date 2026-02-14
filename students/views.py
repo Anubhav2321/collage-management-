@@ -1,6 +1,7 @@
 import json
 import datetime
 import time
+import re  # <--- Regex Module for YouTube Link Parsing
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
@@ -12,8 +13,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.core.paginator import Paginator
 
-# Import AI Logic (From your ai_utils.py file)
+# Import AI Logic
 from .ai_utils import extract_text_from_file, generate_quiz_from_text
+# Import the powerful AI Service
+from .ai_service import generate_learning_assistant_response
 
 # Import Forms
 from .forms import (
@@ -24,7 +27,8 @@ from .forms import (
     LiveClassForm,
     ExamForm,
     ProfilePictureForm,
-    LessonForm  # <--- UPDATE 1: Added LessonForm to imports
+    LessonForm,
+    LessonCommentForm  # <--- UPDATE: Imported LessonCommentForm
 )
 
 # Import Models
@@ -37,9 +41,10 @@ from .models import (
     Exam,
     Profile,
     Lesson,
-    Quiz, # If unused, can be removed
+    Quiz, 
     Question,
-    QuizResult
+    QuizResult,
+    LessonComment # <--- UPDATE: Imported LessonComment Model
 )
 
 User = get_user_model()
@@ -87,7 +92,7 @@ def contact_developers_view(request):
 
 def register_view(request):
     """
-    Handles Student Registration (UPDATED: Uses First Name in success message).
+    Handles Student Registration.
     """
     if request.user.is_authenticated:
         messages.info(request, "You are already logged in.")
@@ -97,7 +102,7 @@ def register_view(request):
         form = StudentRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # UPDATE: Use first_name instead of username for friendly message
+            # Use first_name for success message
             messages.success(request, f"Account created successfully for {user.first_name}! Please login.")
             return redirect('login')
         else:
@@ -113,7 +118,7 @@ def register_view(request):
 
 def login_view(request):
     """
-    Handles User Login (Supports Username or Email).
+    Handles User Login.
     """
     if request.user.is_authenticated:
         if request.user.is_staff or request.user.is_superuser:
@@ -124,10 +129,10 @@ def login_view(request):
         identifier = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Try authenticating as Username (which is now Email in backend) first
+        # Try authenticating as Username (Email in backend)
         user = authenticate(request, username=identifier, password=password)
         
-        # If failed, try finding user by Email explicitly (fallback)
+        # Fallback: try finding user by Email explicitly
         if user is None:
             try:
                 user_obj = User.objects.get(email=identifier)
@@ -294,14 +299,15 @@ def process_payment(request, course_id):
     return redirect('all_courses')
 
 
+# --- UPDATED: COURSE WATCH (Added Comment Logic & Fixed Progress) ---
 @login_required
 def course_watch(request, course_id, lesson_id=None):
     """
-    Course Player / Video Watcher logic with Progress Tracking.
+    Course Player logic with YouTube ID Extraction and Comment System.
     """
     course = get_object_or_404(Course, id=course_id)
     
-    # Security Check
+    # Security Check: Must be enrolled
     try:
         enrollment = Enrollment.objects.get(student=request.user, course=course)
     except Enrollment.DoesNotExist:
@@ -317,6 +323,7 @@ def course_watch(request, course_id, lesson_id=None):
     current_lesson = None
     next_lesson = None
     prev_lesson = None
+    youtube_id = None
 
     if lessons.exists():
         if lesson_id:
@@ -333,22 +340,47 @@ def course_watch(request, course_id, lesson_id=None):
             if idx < len(lesson_list) - 1:
                 next_lesson = lesson_list[idx + 1]
             
-            # Progress Calculation
+            # --- PROGRESS LOGIC ---
+            # Calculates percentage based on current lesson index.
+            # Example: Lesson 1 of 5 -> (1/5)*100 = 20%. Lesson 5 of 5 -> 100%.
             new_progress = ((idx + 1) / len(lesson_list)) * 100
             
-            # Update progress if the new progress is higher
+            # Only update if the user has progressed FURTHER than before
             if new_progress > enrollment.progress:
-                # Check if the model has a custom method, otherwise update field directly
                 if hasattr(enrollment, 'update_progress'):
                     enrollment.update_progress(new_progress)
                 else:
                     enrollment.progress = new_progress
                     enrollment.save()
 
+            # --- YOUTUBE ID EXTRACTION ---
+            if current_lesson.video_url:
+                url = current_lesson.video_url.strip()
+                regex = r'(?:v=|\/embed\/|\/v\/|youtu\.be\/)([0-9A-Za-z_-]{11})'
+                match = re.search(regex, url)
+                if match:
+                    youtube_id = match.group(1)
+                elif len(url) == 11:
+                    youtube_id = url # Fallback
+
         except ValueError:
             pass
 
-    # --- FIX: Calculate integer progress here to prevent TemplateSyntaxError ---
+    # --- NEW: COMMENT SYSTEM LOGIC ---
+    comments = current_lesson.comments.all().order_by('-created_at') if current_lesson else []
+    comment_form = LessonCommentForm()
+
+    if request.method == 'POST' and 'text' in request.POST:
+        comment_form = LessonCommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.lesson = current_lesson
+            comment.student = request.user
+            comment.save()
+            messages.success(request, "Comment posted successfully!")
+            return redirect('course_watch', course_id=course.id, lesson_id=current_lesson.id)
+
+    # Calculate integer progress
     progress_int = int(enrollment.progress) if enrollment.progress else 0
 
     context = {
@@ -357,7 +389,10 @@ def course_watch(request, course_id, lesson_id=None):
         'current_lesson': current_lesson,
         'next_lesson': next_lesson,
         'prev_lesson': prev_lesson,
-        'progress': progress_int  # Passing integer directly
+        'progress': progress_int,
+        'youtube_id': youtube_id,
+        'comments': comments,          # Passed to template
+        'comment_form': comment_form   # Passed to template
     }
     return render(request, 'course_watch.html', context)
 
@@ -402,7 +437,7 @@ def library_view(request):
 
 
 # ====================================================
-# 5. QUIZ & EXAMS (UPDATED LOGIC)
+# 5. QUIZ & EXAMS
 # ====================================================
 
 @login_required
@@ -419,12 +454,12 @@ def student_exam_list(request):
         is_active=True
     ).order_by('-created_at')
 
-    # 3. Fetch History/Results (New Addition for the History Tab)
+    # 3. Fetch History/Results
     past_results = QuizResult.objects.filter(student=request.user).select_related('exam').order_by('-taken_at')
 
     context = {
         'exams': available_exams,
-        'results': past_results # Passing results to the template
+        'results': past_results
     }
     return render(request, 'exam_list.html', context) 
 
@@ -442,7 +477,7 @@ def take_exam(request, exam_id):
             messages.error(request, 'You must enroll in this course to take the exam.')
             return redirect('dashboard')
 
-    # 2. Render exam page using your EXISTING take_quiz.html
+    # 2. Render exam page
     context = {
         'exam': exam,
         'questions': exam.questions.all()
@@ -452,14 +487,13 @@ def take_exam(request, exam_id):
 
 @login_required
 def exams_view(request):
-    # Redirect old 'exams_view' to the new 'student_exam_list' logic
     return student_exam_list(request)
 
 
 @login_required
 def generate_quiz_view(request):
     """
-    AI Quiz Generator.
+    AI Quiz Generator (From Documents).
     """
     if request.method == "POST":
         try:
@@ -504,23 +538,21 @@ def save_quiz_view(request):
             data = json.loads(request.body)
             title = data.get('title', 'AI Generated Quiz')
             questions = data.get('questions', [])
-            course_id = data.get('course_id')  # <--- NEW: Get Course ID from frontend
+            course_id = data.get('course_id')
             
             course_obj = None
             if course_id:
                 course_obj = get_object_or_404(Course, id=course_id)
 
-            # NOTE: Linking to the course
             exam = Exam.objects.create(
                 title=title,
-                course=course_obj,  # <--- LINKED HERE
+                course=course_obj,
                 description="Generated by AI Assistant",
                 duration_minutes=20, 
                 is_active=True,
                 total_marks=len(questions)
             )
             
-            # Create Questions
             for q in questions:
                 opts = q.get('options', [])
                 correct_idx = q.get('answer', 0)
@@ -546,10 +578,6 @@ def save_quiz_view(request):
 
 @login_required
 def take_quiz_view(request, exam_id):
-    """
-    Renders the Quiz Taking Interface.
-    """
-    # Using the new logic now
     return take_exam(request, exam_id)
 
 
@@ -594,14 +622,13 @@ def submit_quiz_view(request, exam_id):
                 score=score
             )
         
-        # --- FIXED HERE: Added int() to remove float issues in template ---
         percentage = int((score / total_questions) * 100) if total_questions > 0 else 0
         
         context = {
             'exam': exam,
             'score': score,
             'total': total_questions,
-            'percentage': percentage, # Now it's an integer
+            'percentage': percentage,
             'user_answers': user_answers
         }
         return render(request, 'quiz_result.html', context)
@@ -612,31 +639,23 @@ def submit_quiz_view(request, exam_id):
 @csrf_exempt
 def ai_chat(request):
     """
-    AI Chatbot Logic.
+    AI Chatbot Logic (Powered by Llama 3 70B via Groq Service).
+    This function now uses the external ai_service for high intelligence.
     """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            user_message = data.get('question', '').lower()
+            user_message = data.get('question', '')
+
+            # --- UPDATE: Using the powerful AI Service ---
+            # This function uses the Course Database context and Llama 3
+            ai_reply = generate_learning_assistant_response(user_message)
+
+            return JsonResponse({'answer': ai_reply})
+        except Exception as e:
+            print(f"AI Service Error: {e}")
+            return JsonResponse({'answer': "I am having trouble connecting to my brain right now."}, status=500)
             
-            response_text = "I'm not sure about that."
-
-            if 'hello' in user_message:
-                response_text = "Hello! How can I help you with your studies today?"
-            elif 'course' in user_message:
-                response_text = "You can browse courses in the Course Catalog section."
-            elif 'python' in user_message:
-                response_text = "Python is a great language! We have courses on it."
-            elif 'exam' in user_message:
-                response_text = "Check the Exams tab for upcoming schedules."
-            elif 'library' in user_message:
-                response_text = "You can download notes from the Digital Library."
-            else:
-                response_text = "I am an AI assistant for this LMS. Ask me about courses or exams!"
-
-            return JsonResponse({'answer': response_text})
-        except Exception:
-            return JsonResponse({'answer': "Error processing request."}, status=500)
     return JsonResponse({'error': "Invalid request"}, status=400)
 
 
@@ -669,7 +688,7 @@ def admin_dashboard(request):
         'class_form': LiveClassForm(),
         'exam_form': ExamForm(),
         'library_form': LibraryDocumentForm(),
-        'lesson_form': LessonForm(), # Keeping this here if you use it in dashboard too
+        'lesson_form': LessonForm(),
     }
     return render(request, 'custom_admin/dashboard.html', context)
 
@@ -732,7 +751,6 @@ def add_library_view(request):
             messages.error(request, "Upload failed. Check file type (PDF/Doc only).")
     return redirect('admin_dashboard')
 
-# --- UPDATE 2: NEW VIEW: Admin Add Lesson (SEPARATE PAGE) ---
 @staff_member_required
 def admin_add_lesson(request, course_id):
     """
@@ -751,7 +769,6 @@ def admin_add_lesson(request, course_id):
         else:
             messages.error(request, "Error adding lesson. Please check inputs.")
     else:
-        # Pre-fill course (optional, handled by view logic usually)
         form = LessonForm(initial={'course': course})
     
     return render(request, 'custom_admin/add_lesson.html', {'form': form, 'course': course})
@@ -841,8 +858,6 @@ def admin_reset_password(request, user_id):
 @staff_member_required
 def admin_course_list(request):
     courses = Course.objects.all().order_by('-created_at')
-    
-    # --- UPDATE 3: NO Form passed, just rendering the list
     context = {
         'courses': courses,
     }

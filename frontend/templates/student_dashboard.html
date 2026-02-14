@@ -5,6 +5,13 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
 
+<script>
+    // Check if user has a profile picture and get its URL
+    // We check for 'profile_pic' because that was in your forms.py
+    const userHasProfileImg = {% if request.user.profile.profile_pic %}true{% else %}false{% endif %};
+    const userProfileImgUrl = "{% if request.user.profile.profile_pic %}{{ request.user.profile.profile_pic.url }}{% endif %}";
+</script>
+
 <style>
     /* --- GLOBAL THEME --- */
     :root {
@@ -15,13 +22,15 @@
         --neon-purple: #bc13fe;
         --text-main: #e0e0e0;
         --glass: rgba(19, 19, 26, 0.95);
+        --chat-bg-glass: rgba(10, 10, 15, 0.95); /* Slightly more opaque for better readability */
+        --chat-border: 1px solid rgba(0, 243, 255, 0.4);
     }
 
     body {
         font-family: 'Rajdhani', sans-serif;
         background-color: var(--bg-dark);
-        /* Graph/Grid background removed for a clean look */
         color: var(--text-main);
+        overflow-x: hidden; /* Prevent horizontal scroll */
     }
 
     .dashboard-container {
@@ -41,12 +50,12 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* --- WELCOME BANNER (With Notification Bell) --- */
+    /* --- WELCOME BANNER --- */
     .welcome-banner {
         background: linear-gradient(90deg, #13131a 0%, #1a1a24 100%);
         border: 1px solid var(--border-color);
         border-left: 5px solid var(--neon-blue);
-        border-radius: 15px; /* Curved */
+        border-radius: 15px;
         padding: 30px 40px;
         display: flex;
         justify-content: space-between;
@@ -78,7 +87,7 @@
         display: inline-block;
     }
 
-    /* Notification Trigger (Top Right) */
+    /* Notification Trigger */
     .notif-bell {
         position: relative;
         width: 50px; height: 50px;
@@ -96,7 +105,6 @@
     }
     .notif-bell i { font-size: 1.2rem; }
     
-    /* Red Dot if unread */
     .badge-dot {
         position: absolute; top: 10px; right: 12px;
         width: 8px; height: 8px;
@@ -104,7 +112,7 @@
         border: 1px solid #fff;
     }
 
-    /* --- COURSES SECTION (Full Width Layout) --- */
+    /* --- COURSES SECTION --- */
     .section-title {
         font-family: 'Orbitron', sans-serif;
         font-size: 1.5rem; color: #fff; margin-bottom: 25px;
@@ -122,14 +130,13 @@
     .course-card {
         background: var(--card-bg);
         border: 1px solid var(--border-color);
-        border-radius: 15px; /* Curved */
+        border-radius: 15px;
         padding: 20px;
         transition: 0.3s ease;
         position: relative;
         overflow: hidden;
     }
     
-    /* Hover Glow Only (No Scale/Move) */
     .course-card:hover {
         border-color: var(--neon-blue);
         box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
@@ -158,7 +165,7 @@
         background: var(--neon-blue); color: #000; border-color: var(--neon-blue);
     }
 
-    /* --- NOTIFICATION MODAL (Curved & Animated) --- */
+    /* --- NOTIFICATION MODAL --- */
     .modal-overlay {
         display: none; position: fixed; inset: 0;
         background: rgba(0,0,0,0.8); z-index: 9999;
@@ -170,7 +177,7 @@
         background: #161616;
         border: 1px solid var(--neon-blue);
         width: 500px;
-        border-radius: 25px; /* Highly Curved */
+        border-radius: 25px;
         padding: 30px;
         box-shadow: 0 0 50px rgba(0, 243, 255, 0.15);
         position: relative;
@@ -179,7 +186,6 @@
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     
-    /* Open Animation State */
     .modal-overlay.modal-open .modal-box {
         transform: scale(1);
         opacity: 1;
@@ -206,22 +212,157 @@
     .n-body { font-size: 0.9rem; color: #aaa; line-height: 1.5; }
     .n-date { font-size: 0.8rem; color: #666; margin-top: 10px; display: block; text-align: right; }
 
-    /* Chatbot Fab */
-    .ai-fab {
+    /* =========================================================
+       UPDATED ADVANCED CHATBOT STYLES
+       ========================================================= */
+    
+    /* Floating Toggle Button */
+    #ai-chat-toggle {
         position: fixed; bottom: 30px; right: 30px;
-        width: 60px; height: 60px; background: #000;
-        border: 2px solid var(--neon-blue); border-radius: 50%;
-        display: flex; justify-content: center; align-items: center;
-        cursor: pointer; z-index: 1000; box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
-        transition: 0.3s;
+        width: 70px; height: 70px;
+        background: linear-gradient(135deg, var(--neon-blue), #0066ff);
+        border-radius: 50%; display: flex; justify-content: center; align-items: center;
+        cursor: pointer; z-index: 10000;
+        box-shadow: 0 0 25px rgba(0, 243, 255, 0.6);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: floatBot 3s ease-in-out infinite;
     }
-    .ai-fab:hover { background: var(--neon-blue); color: #000; }
-    .ai-fab i { font-size: 24px; color: inherit; }
+    #ai-chat-toggle:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 0 40px rgba(0, 243, 255, 0.8); }
+    #ai-chat-toggle i { font-size: 32px; color: #000; }
+
+    .pulse-ring {
+        position: absolute; width: 100%; height: 100%; border-radius: 50%;
+        border: 2px solid var(--neon-blue); opacity: 0; animation: pulseRing 2s infinite;
+    }
+
+    /* Main Chat Window */
+    #ai-chat-container {
+        position: fixed; bottom: 115px; right: 35px;
+        width: 400px; height: 550px; min-width: 320px; min-height: 400px;
+        max-width: 90vw; max-height: 90vh;
+        background: var(--chat-bg-glass);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: var(--chat-border); border-radius: 25px; /* More curved */
+        display: flex; flex-direction: column; z-index: 9999;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        resize: both; overflow: hidden;
+        transform-origin: bottom right;
+        /* UPDATED: Smoother transition for all properties */
+        transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    #ai-chat-container.closed {
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(0.8) translateY(30px);
+        box-shadow: none;
+    }
+
+    /* --- UPDATED: SMOOTH & CURVED FULLSCREEN MODE --- */
+    #ai-chat-container.fullscreen-mode {
+        width: 98vw !important;
+        height: 98vh !important;
+        bottom: 1vh !important;
+        right: 1vw !important;
+        border-radius: 30px !important; /* Curved corners in fullscreen */
+        resize: none !important;
+        z-index: 99999;
+        /* Add box-shadow for better focus */
+        box-shadow: 0 0 50px rgba(0, 243, 255, 0.3) !important;
+    }
+
+    /* Header */
+    .chat-header {
+        padding: 20px 25px; background: rgba(0, 243, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .header-title { 
+        font-family: 'Orbitron', sans-serif; font-weight: 700; color: #fff; font-size: 1.2rem;
+        display: flex; gap: 12px; align-items: center; 
+    }
+    .header-controls { display: flex; gap: 15px; }
+    .header-controls i { color: #aaa; cursor: pointer; transition: 0.3s; font-size: 1.2rem; }
+    .header-controls i:hover { color: var(--neon-blue); transform: scale(1.1); }
+
+    /* Chat Body & Messages */
+    #chat-box { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+    #chat-box::-webkit-scrollbar { width: 8px; }
+    #chat-box::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+    #chat-box::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.3); border-radius: 10px; }
+    #chat-box::-webkit-scrollbar-thumb:hover { background: rgba(0, 243, 255, 0.5); }
+
+    .message { display: flex; gap: 15px; max-width: 85%; animation: msgPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .msg-avatar {
+        width: 42px; height: 42px; border-radius: 50%;
+        display: flex; justify-content: center; align-items: center;
+        font-size: 18px; flex-shrink: 0; overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        border: 2px solid transparent;
+    }
+    .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .msg-text { padding: 16px 20px; border-radius: 18px; font-size: 1rem; line-height: 1.6; word-wrap: break-word; position: relative; }
+
+    .bot-msg { align-self: flex-start; }
+    .bot-msg .msg-avatar { background: rgba(0, 243, 255, 0.1); color: var(--neon-blue); border-color: rgba(0, 243, 255, 0.3); }
+    .bot-msg .msg-text { background: rgba(255, 255, 255, 0.08); color: #e0e0e0; border: 1px solid rgba(255,255,255,0.05); border-top-left-radius: 4px; }
+
+    .user-msg { align-self: flex-end; flex-direction: row-reverse; }
+    .user-msg .msg-avatar { background: rgba(188, 19, 254, 0.2); color: var(--neon-purple); border-color: rgba(188, 19, 254, 0.4); }
+    .user-msg .msg-text { background: linear-gradient(135deg, rgba(0, 243, 255, 0.8), rgba(0, 102, 255, 0.8)); color: #000; font-weight: 600; border-top-right-radius: 4px; box-shadow: 0 8px 20px rgba(0, 243, 255, 0.25); }
+
+    .typing-dots { display: flex; gap: 6px; padding: 12px 24px; align-self: flex-start; background: rgba(255, 255, 255, 0.08); border-radius: 20px; margin-left: 58px; border-top-left-radius: 4px;}
+    .typing-dots span { display: inline-block; width: 8px; height: 8px; background: var(--neon-blue); border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; }
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    /* Input Area */
+    .chat-input-area {
+        padding: 20px; background: rgba(0, 0, 0, 0.3);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex; gap: 12px; position: relative; align-items: center;
+    }
+    
+    #mic-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        width: 54px; height: 54px; border-radius: 50%;
+        cursor: pointer; color: var(--neon-blue); font-size: 20px; transition: 0.3s;
+        display: flex; justify-content: center; align-items: center;
+    }
+    #mic-btn:hover { background: rgba(0, 243, 255, 0.15); box-shadow: 0 0 15px var(--neon-blue); transform: scale(1.05); }
+    #mic-btn.listening { background: var(--neon-purple); color: white; border-color: var(--neon-purple); animation: pulseMic 1.5s infinite; }
+
+    #user-input {
+        flex: 1; background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #fff; padding: 16px 24px; border-radius: 30px; 
+        outline: none; transition: 0.3s; font-family: 'Rajdhani'; font-size: 1.05rem;
+    }
+    #user-input:focus { border-color: var(--neon-blue); background: rgba(0, 243, 255, 0.05); box-shadow: 0 0 20px rgba(0, 243, 255, 0.15); }
+    
+    #send-btn {
+        background: linear-gradient(135deg, var(--neon-blue), #0066ff); 
+        border: none; width: 54px; height: 54px; border-radius: 50%;
+        cursor: pointer; color: #000; font-size: 22px; transition: 0.3s;
+        display: flex; justify-content: center; align-items: center;
+        box-shadow: 0 5px 15px rgba(0, 243, 255, 0.3);
+    }
+    #send-btn:hover { transform: scale(1.1) rotate(-10deg); box-shadow: 0 8px 25px var(--neon-blue); }
+
+    /* Hide resize handle in webkit browsers for cleaner look, still works */
+    #ai-chat-container::-webkit-resizer { display: none; }
+
+    @keyframes floatBot { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    @keyframes pulseRing { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.8); opacity: 0; } }
+    @keyframes msgPop { from { opacity: 0; transform: translateY(20px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes typing { 0%, 80%, 100% { transform: scale(0); opacity: 0.5; } 40% { transform: scale(1); opacity: 1; } }
+    @keyframes pulseMic { 0% { box-shadow: 0 0 0 0 rgba(188, 19, 254, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(188, 19, 254, 0); } 100% { box-shadow: 0 0 0 0 rgba(188, 19, 254, 0); } }
 
 </style>
 
 <div class="dashboard-container">
-
     <div class="welcome-banner fade-in-up">
         <div class="user-info">
             <h1>Welcome, <span>{{ request.user.first_name }}</span></h1>
@@ -275,7 +416,6 @@
             {% endif %}
         </div>
     </div>
-
 </div>
 
 <div class="modal-overlay" id="notifModal">
@@ -298,77 +438,209 @@
     </div>
 </div>
 
-<div class="ai-fab" onclick="toggleChat()">
+<div id="ai-chat-toggle" onclick="toggleChat()">
     <i class="fas fa-robot"></i>
+    <span class="pulse-ring"></span>
 </div>
 
-<div class="chat-interface" id="chatWin" style="display:none; position:fixed; bottom:100px; right:30px; width:350px; height:500px; background:#111; border:1px solid #333; z-index:9999; flex-direction:column; border-radius:15px; overflow:hidden;">
-    <div style="padding:15px; background:#222; border-bottom:1px solid #333; font-weight:bold; color:white; display:flex; justify-content:space-between;">
-        <span>AI Assistant</span>
-        <span onclick="toggleChat()" style="cursor:pointer;">&times;</span>
-    </div>
-    <div id="chatMsgs" style="flex:1; padding:15px; color:white; overflow-y:auto;">
-        <div style="background:#333; padding:10px; border-radius:8px; display:inline-block; margin-bottom:10px;">
-            Hello! I am your AI Study Companion. Ready to solve some mysteries today? 🚀
+<div id="ai-chat-container" class="closed">
+    <div class="chat-header">
+        <div class="header-title">
+            <i class="fas fa-brain" style="color: #00f3ff;"></i> 
+            <span>LMS AI Assistant</span>
+        </div>
+        <div class="header-controls">
+            <i class="fas fa-expand-alt" id="fullscreen-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen"></i>
+            <i class="fas fa-times" onclick="toggleChat()"></i>
         </div>
     </div>
-    <div style="padding:15px; display:flex;">
-        <input type="text" id="chatIn" style="flex:1; padding:10px; background:#000; border:1px solid #444; color:white; border-radius:5px;" placeholder="Type...">
-        <button onclick="sendMsg()" style="padding:10px 15px; background:var(--neon-blue); border:none; cursor:pointer; border-radius:5px; margin-left:10px;"><i class="fas fa-paper-plane"></i></button>
+
+    <div id="chat-box">
+        <div class="message bot-msg">
+            <div class="msg-avatar"><i class="fas fa-robot"></i></div>
+            <div class="msg-text">
+                Hello! I am your <b>AI Study Companion</b>. 
+                <br>I can help with coding, explain concepts, and solve errors. 🚀
+                <br><i>How can I help you today?</i>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-loader" style="display: none;">
+        <div class="typing-dots">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <button id="mic-btn" onclick="toggleVoiceSearch()" title="Speak to AI">
+            <i class="fas fa-microphone"></i>
+        </button>
+
+        <input type="text" id="user-input" placeholder="Type or speak..." autocomplete="off">
+        <button onclick="sendMessage()" id="send-btn">
+            <i class="fas fa-paper-plane"></i>
+        </button>
     </div>
 </div>
 
 <script>
-    // Notification Modal Logic
+    // --- Notification Modal Logic ---
     function openNotificationModal() {
         const modal = document.getElementById('notifModal');
         modal.style.display = 'flex';
-        // Small delay to allow CSS transition
-        setTimeout(() => {
-            modal.classList.add('modal-open');
-        }, 10);
+        setTimeout(() => { modal.classList.add('modal-open'); }, 10);
     }
 
     function closeNotificationModal() {
         const modal = document.getElementById('notifModal');
         modal.classList.remove('modal-open');
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300); // Wait for transition
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
     }
 
-    // Close modal when clicking outside
     window.onclick = function(e) {
         if(e.target == document.getElementById('notifModal')) {
             closeNotificationModal();
         }
     }
 
-    // Chat Logic
+    // =========================================
+    // UPDATED CHATBOT LOGIC
+    // =========================================
+    const chatContainer = document.getElementById('ai-chat-container');
+    const userInput = document.getElementById('user-input');
+    const chatBox = document.getElementById('chat-box');
+    const loader = document.getElementById('chat-loader');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const micBtn = document.getElementById('mic-btn');
+
+    // 1. Toggle Chat
     function toggleChat() {
-        var w = document.getElementById('chatWin');
-        w.style.display = w.style.display === 'none' ? 'flex' : 'none';
+        chatContainer.classList.toggle('closed');
+        if (!chatContainer.classList.contains('closed')) {
+            userInput.focus();
+        }
     }
-    
-    function sendMsg() {
-        var i = document.getElementById('chatIn');
-        var t = i.value;
-        if(!t) return;
+
+    // 2. Fullscreen Toggle
+    function toggleFullscreen() {
+        chatContainer.classList.toggle('fullscreen-mode');
+        if (chatContainer.classList.contains('fullscreen-mode')) {
+            fullscreenBtn.classList.replace('fa-expand-alt', 'fa-compress-alt');
+        } else {
+            fullscreenBtn.classList.replace('fa-compress-alt', 'fa-expand-alt');
+        }
+    }
+
+    // 3. Voice Search (Speech to Text)
+    let recognition;
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = function() {
+            micBtn.classList.add('listening');
+            userInput.setAttribute('placeholder', 'Listening...');
+        };
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            userInput.value = transcript;
+            micBtn.classList.remove('listening');
+            userInput.setAttribute('placeholder', 'Type or speak...');
+            sendMessage(); // Auto send
+        };
+
+        recognition.onerror = function(event) {
+            micBtn.classList.remove('listening');
+            userInput.setAttribute('placeholder', 'Error. Try typing.');
+        };
+
+        recognition.onend = function() {
+            micBtn.classList.remove('listening');
+            userInput.setAttribute('placeholder', 'Type or speak...');
+        };
+    } else {
+        micBtn.style.display = 'none';
+        console.warn("Web Speech API not supported.");
+    }
+
+    function toggleVoiceSearch() {
+        if (recognition) {
+            if (micBtn.classList.contains('listening')) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+    }
+
+    // Press Enter to Send
+    userInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // Send Message
+    function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        appendMessage('user', text);
+        userInput.value = '';
         
-        var d = document.createElement('div');
-        d.style.cssText = "background:var(--neon-blue); color:black; padding:10px; border-radius:8px; align-self:flex-end; margin-bottom:10px; max-width:80%; margin-left:auto;";
-        d.innerText = t;
-        document.getElementById('chatMsgs').appendChild(d);
-        i.value = '';
-        
-        fetch('/api/ai-chat/', {method:'POST', body:JSON.stringify({question:t})})
-        .then(r=>r.json())
-        .then(data=>{
-            var r = document.createElement('div');
-            r.style.cssText = "background:#333; color:white; padding:10px; border-radius:8px; margin-bottom:10px; max-width:80%;";
-            r.innerText = data.answer;
-            document.getElementById('chatMsgs').appendChild(r);
+        loader.style.display = 'flex';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        fetch('/api/ai-chat/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: text })
+        })
+        .then(response => response.json())
+        .then(data => {
+            loader.style.display = 'none';
+            if (data.answer) {
+                appendMessage('bot', data.answer);
+            } else {
+                appendMessage('bot', "Sorry, I encountered an error connecting to my brain.");
+            }
+        })
+        .catch(error => {
+            loader.style.display = 'none';
+            appendMessage('bot', "Network error. Please check your connection.");
         });
+    }
+
+    // 4. Dynamic Profile Picture Logic in Helper
+    function appendMessage(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message', sender === 'user' ? 'user-msg' : 'bot-msg');
+        
+        let iconHtml;
+        if (sender === 'user') {
+            // Check global variable set at top of file
+            if (userHasProfileImg) {
+                iconHtml = `<img src="${userProfileImgUrl}" alt="User">`;
+            } else {
+                iconHtml = '<i class="fas fa-user"></i>';
+            }
+        } else {
+            iconHtml = '<i class="fas fa-robot"></i>';
+        }
+        
+        const formattedText = text.replace(/\n/g, '<br>');
+
+        msgDiv.innerHTML = `
+            <div class="msg-avatar">${iconHtml}</div>
+            <div class="msg-text">${formattedText}</div>
+        `;
+        
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 </script>
 

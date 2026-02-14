@@ -1,115 +1,49 @@
-import os
-import json
-import re
-from groq import Groq
-from dotenv import load_dotenv
-from pypdf import PdfReader
-import docx
+from .ai_utils import get_groq_response
+from .models import Course  # Assuming you have a Course model
 
-load_dotenv()
-
-client = Groq(
-    api_key=os.environ.get("GROQ_API_KEY"),
-)
-
-def _clean_json_response(response_text):
-    if "```" in response_text:
-        pattern = r"```json(.*?)```"
-        match = re.search(pattern, response_text, re.DOTALL)
-        if match:
-            return match.group(1).strip()
-        else:
-            return response_text.replace("```json", "").replace("```", "").strip()
-    return response_text.strip()
-
-def extract_text_from_file(file_obj, file_ext):
-    text = ""
-    try:
-        if file_ext == '.pdf':
-            reader = PdfReader(file_obj)
-            for page in reader.pages:
-                text += page.extract_text() or ""
-        elif file_ext == '.docx':
-            doc = docx.Document(file_obj)
-            for para in doc.paragraphs:
-                text += para.text + "\n"
-        elif file_ext == '.txt':
-            if hasattr(file_obj, 'read'):
-                try: text = file_obj.read().decode('utf-8')
-                except: 
-                    file_obj.seek(0)
-                    text = file_obj.read().decode('latin-1')
-            else:
-                with open(file_obj, 'r', encoding='utf-8') as f:
-                    text = f.read()
-    except Exception as e:
-        print(f"Error extracting text: {e}")
-    return text
-
-# --- 1. QUIZ GENERATOR ---
-def generate_quiz_from_doc(file_obj, file_ext):
-    text = extract_text_from_file(file_obj, file_ext)
-    text = text[:20000] 
-    
-    if not text.strip(): return []
-
-    prompt = f"""
-    You are an expert examiner. Based on the provided text, create a 30-mark quiz.
-    Create exactly 30 Multiple Choice Questions (MCQs).
-    
-    OUTPUT RULES:
-    1. Return ONLY valid JSON.
-    2. JSON format: {{ "questions": [ {{ "question": "...", "options": ["A","B","C","D"], "answer": 0 }} ] }}
-    
-    TEXT:
-    {text}
+def generate_learning_assistant_response(user_query):
     """
+    Generates a response strictly for learning, coding, and course-related queries.
+    """
+    
+    # 1. Fetch Context (আপনার ওয়েবসাইটের কোর্সের তথ্য)
+    # AI-কে আপনার ওয়েবসাইটের বর্তমান অবস্থা জানানো হচ্ছে
+    courses = Course.objects.filter(is_published=True)
+    course_list_text = "\n".join([f"- {c.title}: {c.description} (Level: {c.difficulty_level})" for c in courses])
 
-    try:
-        # UPDATED MODEL: llama-3.1-8b-instant
-        completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "system", "content": "You are a strict JSON generator API."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.3,
-            response_format={"type": "json_object"}
-        )
-        
-        raw_content = completion.choices[0].message.content
-        cleaned_content = _clean_json_response(raw_content)
-        quiz_data = json.loads(cleaned_content)
-        
-        if "questions" in quiz_data: return quiz_data["questions"]
-        elif isinstance(quiz_data, list): return quiz_data
-        return []
-        
-    except Exception as e:
-        print(f"Error generating quiz: {e}")
-        return []
-
-# --- 2. AI TUTOR (CHATBOT) ---
-def ask_ai_tutor(student_question, student_level="Intermediate"):
+    # 2. The "Next Level" System Prompt (Super Brain Instructions)
     system_prompt = f"""
-    You are a helpful AI Tutor named 'Learning-365 AI'.
-    Student Level: {student_level}.
-    Keep answers concise.
+    ROLE & PERSONA:
+    You are 'Learning-365 AI', a world-class advanced educational assistant and expert coding mentor.
+    You possess deep knowledge of Computer Science, Mathematics, Science, and Technology.
+    You are polite, encouraging, and extremely precise in your explanations.
+
+    YOUR KNOWLEDGE BASE (CURRENT COURSES ON THIS PLATFORM):
+    The following courses are currently available on Learning-365:
+    {course_list_text}
+    
+    STRICT GUIDELINES (GUARDRAILS):
+    1. **DOMAIN RESTRICTION:** You must ONLY answer questions related to:
+       - Learning and Education (Science, Math, Programming, etc.)
+       - Code fixing, debugging, and software architecture.
+       - Explaining concepts found in the courses listed above.
+       - Career guidance in tech and education.
+    
+    2. **REFUSAL POLICY:** If the user asks about:
+       - Movies, Entertainment, Gossip, Politics, Sports (non-educational), Personal Advice (dating, etc.)
+       - Or anything not related to learning/education.
+       
+       You must reply with: "I am designed to assist only with learning and educational topics. Please ask me something about your courses or studies."
+
+    3. **CODING ASSISTANCE:** When providing code:
+       - Write clean, commented, and production-ready code.
+       - Explain the logic step-by-step.
+       - If the user provides broken code, fix it and explain the error.
+
+    4. **TONE:** Professional, Academic, yet accessible to beginners.
     """
 
-    try:
-        # UPDATED MODEL: llama-3.3-70b-versatile
-        completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": student_question}
-            ],
-            temperature=0.7,
-            max_tokens=500
-        )
-        return completion.choices[0].message.content
-        
-    except Exception as e:
-        print(f"AI Tutor Error: {e}")
-        return "Sorry, I am currently undergoing maintenance (Model Update). Please try again later."
+    # 3. Call the Utility
+    response = get_groq_response(system_prompt, user_query)
+    
+    return response

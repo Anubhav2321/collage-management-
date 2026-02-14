@@ -3,217 +3,436 @@
 
 {% block content %}
 
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
-    /* Fullscreen-ish Layout for Video Player */
-    .player-container {
-        display: flex;
-        flex-wrap: wrap;
-        height: calc(100vh - 80px); /* Adjust based on navbar height */
-        background: #0f172a;
-        margin-top: -20px; 
-        overflow: hidden; 
+    /* --- THEME VARIABLES --- */
+    :root {
+        --bg-dark: #0a0a0f;
+        --sidebar-bg: #111116;
+        --border-color: #2a2a35;
+        --neon-blue: #00f3ff;
+        --neon-purple: #bc13fe;
+        --text-main: #e0e0e0;
+        --active-item: rgba(0, 243, 255, 0.1);
     }
 
-    /* LEFT: Video Player (75%) */
-    .video-section {
-        flex: 3;
-        background: #000;
+    body {
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        font-family: 'Rajdhani', sans-serif;
+        overflow: hidden; /* Prevent body scroll */
+    }
+
+    /* --- LAYOUT GRID --- */
+    .course-watch-container {
+        display: grid;
+        grid-template-columns: 1fr 350px; /* Video Area | Sidebar */
+        height: calc(100vh - 70px); /* Full height minus navbar */
+        margin-top: 0;
+    }
+
+    /* --- LEFT AREA (VIDEO + COMMENTS) --- */
+    .content-area {
+        padding: 30px;
+        overflow-y: auto; /* Allow scrolling for comments */
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        position: relative;
-        overflow-y: auto;
-        min-width: 600px;
+        scroll-behavior: smooth;
     }
+    
+    /* Scrollbar Styling */
+    .content-area::-webkit-scrollbar { width: 8px; }
+    .content-area::-webkit-scrollbar-track { background: #0a0a0f; }
+    .content-area::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    .content-area::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
 
     .video-wrapper {
         position: relative;
         padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
         height: 0;
-        width: 100%;
         background: #000;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        margin-bottom: 25px;
+        flex-shrink: 0;
     }
 
     .video-wrapper iframe {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
         border: none;
     }
 
-    .lesson-info {
-        padding: 20px 30px;
-        color: white;
-        background: #1e293b;
-        border-top: 1px solid #333;
+    .lesson-header h1 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.8rem;
+        color: #fff;
+        margin-bottom: 10px;
     }
 
-    /* RIGHT: Playlist (25%) */
-    .playlist-section {
-        flex: 1;
-        min-width: 350px;
-        background: #1a1a2e;
-        border-left: 1px solid rgba(255, 255, 255, 0.1);
+    .lesson-meta {
+        display: flex;
+        gap: 15px;
+        color: #888;
+        font-size: 0.95rem;
+        margin-bottom: 25px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+    }
+    .lesson-meta span { display: flex; align-items: center; gap: 5px; }
+    .lesson-meta i { color: var(--neon-blue); }
+
+    /* Navigation Buttons */
+    .nav-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        margin-bottom: 40px;
+    }
+
+    .btn-nav {
+        padding: 12px 25px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        color: #fff;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: 0.3s;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .btn-nav:hover {
+        background: var(--neon-blue);
+        color: #000;
+        box-shadow: 0 0 15px var(--neon-blue);
+    }
+    .btn-nav.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    /* --- COMMENT SECTION --- */
+    .comment-section {
+        background: #111116;
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 50px;
+    }
+    
+    .comment-section h3 {
+        font-family: 'Orbitron', sans-serif;
+        color: var(--neon-blue);
+        margin-bottom: 20px;
+        font-size: 1.3rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+
+    .comment-form textarea {
+        width: 100%;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid var(--border-color);
+        color: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1rem;
+        resize: vertical;
+        transition: 0.3s;
+    }
+    .comment-form textarea:focus {
+        outline: none;
+        border-color: var(--neon-blue);
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+    }
+
+    .btn-comment {
+        margin-top: 15px;
+        padding: 10px 30px;
+        background: linear-gradient(45deg, var(--neon-purple), #8a2be2);
+        border: none;
+        color: white;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: 0.3s;
+        float: right;
+    }
+    .btn-comment:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 15px var(--neon-purple);
+    }
+
+    .comment-list {
+        margin-top: 60px;
+        clear: both;
+    }
+
+    .single-comment {
+        display: flex;
+        gap: 15px;
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        animation: fadeIn 0.5s ease;
+    }
+    
+    /* Profile Picture Logic */
+    .c-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: #222;
+        border: 1px solid var(--border-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .c-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .c-avatar i { font-size: 1.2rem; color: #666; }
+
+    .c-content { flex: 1; }
+    .c-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .c-author { color: #fff; font-weight: 700; font-size: 1rem; }
+    .c-tag { 
+        font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 8px; 
+        border: 1px solid var(--neon-blue); color: var(--neon-blue);
+    }
+    .c-date { font-size: 0.8rem; color: #666; }
+    .c-text { color: #ccc; line-height: 1.5; font-size: 0.95rem; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+
+    /* --- SIDEBAR (RIGHT) --- */
+    .playlist-sidebar {
+        background: var(--sidebar-bg);
+        border-left: 1px solid var(--border-color);
         display: flex;
         flex-direction: column;
         height: 100%;
     }
 
-    .playlist-header {
+    .sidebar-header {
         padding: 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(0, 229, 255, 0.05);
+        border-bottom: 1px solid var(--border-color);
+        background: rgba(0,0,0,0.2);
+    }
+    .sidebar-header h3 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.1rem;
+        color: #fff;
+        margin-bottom: 10px;
     }
 
-    .playlist-content {
+    /* Progress Bar */
+    .progress-container {
+        display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #888; margin-bottom: 5px;
+    }
+    .progress-track {
+        width: 100%; height: 6px; background: #222; border-radius: 10px; overflow: hidden;
+    }
+    
+    /* FIX: Dynamic Progress Bar Width */
+    .progress-fill {
+        height: 100%; 
+        background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+        transition: width 0.5s ease-in-out;
+        width: 0%; /* Default 0, overridden inline */
+    }
+
+    /* Lesson List */
+    .lesson-list {
         flex: 1;
         overflow-y: auto;
     }
+    .lesson-list::-webkit-scrollbar { width: 5px; }
+    .lesson-list::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
 
-    /* Scrollbar Styling */
-    .playlist-content::-webkit-scrollbar { width: 6px; }
-    .playlist-content::-webkit-scrollbar-track { background: #0f172a; }
-    .playlist-content::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-
-    /* Playlist Item */
     .lesson-item {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         padding: 15px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        color: #ccc;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        color: #aaa;
         text-decoration: none;
-        transition: all 0.2s;
-        gap: 12px;
+        transition: 0.2s;
+        gap: 15px;
     }
 
     .lesson-item:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: white;
+        background: rgba(255,255,255,0.03);
+        color: #fff;
     }
 
     .lesson-item.active {
-        background: rgba(0, 229, 255, 0.1);
-        border-left: 4px solid #00e5ff;
-        color: #00e5ff;
+        background: var(--active-item);
+        color: var(--neon-blue);
+        border-left: 4px solid var(--neon-blue);
     }
 
-    .lesson-number { font-size: 12px; color: #666; margin-top: 2px; }
-    .lesson-item.active .lesson-number { color: #00e5ff; }
-    .play-icon { font-size: 14px; margin-top: 3px; }
-    .lesson-meta { font-size: 11px; color: #777; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+    .status-icon {
+        font-size: 14px;
+        width: 20px;
+        text-align: center;
+    }
+    .status-icon.completed { color: var(--neon-blue); }
+    .status-icon.locked { color: #444; }
+
+    .lesson-info { flex: 1; }
+    .l-title { font-weight: 600; font-size: 0.95rem; display: block; margin-bottom: 3px; }
+    .l-duration { font-size: 0.8rem; color: #666; }
 
     /* Responsive */
-    @media (max-width: 992px) {
-        .player-container { height: auto; flex-direction: column; overflow: visible; }
-        .video-section { width: 100%; height: auto; min-width: auto; }
-        .playlist-section { width: 100%; height: 500px; border-left: none; border-top: 1px solid #333; }
+    @media (max-width: 900px) {
+        .course-watch-container { grid-template-columns: 1fr; height: auto; }
+        .playlist-sidebar { height: 400px; border-left: none; border-top: 1px solid var(--border-color); }
+        .content-area { overflow-y: visible; height: auto; }
     }
 </style>
 
-<div class="player-container">
-    
-    <div class="video-section">
+<div class="course-watch-container">
+
+    <div class="content-area">
         {% if current_lesson %}
             <div class="video-wrapper">
-                <iframe 
-                    src="{{ current_lesson.get_youtube_embed_url }}" 
-                    title="{{ current_lesson.title }}" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
+                {% if youtube_id %}
+                    <iframe 
+                        src="https://www.youtube.com/embed/{{ youtube_id }}?rel=0&modestbranding=1" 
+                        title="Course Video"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        referrerpolicy="strict-origin-when-cross-origin" 
+                        allowfullscreen>
+                    </iframe>
+                {% else %}
+                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#ff4757;">
+                        <i class="fas fa-video-slash fa-2x" style="margin-bottom: 10px;"></i>
+                        <p>Video Not Available</p>
+                    </div>
+                {% endif %}
             </div>
-            
-            <div class="lesson-info">
-                <h1 style="font-size: 22px; margin: 0 0 10px 0; font-weight: 700;">{{ current_lesson.title }}</h1>
+
+            <div class="lesson-header">
+                <h1>{{ current_lesson.title }}</h1>
+                <div class="lesson-meta">
+                    <span><i class="fas fa-book-reader"></i> {{ course.title }}</span>
+                    <span><i class="fas fa-clock"></i> {{ current_lesson.duration }}</span>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                {% if prev_lesson %}
+                    <a href="{% url 'course_watch' course.id prev_lesson.id %}" class="btn-nav">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </a>
+                {% else %}
+                    <a href="#" class="btn-nav disabled"><i class="fas fa-arrow-left"></i> Previous</a>
+                {% endif %}
+
+                {% if next_lesson %}
+                    <a href="{% url 'course_watch' course.id next_lesson.id %}" class="btn-nav">
+                        Next Lesson <i class="fas fa-arrow-right"></i>
+                    </a>
+                {% else %}
+                    <a href="{% url 'dashboard' %}" class="btn-nav">
+                        Finish Course <i class="fas fa-check"></i>
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="comment-section">
+                <h3><i class="far fa-comments"></i> Discussion & Doubts</h3>
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                    <div style="display: flex; flex-direction: column; gap: 5px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="color: #aaa; font-size: 14px;">
-                                <i class="fas fa-book-open" style="color: #00e5ff;"></i> {{ course.title }}
-                            </span>
+                <form method="POST" class="comment-form">
+                    {% csrf_token %}
+                    {{ comment_form.text }}
+                    <button type="submit" name="submit_comment" class="btn-comment">
+                        Post Comment <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+
+                <div class="comment-list">
+                    {% for comment in comments %}
+                    <div class="single-comment">
+                        <div class="c-avatar">
+                            {% if comment.student.profile.profile_picture %}
+                                <img src="{{ comment.student.profile.profile_picture.url }}" alt="User">
+                            {% else %}
+                                <i class="fas fa-user"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="c-content">
+                            <div class="c-header">
+                                <span class="c-author">
+                                    {{ comment.student.first_name }} {{ comment.student.last_name }}
+                                    {% if comment.student.is_staff %}
+                                        <span class="c-tag">INSTRUCTOR</span>
+                                    {% endif %}
+                                </span>
+                                <span class="c-date">{{ comment.created_at|timesince }} ago</span>
+                            </div>
+                            <p class="c-text">{{ comment.text }}</p>
                         </div>
                     </div>
-
-                    <div style="display: flex; gap: 10px;">
-                        {% if prev_lesson %}
-                            <a href="{% url 'course_watch_lesson' course.id prev_lesson.id %}" 
-                               style="padding: 10px 18px; background: #334155; color: white; border-radius: 6px; text-decoration: none; font-size: 14px;">
-                                <i class="fas fa-chevron-left"></i> Previous
-                            </a>
-                        {% else %}
-                            <button disabled style="padding: 10px 18px; background: #1e293b; color: #555; border: 1px solid #333; border-radius: 6px; cursor: not-allowed;">
-                                <i class="fas fa-chevron-left"></i> Previous
-                            </button>
-                        {% endif %}
-
-                        {% if next_lesson %}
-                            <a href="{% url 'course_watch_lesson' course.id next_lesson.id %}" 
-                               style="padding: 10px 18px; background: #00e5ff; color: #000; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold;">
-                                Next <i class="fas fa-chevron-right"></i>
-                            </a>
-                        {% else %}
-                            <button disabled style="padding: 10px 18px; background: #1e293b; color: #555; border: 1px solid #333; border-radius: 6px; cursor: not-allowed;">
-                                Next <i class="fas fa-chevron-right"></i>
-                            </button>
-                        {% endif %}
-                    </div>
+                    {% empty %}
+                        <p style="color:#666; text-align:center; padding: 20px;">
+                            No comments yet. Ask your doubts here!
+                        </p>
+                    {% endfor %}
                 </div>
             </div>
 
         {% else %}
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: white; padding: 40px; text-align: center;">
-                <i class="fas fa-film" style="font-size: 60px; color: #333; margin-bottom: 20px;"></i>
-                <h2 style="margin-bottom: 10px;">No Content Available</h2>
-                <a href="{% url 'dashboard' %}" style="margin-top: 20px; color: #00e5ff; text-decoration: none; font-weight: bold;">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
+            <div style="text-align:center; padding:50px; color:#666;">
+                <h2>No lessons available in this course.</h2>
             </div>
         {% endif %}
     </div>
 
-    <div class="playlist-section">
-        <div class="playlist-header">
-            <h3 style="color: white; margin: 0; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;">
-                <i class="fas fa-list-ul" style="margin-right: 8px; color: #00e5ff;"></i> Course Content
-            </h3>
-            <div style="margin-top: 12px; width: 100%; height: 6px; background: #333; border-radius: 3px;">
-                <div style="width: {{ progress }}%; height: 100%; background: #00e5ff; border-radius: 3px;"></div>
+    <div class="playlist-sidebar">
+        <div class="sidebar-header">
+            <h3>COURSE CONTENT</h3>
+            <div class="progress-container">
+                <span>{{ progress }}% Completed</span>
             </div>
-            <p style="color: #888; font-size: 11px; margin-top: 8px; text-align: right;">{{ progress }}% Completed</p>
+            <div class="progress-track">
+                <div class="progress-fill" style="width: {{ progress }}%;"></div>
+            </div>
         </div>
-        
-        <div class="playlist-content">
+
+        <div class="lesson-list">
             {% for lesson in lessons %}
-            <a href="{% url 'course_watch_lesson' course.id lesson.id %}" 
-               class="lesson-item {% if current_lesson and lesson.id == current_lesson.id %}active{% endif %}">
+            <a href="{% url 'course_watch' course.id lesson.id %}" 
+               class="lesson-item {% if lesson.id == current_lesson.id %}active{% endif %}">
                 
-                <div style="min-width: 25px; text-align: center;">
-                    {% if current_lesson and lesson.id == current_lesson.id %}
-                        <i class="fas fa-play-circle play-icon" style="color: #00e5ff;"></i>
+                <div class="status-icon {% if lesson.id == current_lesson.id %}completed{% endif %}">
+                    {% if lesson.id == current_lesson.id %}
+                        <i class="fas fa-play-circle"></i>
                     {% else %}
-                        <span class="lesson-number">{{ forloop.counter }}</span>
-                    {% endif %}
-                </div>
-                
-                <div style="flex: 1;">
-                    <div style="font-weight: 500; font-size: 14px; line-height: 1.4;">{{ lesson.title }}</div>
-                    {% if lesson.duration %}
-                    <div class="lesson-meta"><i class="far fa-clock"></i> {{ lesson.duration }}</div>
+                        <i class="far fa-circle"></i>
                     {% endif %}
                 </div>
 
-                {% if lesson.is_completed %}
-                    <i class="fas fa-check-circle" style="color: #00e676; font-size: 12px;"></i>
-                {% endif %}
+                <div class="lesson-info">
+                    <span class="l-title">{{ lesson.title }}</span>
+                    <span class="l-duration"><i class="far fa-clock"></i> {{ lesson.duration }}</span>
+                </div>
             </a>
-            {% empty %}
-            <div style="padding: 30px; text-align: center; color: #666; font-size: 13px;">No lessons found.</div>
             {% endfor %}
         </div>
     </div>
+
 </div>
+
 {% endblock %}

@@ -1,102 +1,122 @@
-import random
-import re
 import os
-from pypdf import PdfReader
-from docx import Document
-from django.conf import settings
+import json
+import PyPDF2
+import docx
+from groq import Groq
+from dotenv import load_dotenv
 
+# Load .env file
+load_dotenv()
+
+# Initialize Groq Client
+client = Groq(
+    api_key=os.environ.get("GROQ_API_KEY"),
+)
+
+# ==========================================================
+# 1. CORE AI COMMUNICATOR (The Brain)
+# ==========================================================
+def get_groq_response(system_instruction, user_message):
+    """
+    Sends data to Groq API and retrieves the AI response.
+    Updated Model: llama-3.3-70b-versatile (Latest Supported)
+    """
+    try:
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_instruction,
+                },
+                {
+                    "role": "user",
+                    "content": user_message,
+                }
+            ],
+            # --- UPDATE: Changed deprecated model to the latest one ---
+            model="llama-3.3-70b-versatile", 
+            temperature=0.5,
+            max_tokens=1024,
+        )
+        return chat_completion.choices[0].message.content
+    except Exception as e:
+        print(f"Error in Groq API: {e}")
+        return "I am having trouble connecting to the brain right now. Please try again later."
+
+# ==========================================================
+# 2. FILE EXTRACTION UTILITIES
+# ==========================================================
 def extract_text_from_file(file_path):
     """
-    Function to extract text from any PDF or DOCX file.
+    Extracts text from PDF, DOCX, or TXT files.
     """
     text = ""
-    ext = os.path.splitext(file_path)[1].lower()
-
     try:
-        if ext == '.pdf':
-            reader = PdfReader(file_path)
-            for page in reader.pages:
-                extracted = page.extract_text()
-                if extracted:
-                    text += extracted + "\n"
+        ext = file_path.split('.')[-1].lower()
         
-        elif ext == '.docx':
-            doc = Document(file_path)
+        if ext == 'pdf':
+            with open(file_path, 'rb') as f:
+                reader = PyPDF2.PdfReader(f)
+                for page in reader.pages:
+                    extracted = page.extract_text()
+                    if extracted:
+                        text += extracted + "\n"
+                        
+        elif ext in ['doc', 'docx']:
+            doc = docx.Document(file_path)
             for para in doc.paragraphs:
                 text += para.text + "\n"
-        
-        else:
-            # For .txt or other formats
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                
+        elif ext == 'txt':
+            with open(file_path, 'r', encoding='utf-8') as f:
                 text = f.read()
                 
     except Exception as e:
-        print(f"Error reading file: {e}")
+        print(f"Error extracting text: {e}")
         return ""
+        
+    return text.strip()
 
-    return text
-
+# ==========================================================
+# 3. AI QUIZ GENERATOR (Powered by Groq)
+# ==========================================================
 def generate_quiz_from_text(text, num_questions=5):
     """
-    Function to generate MCQ questions from text using simple logic.
-    (Note: For best results, OpenAI/Gemini API should be used, 
-    but here I am building it with Python Logic so that it works without API Key)
+    Uses Groq AI to generate a JSON quiz from the provided text.
     """
-    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
-    questions = []
+    system_prompt = f"""
+    You are an expert Teacher and Quiz Generator.
+    Task: Create {num_questions} multiple-choice questions based strictly on the provided text.
     
-    # Look for sentences that contain important keywords (e.g. is, are, called, defined).
-    keywords = ['is a', 'is the', 'are', 'means', 'defined as', 'refers to', 'known as']
+    OUTPUT FORMAT (Strict JSON):
+    Return a raw JSON list of objects. Do not include markdown formatting (like ```json).
+    Structure:
+    [
+        {{
+            "question": "Question text here?",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "answer": 0  // The index of the correct option (0, 1, 2, or 3)
+        }}
+    ]
+    """
     
-    valid_sentences = [s.strip() for s in sentences if len(s.split()) > 5 and len(s.split()) < 30]
+    # Truncate text to avoid token limits
+    safe_text = text[:15000] 
     
-    # Shuffle to get random parts of the chapter
-    random.shuffle(valid_sentences)
-
-    for sentence in valid_sentences:
-        if len(questions) >= num_questions:
-            break
-            
-        for key in keywords:
-            if key in sentence:
-                try:
-                    # Logic: "Python is a programming language" -> Q: "Python ___ a programming language?"
-                    parts = sentence.split(key, 1)
-                    if len(parts) == 2:
-                        subject = parts[0].strip()
-                        definition = parts[1].strip().strip('.')
-                        
-                        # Formulate question
-                        question_text = f"What {key} {definition}?"
-                        if len(subject.split()) > 4: # Subject যদি খুব বড় হয়, তাহলে উল্টে দেব
-                            question_text = f"{subject} {key} _____________."
-                            correct_ans = definition
-                        else:
-                            question_text = f"What {key} {definition}?"
-                            correct_ans = subject
-
-                        # Creating dummy options (wrong answer)
-                        options = [correct_ans, "None of the above", "Variable", "Function"]
-                        random.shuffle(options)
-                        
-                        # Finding the index of the correct answer
-                        ans_idx = options.index(correct_ans)
-                        
-                        questions.append({
-                            'question': question_text,
-                            'options': options,
-                            'answer': ans_idx  # 0, 1, 2, or 3
-                        })
-                        break
-                except:
-                    continue
-
-    # if not enough questions are generated, add a fallback question
-    if len(questions) < 2:
-        questions.append({
-            'question': 'Could not extract enough context. Select the topic type:',
-            'options': ['Programming', 'History', 'Science', 'General'],
-            'answer': 0
-        })
-
-    return questions
+    try:
+        # Call AI
+        response = get_groq_response(system_prompt, f"Generate quiz from this text:\n\n{safe_text}")
+        
+        # Clean up response (sometimes AI adds markdown backticks)
+        clean_response = response.replace('```json', '').replace('```', '').strip()
+        
+        # Parse JSON
+        quiz_data = json.loads(clean_response)
+        return quiz_data
+        
+    except json.JSONDecodeError:
+        print("Error decoding AI JSON response")
+        return []
+    except Exception as e:
+        print(f"Error generating quiz: {e}")
+        return []
