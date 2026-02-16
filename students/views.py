@@ -49,9 +49,8 @@ from .models import (
 
 User = get_user_model()
 
-# ====================================================
 # 1. PUBLIC VIEWS (LANDING, CONTACT)
-# ====================================================
+
 
 def home_view(request):
     """
@@ -69,7 +68,6 @@ def home_view(request):
     }
     return render(request, 'landing.html', context)
 
-
 def contact_developers_view(request):
     """
     Renders Contact Page & Handles Form Submission.
@@ -85,10 +83,8 @@ def contact_developers_view(request):
         
     return render(request, 'contact.html')
 
-
-# ====================================================
 # 2. AUTHENTICATION (REGISTER, LOGIN, LOGOUT)
-# ====================================================
+
 
 def register_view(request):
     """
@@ -159,10 +155,7 @@ def logout_view(request):
     messages.success(request, "You have been logged out successfully.")
     return redirect('login')
 
-
-# ====================================================
 # 3. STUDENT DASHBOARD & PROFILE FEATURES
-# ====================================================
 
 @login_required
 def student_dashboard(request):
@@ -224,10 +217,7 @@ def profile_view(request):
     }
     return render(request, 'student_profile.html', context)
 
-
-# ====================================================
 # 4. COURSE & LEARNING LOGIC
-# ====================================================
 
 @login_required
 def all_courses(request):
@@ -435,10 +425,7 @@ def library_view(request):
 
     return render(request, 'student_library.html', {'documents': documents})
 
-
-# ====================================================
 # 5. QUIZ & EXAMS
-# ====================================================
 
 @login_required
 def student_exam_list(request):
@@ -659,9 +646,7 @@ def ai_chat(request):
     return JsonResponse({'error': "Invalid request"}, status=400)
 
 
-# ====================================================
 # 6. ADMIN PANEL SYSTEM (FULL CREATE/DELETE LOGIC)
-# ====================================================
 
 @staff_member_required
 def admin_dashboard(request):

@@ -6,9 +6,8 @@ from .models import (
     Exam, Question, QuizResult, Quiz
 )
 
-# ==========================================
 # 1. Custom User Admin (Student/Teacher Info)
-# ==========================================
+
 class ProfileInline(admin.StackedInline):
     model = Profile
     can_delete = False
@@ -30,10 +29,8 @@ admin.site.register(User, CustomUserAdmin)
 # Profile is registered inline, but you can register it separately if needed
 # admin.site.register(Profile) 
 
-
-# ==========================================
 # 2. Course & Lesson Admin
-# ==========================================
+
 class LessonInline(admin.TabularInline):
     model = Lesson
     extra = 1
@@ -51,10 +48,8 @@ class LessonAdmin(admin.ModelAdmin):
     list_display = ('title', 'course', 'order', 'is_preview')
     list_filter = ('course',)
 
-
-# ==========================================
 # 3. Exam & Question Admin (Updated Logic)
-# ==========================================
+
 # Inline for Questions within Exam
 class QuestionInline(admin.StackedInline):
     model = Question
@@ -72,10 +67,8 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ('question_text', 'exam', 'correct_option')
     list_filter = ('exam',)
 
-
-# ==========================================
 # 4. Other Features Admin
-# ==========================================
+
 admin.site.register(Enrollment)
 admin.site.register(Notification)
 admin.site.register(LiveClass)

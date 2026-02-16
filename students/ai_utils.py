@@ -13,9 +13,8 @@ client = Groq(
     api_key=os.environ.get("GROQ_API_KEY"),
 )
 
-# ==========================================================
 # 1. CORE AI COMMUNICATOR (The Brain)
-# ==========================================================
+
 def get_groq_response(system_instruction, user_message):
     """
     Sends data to Groq API and retrieves the AI response.
@@ -43,9 +42,8 @@ def get_groq_response(system_instruction, user_message):
         print(f"Error in Groq API: {e}")
         return "I am having trouble connecting to the brain right now. Please try again later."
 
-# ==========================================================
 # 2. FILE EXTRACTION UTILITIES
-# ==========================================================
+
 def extract_text_from_file(file_path):
     """
     Extracts text from PDF, DOCX, or TXT files.
@@ -77,9 +75,8 @@ def extract_text_from_file(file_path):
         
     return text.strip()
 
-# ==========================================================
 # 3. AI QUIZ GENERATOR (Powered by Groq)
-# ==========================================================
+
 def generate_quiz_from_text(text, num_questions=5):
     """
     Uses Groq AI to generate a JSON quiz from the provided text.

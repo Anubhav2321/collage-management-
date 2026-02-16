@@ -2,17 +2,16 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # ==========================
+
     # Authentication
-    # ==========================
+      
     path('', views.login_view, name='login'),  # Default to login page
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
 
-    # ==========================
     # Student Panel Features
-    # ==========================
+
     path('dashboard/', views.student_dashboard, name='dashboard'),
     path('courses/', views.all_courses, name='all_courses'),
     path('courses/watch/<int:course_id>/', views.course_watch, name='course_watch'),
@@ -23,14 +22,12 @@ urlpatterns = [
     path('exams/', views.exams_view, name='exams'),
     path('profile/', views.profile_view, name='profile'),
 
-    # ==========================
     # API (Chatbot)
-    # ==========================
+
     path('api/ai-chat/', views.ai_chat, name='ai_chat'),
 
-    # ==========================
     # Admin Panel System (New)
-    # ==========================
+    
     path('admin-panel/', views.admin_dashboard, name='admin_dashboard'),
     
     # Student Management List

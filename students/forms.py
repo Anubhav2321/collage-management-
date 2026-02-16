@@ -15,9 +15,8 @@ from .models import (
 
 User = get_user_model()
 
-# ==========================================
 # 1. STUDENT REGISTRATION FORM
-# ==========================================
+
 class StudentRegistrationForm(forms.ModelForm):
     first_name = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
@@ -85,9 +84,8 @@ class StudentRegistrationForm(forms.ModelForm):
         return user
 
 
-# ==========================================
 # 2. COURSE CREATION FORM (ADMIN)
-# ==========================================
+
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
@@ -115,10 +113,8 @@ class CourseForm(forms.ModelForm):
                 raise ValidationError("Image file too large ( > 2mb ).")
         return thumbnail
 
-
-# ==========================================
 # 2.1. LESSON CREATION FORM
-# ==========================================
+
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
@@ -131,10 +127,8 @@ class LessonForm(forms.ModelForm):
             'order': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
-
-# ==========================================
 # 3. NOTIFICATION FORM
-# ==========================================
+
 class NotificationForm(forms.ModelForm):
     class Meta:
         model = Notification
@@ -145,10 +139,8 @@ class NotificationForm(forms.ModelForm):
             'is_global': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-
-# ==========================================
 # 4. LIVE CLASS FORM
-# ==========================================
+
 class LiveClassForm(forms.ModelForm):
     class Meta:
         model = LiveClass
@@ -168,9 +160,9 @@ class LiveClassForm(forms.ModelForm):
         return date_time
 
 
-# ==========================================
+
 # 5. EXAM & QUIZ FORM
-# ==========================================
+
 class ExamForm(forms.ModelForm):
     class Meta:
         model = Exam
@@ -185,10 +177,8 @@ class ExamForm(forms.ModelForm):
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
-
-# ==========================================
 # 6. LIBRARY UPLOAD FORM
-# ==========================================
+
 class LibraryDocumentForm(forms.ModelForm):
     class Meta:
         model = LibraryDocument
@@ -209,10 +199,8 @@ class LibraryDocumentForm(forms.ModelForm):
                 raise ValidationError("Unsupported file extension. Please upload PDF or Office docs.")
         return file
 
-
-# ==========================================
 # 7. PROFILE PICTURE FORM
-# ==========================================
+
 class ProfilePictureForm(forms.ModelForm):
     class Meta:
         model = Profile
@@ -221,10 +209,8 @@ class ProfilePictureForm(forms.ModelForm):
            'profile_pic': forms.FileInput(attrs={'class': 'form-control', 'id': 'id_profile_pic'})
         }
 
-
-# ==========================================
 # 8. LESSON COMMENT FORM (NEW ADDITION)
-# ==========================================
+
 class LessonCommentForm(forms.ModelForm):
     class Meta:
         model = LessonComment

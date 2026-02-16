@@ -67,27 +67,24 @@ from students.views import (
 )
 
 urlpatterns = [
-    # ==============================
+
     # 1. Django Default Admin
-    # ==============================
+
     path('admin/', admin.site.urls),
 
-    # ==============================
     # 2. Public Pages
-    # ==============================
+
     path('', home_view, name='home'),
     path('contact/', contact_developers_view, name='contact_developers'),
 
-    # ==============================
     # 3. Authentication
-    # ==============================
+
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
 
-    # ==============================
     # 4. Student Dashboard & Features
-    # ==============================
+
     path('dashboard/', student_dashboard, name='dashboard'),
     path('profile/', profile_view, name='profile'), 
 
@@ -107,9 +104,7 @@ urlpatterns = [
     path('live-classes/', live_classes, name='live_classes'),
     path('library/', library_view, name='library'),
     
-    # ==============================
     # 5. Quiz & AI System
-    # ==============================
     
     # New Exam Logic (Course Linked)
     path('my-exams/', student_exam_list, name='student_exam_list'), 
@@ -123,9 +118,8 @@ urlpatterns = [
     # AI Chatbot Endpoint
     path('api/ai-chat/', ai_chat, name='ai_chat'),
 
-    # ==============================
     # 6. Admin Panel System
-    # ==============================
+   
     path('admin-panel/', admin_dashboard, name='admin_dashboard'),
     
     # --- A. Student Management ---
@@ -161,9 +155,8 @@ urlpatterns = [
     path('admin-panel/course/<int:course_id>/add-lesson/', admin_add_lesson, name='admin_add_lesson'),
 ]
 
-# ==============================
 # Media & Static Files Configuration
-# ==============================
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     if settings.STATICFILES_DIRS:

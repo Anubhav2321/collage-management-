@@ -8,9 +8,8 @@ from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-# ==========================================
 # 1. CUSTOM USER MODEL
-# ==========================================
+
 class User(AbstractUser):
     is_student = models.BooleanField(default=True, verbose_name="Is Student")
     is_teacher = models.BooleanField(default=False, verbose_name="Is Teacher")
@@ -36,10 +35,8 @@ class User(AbstractUser):
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip() or self.username
 
-
-# ==========================================
 # 2. PROFILE MODEL
-# ==========================================
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(max_length=500, blank=True, null=True)
@@ -57,10 +54,8 @@ class Profile(models.Model):
     def __str__(self):
         return f"Profile: {self.user.username}"
 
-
-# ==========================================
 # 3. COURSE MODEL
-# ==========================================
+
 class Course(models.Model):
     title = models.CharField(max_length=200, unique=True)
     slug = models.SlugField(max_length=250, unique=True, blank=True, help_text="Auto-generated from title")
@@ -95,10 +90,8 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
-
-# ==========================================
 # 4. LESSON MODEL (CRITICAL UPDATE HERE)
-# ==========================================
+
 class Lesson(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=200)
@@ -154,10 +147,8 @@ class Lesson(models.Model):
         # Fallback: Return original URL if it doesn't match standard patterns
         return url
 
-
-# ==========================================
 # 5. ENROLLMENT MODEL
-# ==========================================
+
 class Enrollment(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments')
@@ -181,9 +172,8 @@ class Enrollment(models.Model):
         return f"{self.student.username} -> {self.course.title}"
 
 
-# ==========================================
 # 6. EXAM & QUIZ LOGIC
-# ==========================================
+
 class Exam(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='exams', null=True, blank=True)
     title = models.CharField(max_length=200)
@@ -235,9 +225,8 @@ class QuizResult(models.Model):
         return f"{self.student.username} - {self.score}"
 
 
-# ==========================================
 # 7. UTILITY MODELS
-# ==========================================
+
 class Notification(models.Model):
     title = models.CharField(max_length=255, default="New Notice")
     message = models.TextField()
@@ -287,9 +276,7 @@ class LessonComment(models.Model):
         return f"Comment by {self.student.username} on {self.lesson.title}"
 
 
-# ==========================================
 # 9. AI FEATURES MODELS
-# ==========================================
 
 # 1. AI Code Reviewer & Optimizer
 class AICodeSubmission(models.Model):
@@ -349,10 +336,8 @@ class AIVideoNote(models.Model):
     def __str__(self):
         return f"Notes for {self.lesson.title} - {self.student.username}"
 
-
-# ==========================================
 # 8. SIGNALS
-# ==========================================
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

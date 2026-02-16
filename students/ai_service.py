@@ -6,7 +6,7 @@ def generate_learning_assistant_response(user_query):
     Generates a response strictly for learning, coding, and course-related queries.
     """
     
-    # 1.Fetch Context (course information on your website)
+    # 1.Fetch Context (course information on your website)  
     #Telling AI the current status of your website
     courses = Course.objects.filter(is_published=True)
     course_list_text = "\n".join([f"- {c.title}: {c.description} (Level: {c.difficulty_level})" for c in courses])
