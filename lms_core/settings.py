@@ -4,6 +4,10 @@ Django settings for lms_core project.
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv  # <--- NEW: Import dotenv
+
+# Load environment variables from .env file
+load_dotenv()  # <--- NEW: Load variables
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -111,3 +115,7 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+# --- GROQ AI CONFIGURATION ---
+# Reads the key from your .env file
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")

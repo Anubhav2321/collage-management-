@@ -28,7 +28,7 @@ from .forms import (
     ExamForm,
     ProfilePictureForm,
     LessonForm,
-    LessonCommentForm  # <--- UPDATE: Imported LessonCommentForm
+    LessonCommentForm
 )
 
 # Import Models
@@ -44,13 +44,12 @@ from .models import (
     Quiz, 
     Question,
     QuizResult,
-    LessonComment # <--- UPDATE: Imported LessonComment Model
+    LessonComment
 )
 
 User = get_user_model()
 
 # 1. PUBLIC VIEWS (LANDING, CONTACT)
-
 
 def home_view(request):
     """
@@ -85,13 +84,13 @@ def contact_developers_view(request):
 
 # 2. AUTHENTICATION (REGISTER, LOGIN, LOGOUT)
 
-
 def register_view(request):
     """
     Handles Student Registration.
     """
     if request.user.is_authenticated:
-        messages.info(request, "You are already logged in.")
+        # UPDATE: Changed to success (Green)
+        messages.success(request, "You are already logged in.")
         return redirect('dashboard')
         
     if request.method == 'POST':
@@ -117,6 +116,8 @@ def login_view(request):
     Handles User Login.
     """
     if request.user.is_authenticated:
+        # UPDATE: Added success message (Green)
+        messages.success(request, "You are already logged in.")
         if request.user.is_staff or request.user.is_superuser:
             return redirect('admin_dashboard')
         return redirect('dashboard')
@@ -152,7 +153,8 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    messages.success(request, "You have been logged out successfully.")
+    # UPDATE: Changed to error (Red)
+    messages.error(request, "You have been logged out successfully.")
     return redirect('login')
 
 # 3. STUDENT DASHBOARD & PROFILE FEATURES
@@ -289,7 +291,7 @@ def process_payment(request, course_id):
     return redirect('all_courses')
 
 
-# --- UPDATED: COURSE WATCH (Added Comment Logic & Fixed Progress) ---
+# --- COURSE WATCH ---
 @login_required
 def course_watch(request, course_id, lesson_id=None):
     """
@@ -331,8 +333,6 @@ def course_watch(request, course_id, lesson_id=None):
                 next_lesson = lesson_list[idx + 1]
             
             # --- PROGRESS LOGIC ---
-            # Calculates percentage based on current lesson index.
-            # Example: Lesson 1 of 5 -> (1/5)*100 = 20%. Lesson 5 of 5 -> 100%.
             new_progress = ((idx + 1) / len(lesson_list)) * 100
             
             # Only update if the user has progressed FURTHER than before
@@ -356,7 +356,7 @@ def course_watch(request, course_id, lesson_id=None):
         except ValueError:
             pass
 
-    # --- NEW: COMMENT SYSTEM LOGIC ---
+    # --- COMMENT SYSTEM LOGIC ---
     comments = current_lesson.comments.all().order_by('-created_at') if current_lesson else []
     comment_form = LessonCommentForm()
 
@@ -381,8 +381,8 @@ def course_watch(request, course_id, lesson_id=None):
         'prev_lesson': prev_lesson,
         'progress': progress_int,
         'youtube_id': youtube_id,
-        'comments': comments,          # Passed to template
-        'comment_form': comment_form   # Passed to template
+        'comments': comments,          
+        'comment_form': comment_form   
     }
     return render(request, 'course_watch.html', context)
 
@@ -633,10 +633,12 @@ def ai_chat(request):
         try:
             data = json.loads(request.body)
             user_message = data.get('question', '')
+            
+            # --- CRITICAL FIX: Receive History from Frontend ---
+            history = data.get('history', [])
 
-            # --- UPDATE: Using the powerful AI Service ---
-            # This function uses the Course Database context and Llama 3
-            ai_reply = generate_learning_assistant_response(user_message)
+            # --- UPDATE: Pass history to the service ---
+            ai_reply = generate_learning_assistant_response(user_message, history)
 
             return JsonResponse({'answer': ai_reply})
         except Exception as e:
