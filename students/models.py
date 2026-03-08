@@ -1,5 +1,6 @@
 import os
 import re  # <--- CRITICAL IMPORT: Video fix er jonno eta must lagbe
+import requests # <--- NEW: Google profile picture download er jonno
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.text import slugify
@@ -7,6 +8,9 @@ from django.utils import timezone
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+from django.core.files.base import ContentFile # <--- NEW: Image save korar jonno
+from allauth.account.signals import user_logged_in # <--- NEW: Login signal
+from allauth.socialaccount.models import SocialAccount # <--- NEW: Google data fetch korar jonno
 
 # 1. CUSTOM USER MODEL
 
@@ -351,3 +355,88 @@ def save_user_profile(sender, instance, **kwargs):
 def delete_document_file(sender, instance, **kwargs):
     if instance.file and os.path.isfile(instance.file.path):
         os.remove(instance.file.path)
+
+# ==========================================
+# --- GOOGLE PROFILE PICTURE AUTO-SAVE ---
+# ==========================================
+
+@receiver(user_logged_in)
+def fetch_google_profile_pic(request, user, **kwargs):
+    try:
+        # Check if the user already has a profile picture
+        if user.profile.profile_pic:
+            return  # If yes, do nothing
+
+        # Find the Google social account linked to this user
+        social_account = SocialAccount.objects.filter(user=user, provider='google').first()
+        
+        if social_account:
+            # Extract the profile picture URL from Google's extra data
+            picture_url = social_account.extra_data.get('picture')
+            
+            if picture_url:
+                # Download the image using requests
+                response = requests.get(picture_url)
+                
+                if response.status_code == 200:
+                    # Save the downloaded image to the user's profile
+                    file_name = f"{user.username}_google_pic.jpg"
+                    user.profile.profile_pic.save(file_name, ContentFile(response.content), save=True)
+                    
+    except Exception as e:
+        # If any error occurs (like profile not created yet), skip it safely
+        print(f"Could not save Google profile picture: {e}")
+
+# ==========================================
+# --- COURSE COMMUNITY / WHATSAPP STYLE GROUP ---
+# ==========================================
+
+class CourseGroupMessage(models.Model):
+    # which course group is being message to .
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='group_messages')
+    
+    # Who is sending the message (must be a student enrolled in the course)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    
+    # --- NEW: Reply Feature ---
+    reply_to = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies')
+    
+    # Message text and image/file (can be either or both)
+    text = models.TextField(blank=True, null=True)
+    attachment = models.FileField(upload_to='group_attachments/', blank=True, null=True)
+    
+    # --- NEW: Pin Feature ---
+    is_pinned = models.BooleanField(default=False)
+    
+    # While sending the message
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # Like WhatsApp, your messages are on top and new messages are for water.
+        ordering = ['created_at'] 
+
+    def __str__(self):
+        return f"Message by {self.sender.username} in {self.course.title}"
+
+# --- NEW: Emoji Reaction Model ---
+class MessageReaction(models.Model):
+    REACTION_CHOICES = [
+        ('like', '👍'),
+        ('love', '❤️'),
+        ('haha', '😂'),
+        ('sad', '😢'),
+        ('wow', '😮'),
+        ('handshake', '🤝'),
+        ('fire', '🔥'),
+    ]
+    
+    message = models.ForeignKey(CourseGroupMessage, on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    reaction_type = models.CharField(max_length=20, choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('message', 'user', 'reaction_type')
+
+    def __str__(self):
+        return f"{self.user.username} reacted {self.reaction_type} on Msg ID {self.message.id}"

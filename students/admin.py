@@ -3,7 +3,8 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     User, Profile, Course, Lesson, Enrollment, 
     Notification, LiveClass, LibraryDocument, 
-    Exam, Question, QuizResult, Quiz
+    Exam, Question, QuizResult, Quiz,
+    CourseGroupMessage  # <--- NEW: Import added here
 )
 
 # 1. Custom User Admin (Student/Teacher Info)
@@ -74,4 +75,14 @@ admin.site.register(Notification)
 admin.site.register(LiveClass)
 admin.site.register(LibraryDocument)
 admin.site.register(QuizResult)
-admin.site.register(Quiz) # Dummy Quiz model registered if needed
+admin.site.register(Quiz) # Dummy Quiz model registered if needed   
+
+# ==========================================
+# --- 5. COMMUNITY CHAT ADMIN ---
+# ==========================================
+
+@admin.register(CourseGroupMessage)
+class CourseGroupMessageAdmin(admin.ModelAdmin):
+    list_display = ('course', 'sender', 'created_at', 'text')
+    list_filter = ('course', 'created_at')
+    search_fields = ('text', 'sender__username', 'course__title')

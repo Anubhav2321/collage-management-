@@ -1,9 +1,9 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include  # <--- NEW: 'include'    
 from django.conf import settings
 from django.conf.urls.static import static
 
-# Importing all views from students app
+# Importing all views from students app (Main Views)
 from students.views import (
     # 1. Public
     home_view, 
@@ -66,25 +66,32 @@ from students.views import (
     admin_add_lesson # <--- Lesson View
 )
 
+# --- NEW: Importing views from the new community_views.py file ---
+from students.community_views import (
+    course_community_chat,
+    toggle_pin_message,
+    add_message_reaction,
+    get_student_info
+)
+
 urlpatterns = [
 
     # 1. Django Default Admin
-
     path('admin/', admin.site.urls),
 
-    # 2. Public Pages
+    # --- NEW: Allauth URLs for Google Login ---
+    path('accounts/', include('allauth.urls')), 
 
+    # 2. Public Pages
     path('', home_view, name='home'),
     path('contact/', contact_developers_view, name='contact_developers'),
 
     # 3. Authentication
-
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
 
     # 4. Student Dashboard & Features
-
     path('dashboard/', student_dashboard, name='dashboard'),
     path('profile/', profile_view, name='profile'), 
 
@@ -96,13 +103,23 @@ urlpatterns = [
     path('courses/payment/<int:course_id>/', payment_page, name='payment_page'),
     path('courses/payment/<int:course_id>/process/', process_payment, name='process_payment'),
 
-    # Watch Course (FIXED HERE: Both names are now 'course_watch')
+    # Watch Course
     path('courses/watch/<int:course_id>/', course_watch, name='course_watch'),
     path('courses/watch/<int:course_id>/<int:lesson_id>/', course_watch, name='course_watch'),
 
     # Core Features
     path('live-classes/', live_classes, name='live_classes'),
     path('library/', library_view, name='library'),
+    
+    # ==================================================
+    # --- 9. ADVANCED COMMUNITY CHAT URLs ---
+    # ==================================================
+    path('community/<slug:slug>/', course_community_chat, name='course_community_chat'),
+    
+    # AJAX APIs for Chat Features
+    path('api/chat/pin/<int:message_id>/', toggle_pin_message, name='toggle_pin_message'),
+    path('api/chat/react/<int:message_id>/', add_message_reaction, name='add_message_reaction'),
+    path('api/chat/user-info/<int:user_id>/', get_student_info, name='get_student_info'),
     
     # 5. Quiz & AI System
     

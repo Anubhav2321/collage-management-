@@ -1,0 +1,920 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ course.title }} - Community Hub</title>
+    
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <script>const csrftoken = '{{ csrf_token }}';</script>
+
+    <script>
+        (function() {
+            var head = document.head || document.getElementsByTagName('head')[0];
+            var h = 'ht' + 'tps://'; 
+            
+            var cssLinks = [
+                h + 'fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap',
+                h + 'cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+                h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css'
+            ];
+            cssLinks.forEach(function(url) {
+                var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = url; head.appendChild(l);
+            });
+
+            var jsLinks = [
+                h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js',
+                h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js',
+                h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js',
+                h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js'
+            ];
+            jsLinks.forEach(function(url) {
+                var s = document.createElement('script'); s.src = url; s.async = false; head.appendChild(s);
+            });
+        })();
+    </script>
+
+    <script id="pinned-messages-data" type="application/json">
+        [
+            {% for p in pinned_messages %}
+                { "id": {{ p.id }}, "text": "{{ p.text|truncatechars:70|escapejs }}" }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    </script>
+
+    <style>
+        /* =========================================
+           ADVANCED CYBER-BLUE THEME
+           ========================================= */
+        :root {
+            --bg-dark: #030508;
+            --glass-bg: rgba(10, 15, 25, 0.75);
+            --glass-border: rgba(0, 243, 255, 0.15);
+            --neon-cyan: #00f3ff;
+            --deep-blue: #0055ff;
+            --text-main: #e0e0e0;
+            --text-muted: #8892b0;
+            --my-msg-bg: rgba(0, 243, 255, 0.08);
+            --other-msg-bg: rgba(20, 25, 40, 0.9);
+            --danger-red: #ff3366;
+            --ai-neon: #ff0055;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh; display: flex; overflow: hidden; position: relative;
+        }
+
+        .btn-transparent { background: transparent; border: none; outline: none; cursor: pointer; }
+        .active-pin { color: var(--neon-cyan) !important; text-shadow: 0 0 10px var(--neon-cyan); }
+        .icon-small { font-size: 0.7rem; margin-right: 5px; }
+        .modal-icon-field { color: var(--neon-cyan); width: 20px; }
+        .modal-bio-text { font-size: 0.95rem; color: #aaa; margin-top: 5px; display: inline-block; }
+        .no-border { border: none !important; }
+
+        .vfx-bg {
+            position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+            background-image: linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.2; animation: floatOrb 25s infinite alternate ease-in-out; }
+        .orb-1 { width: 450px; height: 450px; background: var(--deep-blue); top: -10%; left: -10%; }
+        .orb-2 { width: 350px; height: 350px; background: var(--neon-cyan); bottom: -10%; right: -5%; animation-delay: -5s; opacity: 0.15;}
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(80px, 120px) scale(1.1); }
+            100% { transform: translate(-40px, 40px) scale(0.9); }
+        }
+
+        .app-container { display: flex; width: 100%; height: 100%; padding: 20px; gap: 20px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+
+        .sidebar {
+            width: 320px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+            border-radius: 20px; display: flex; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; flex-shrink: 0;
+        }
+
+        .sidebar-header { padding: 25px 20px; background: rgba(0, 243, 255, 0.03); border-bottom: 1px solid var(--glass-border); }
+        
+        .back-btn { color: var(--text-muted); text-decoration: none; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; transition: 0.3s; font-weight: 600; }
+        .back-btn:hover { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); transform: translateX(-5px); }
+
+        .course-title { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3; }
+        .member-count { color: var(--neon-cyan); font-size: 0.95rem; margin-top: 10px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
+
+        .members-list { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 15px 10px; }
+        .members-list::-webkit-scrollbar { width: 4px; }
+        .members-list::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.2); border-radius: 10px; }
+
+        .member-item {
+            display: flex; align-items: center; padding: 12px; border-radius: 12px; margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.02); transition: 0.3s; cursor: pointer; border: 1px solid transparent;
+        }
+        .member-item:hover { background: rgba(0, 243, 255, 0.05); border-color: rgba(0, 243, 255, 0.2); transform: translateX(5px); }
+        
+        .member-pic { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 2px solid rgba(0, 243, 255, 0.3); }
+        .member-pic.ai-pic { border-color: var(--ai-neon); box-shadow: 0 0 10px rgba(255, 0, 85, 0.4); }
+        
+        .member-name { font-weight: 600; font-size: 1.05rem; color: #fff; }
+        .member-role { font-size: 0.8rem; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+
+        .chat-area {
+            flex: 1; display: flex; flex-direction: column; background: var(--glass-bg);
+            border: 1px solid var(--glass-border); border-radius: 20px; position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; 
+        }
+
+        .chat-header {
+            padding: 15px 30px; background: rgba(0, 243, 255, 0.03); border-bottom: 1px solid var(--glass-border);
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .chat-header h3 { font-family: 'Orbitron'; color: #fff; font-size: 1.2rem; display: flex; gap: 10px; align-items: center; }
+        .chat-header h3 i { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
+        
+        .search-box { display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 20px; padding: 5px 15px; transition: 0.3s; }
+        .search-box:focus-within { border-color: var(--neon-cyan); }
+        .search-box input { background: transparent; border: none; color: #fff; padding: 5px; outline: none; font-family: 'Rajdhani'; }
+        .search-box button { color: var(--text-muted); transition: 0.3s;}
+        .search-box button:hover { color: var(--neon-cyan); }
+
+        .pinned-container-wrapper { flex-shrink: 0; }
+        .pinned-bar {
+            background: rgba(0, 243, 255, 0.05); border-bottom: 1px solid rgba(0, 243, 255, 0.15);
+            padding: 10px 30px; display: flex; align-items: center; gap: 15px;
+            cursor: pointer; transition: 0.3s; position: relative;
+        }
+        .pinned-bar:hover { background: rgba(0, 243, 255, 0.1); }
+        .pinned-bar::before { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 4px; background: var(--neon-cyan); }
+        
+        .pinned-icon { color: var(--neon-cyan); font-size: 1.1rem; }
+        .pinned-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .pinned-title { font-size: 0.75rem; color: var(--neon-cyan); font-weight: 700; text-transform: uppercase; margin-bottom: 2px;}
+        .pinned-text { font-size: 0.95rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+        .chat-box { 
+            flex: 1; padding: 30px; overflow-y: auto; overflow-x: hidden;
+            display: flex; flex-direction: column; scroll-behavior: smooth; 
+        }
+        .chat-box::-webkit-scrollbar { width: 6px; }
+        .chat-box::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.3); border-radius: 10px; }
+
+        .msg-wrapper { 
+            display: flex; flex-direction: column; max-width: 75%; position: relative; 
+            margin-bottom: 25px; margin-top: 10px;
+            animation: msgPop 0.3s forwards;
+            animation-delay: var(--anim-delay, 0s);
+        }
+        .my-msg-wrapper { align-self: flex-end; align-items: flex-end; }
+        .other-msg-wrapper { align-self: flex-start; align-items: flex-start; }
+
+        .msg-sender { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; cursor: pointer; transition: 0.2s; color: #8ab4f8; }
+        .msg-sender:hover { text-decoration: underline; color: var(--neon-cyan); }
+        .my-msg-wrapper .msg-sender { display: none; }
+
+        .ai-sender { color: var(--ai-neon) !important; text-shadow: 0 0 10px rgba(255, 0, 85, 0.5); font-family: 'Orbitron', sans-serif; letter-spacing: 1px;}
+        .ai-sender:hover { color: #fff !important; text-decoration: none; }
+
+        .msg {
+            padding: 12px 18px; border-radius: 16px; font-size: 1.05rem; word-wrap: break-word;
+            line-height: 1.6; position: relative; z-index: 1; min-width: 110px; 
+        }
+        
+        .message-body-text { white-space: pre-wrap; font-family: 'Rajdhani', sans-serif; }
+
+        .other-msg { background-color: var(--other-msg-bg); border-bottom-left-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.05); border-left: 3px solid var(--deep-blue); }
+        .my-msg { background-color: var(--my-msg-bg); border: 1px solid rgba(0, 243, 255, 0.2); border-right: 3px solid var(--neon-cyan); border-bottom-right-radius: 4px; }
+        
+        .ai-msg { background-color: rgba(255, 0, 85, 0.05); border-left: 3px solid var(--ai-neon); border-bottom-left-radius: 4px; box-shadow: 0 5px 20px rgba(255, 0, 85, 0.1); border-top: 1px solid rgba(255, 0, 85, 0.1); border-right: 1px solid rgba(255, 0, 85, 0.1); border-bottom: 1px solid rgba(255, 0, 85, 0.1);}
+
+        /* AI TYPING INDICATOR */
+        .typing-dots { font-weight: bold; color: var(--ai-neon); font-size: 1.2rem; letter-spacing: 2px;}
+        .typing-dots span { animation: blink 1.4s infinite both; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+        @keyframes msgPop { 0% { opacity:0; transform: translateY(10px); } 100% { opacity:1; transform: translateY(0); } }
+        
+        .highlight-flash .msg { animation: flashMsg 2.5s ease-out; }
+        @keyframes flashMsg { 0% { background-color: rgba(0, 243, 255, 0.4); box-shadow: 0 0 20px rgba(0,243,255,0.8); transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        .pinned-indicator { font-size: 0.7rem; color: var(--neon-cyan); font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; text-transform: uppercase; }
+
+        .reply-context {
+            font-size: 0.85rem; color: #ccc; background: rgba(0,0,0,0.4); border-left: 3px solid var(--neon-cyan);
+            padding: 6px 10px; border-radius: 6px; margin-bottom: 10px; max-width: 100%;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+        }
+        .reply-context:hover { background: rgba(0,0,0,0.6); }
+
+        .code-snippet-wrapper {
+            margin: 10px 0; background: #1d1f21; border-radius: 8px;
+            overflow: hidden; border: 1px solid rgba(0, 243, 255, 0.3);
+            text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+        }
+        .code-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #282a2e; padding: 6px 15px; font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .code-lang { text-transform: uppercase; font-weight: 700; color: var(--neon-cyan); letter-spacing: 1px; }
+        .copy-btn {
+            background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted);
+            border-radius: 4px; padding: 3px 10px; cursor: pointer; transition: 0.3s; font-size: 0.8rem; outline: none;
+        }
+        .copy-btn:hover { background: rgba(0, 243, 255, 0.1); color: var(--neon-cyan); border-color: var(--neon-cyan); }
+        .code-snippet-wrapper pre { margin: 0 !important; padding: 15px !important; font-size: 0.95rem; background: transparent !important; white-space: pre-wrap; }
+
+        .msg-actions {
+            position: absolute; top: -15px; 
+            background: rgba(15, 20, 30, 0.95); border: 1px solid var(--neon-cyan); border-radius: 8px; padding: 5px 12px;
+            display: flex; gap: 15px; opacity: 0; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+            z-index: 50; visibility: hidden; white-space: nowrap; width: max-content; 
+        }
+        .other-msg-wrapper .msg-actions { left: 10px; right: auto; } 
+        .my-msg-wrapper .msg-actions { right: 10px; left: auto; } 
+        
+        .msg-wrapper:hover .msg-actions { opacity: 1; visibility: visible; }
+        .msg-actions i { font-size: 1rem; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .msg-actions i:hover { color: var(--neon-cyan); transform: scale(1.2); }
+
+        .emoji-picker-menu {
+            position: absolute; bottom: 100%; margin-bottom: 10px;
+            background: rgba(10, 15, 25, 0.98); border: 1px solid var(--neon-cyan); border-radius: 30px; padding: 8px 15px;
+            display: flex; gap: 12px; box-shadow: 0 10px 25px rgba(0,243,255,0.4);
+            opacity: 0; visibility: hidden; transition: 0.2s; z-index: 100; transform: scale(0.8);
+            white-space: nowrap; width: max-content; 
+        }
+        .other-msg-wrapper .emoji-picker-menu { left: 0; transform-origin: bottom left; }
+        .my-msg-wrapper .emoji-picker-menu { right: 0; transform-origin: bottom right; }
+        
+        .emoji-picker-menu.show { opacity: 1; visibility: visible; transform: scale(1); }
+        .emoji-picker-menu span { cursor: pointer; font-size: 1.4rem; transition: 0.2s; }
+        .emoji-picker-menu span:hover { transform: scale(1.3) translateY(-3px); }
+
+        .meta-footer { display: flex; flex-direction: column; width: 100%; margin-top: 6px; gap: 4px; z-index: 2; }
+        .my-msg-wrapper .meta-footer { align-items: flex-end; }
+        .other-msg-wrapper .meta-footer { align-items: flex-start; }
+
+        .reactions-display { display: flex; flex-wrap: wrap; gap: 5px; }
+        
+        .reaction-badge {
+            background: rgba(5, 10, 15, 0.95); border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 15px;
+            padding: 3px 10px; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4); transition: 0.2s; position: relative;
+        }
+        .reaction-badge:hover { border-color: var(--neon-cyan); transform: scale(1.1); z-index: 10; }
+
+        .reactor-names {
+            visibility: hidden; opacity: 0; position: absolute; bottom: 130%; left: 50%;
+            transform: translateX(-50%) translateY(10px); background: rgba(5, 10, 15, 0.98); border: 1px solid var(--neon-cyan);
+            color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem;
+            white-space: nowrap; z-index: 200; transition: all 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0,243,255,0.3); text-align: left; pointer-events: none;
+        }
+        .reaction-badge:hover .reactor-names { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+        .reactor-item { margin-bottom: 4px; display: flex; align-items: center; gap: 6px; font-weight: 600;}
+        .reactor-item:last-child { margin-bottom: 0; }
+
+        .msg-time { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; padding: 0 5px; }
+
+        /* --- INPUT AREA & NEW ATTACHMENT MENU --- */
+        .chat-input-container { padding: 15px 30px 25px; background: transparent; position: relative; flex-shrink: 0; border-top: 1px solid var(--glass-border); }
+        
+        .replying-to-bar {
+            display: none; justify-content: space-between; align-items: center;
+            background: rgba(0, 243, 255, 0.05); border-left: 3px solid var(--neon-cyan);
+            padding: 8px 15px; border-radius: 8px 8px 0 0; font-size: 0.9rem; color: #fff;
+            margin-bottom: -10px; padding-bottom: 15px;
+        }
+        .cancel-reply { color: var(--danger-red); cursor: pointer; font-size: 1rem; }
+
+        .chat-form {
+            display: flex; align-items: flex-end; gap: 15px; background: rgba(5, 10, 15, 0.8);
+            border-radius: 30px; padding: 10px 15px; border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.3s; position: relative; z-index: 2;
+        }
+        .chat-form:focus-within { border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 243, 255, 0.15); }
+
+        /* WHATSAPP STYLE ATTACHMENT MENU */
+        .attachment-wrapper { position: relative; display: flex; align-items: center; }
+        
+        .file-upload-label { color: var(--text-muted); cursor: pointer; font-size: 1.4rem; padding: 10px; transition: 0.3s; border-radius: 50%; }
+        .file-upload-label:hover { color: var(--neon-cyan); background: rgba(0, 243, 255, 0.1); transform: scale(1.1); }
+        
+        .attachment-menu {
+            position: absolute; bottom: 60px; left: 0; background: rgba(15, 20, 30, 0.95);
+            border: 1px solid var(--neon-cyan); border-radius: 15px; padding: 15px;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+            opacity: 0; visibility: hidden; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(20px) scale(0.9); z-index: 100;
+        }
+        .attachment-menu.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+        
+        .attach-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; color: var(--text-main); font-size: 0.8rem; font-weight: 600; transition: 0.2s; }
+        .attach-item:hover { transform: translateY(-5px); color: #fff; }
+        
+        .icon-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .img-bg { background: linear-gradient(135deg, #00c6ff, #0072ff); }
+        .doc-bg { background: linear-gradient(135deg, #5b86e5, #36d1dc); }
+        .ppt-bg { background: linear-gradient(135deg, #f2994a, #f2c94c); }
+        .pdf-bg { background: linear-gradient(135deg, #ff416c, #ff4b2b); }
+        .audio-bg { background: linear-gradient(135deg, #8e2de2, #4a00e0); }
+        
+        #file-upload { display: none; }
+
+        /* File Selected Badge */
+        .file-preview-badge {
+            position: absolute; top: -35px; left: 20px; background: rgba(0, 243, 255, 0.15); border: 1px solid var(--neon-cyan);
+            color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; display: none; align-items: center; gap: 8px;
+            box-shadow: 0 5px 15px rgba(0,243,255,0.2); z-index: 10;
+        }
+        .file-preview-badge i { color: var(--neon-cyan); }
+        .remove-file { color: var(--danger-red); cursor: pointer; font-weight: bold; margin-left: 5px; }
+
+        .chat-input { 
+            flex: 1; background: transparent; border: none; color: #fff; padding: 10px 5px; 
+            font-family: 'Rajdhani'; font-size: 1.1rem; outline: none; resize: none;
+            max-height: 120px; overflow-y: auto; line-height: 1.4; height: 44px; scrollbar-width: none; 
+        }
+        .chat-input::-webkit-scrollbar { display: none; }
+        
+        .send-btn {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--deep-blue)); border: none; width: 45px; height: 45px;
+            border-radius: 50%; color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; transition: 0.3s; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); outline: none; flex-shrink: 0;
+        }
+        .send-btn:hover { transform: scale(1.1) rotate(-10deg); box-shadow: 0 0 25px var(--neon-cyan); }
+
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 99999; justify-content: center; align-items: center; -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); opacity: 0; transition: 0.3s; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .profile-modal { background: var(--glass-bg); border: 1px solid var(--neon-cyan); width: 380px; border-radius: 20px; padding: 30px; text-align: center; position: relative; box-shadow: 0 0 40px rgba(0, 243, 255, 0.2); transform: scale(0.9); transition: 0.3s; }
+        .modal-overlay.show .profile-modal { transform: scale(1); }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 1.2rem; color: #aaa; cursor: pointer; }
+        .close-modal:hover { color: var(--danger-red); }
+        .p-modal-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--neon-cyan); margin-bottom: 15px; }
+        .p-modal-name { font-family: 'Orbitron'; font-size: 1.4rem; color: #fff; margin-bottom: 5px; }
+        .p-modal-role { color: var(--neon-cyan); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; margin-bottom: 15px; }
+        .p-modal-detail { font-size: 1rem; color: #ccc; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; text-align: left;}
+
+    </style>
+</head>
+<body>
+
+    <div class="vfx-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <a href="{% url 'dashboard' %}" class="back-btn"><i class="fas fa-arrow-left"></i> Return to Base</a>
+                <h2 class="course-title">{{ course.title }}</h2>
+                <div class="member-count"><i class="fas fa-users"></i> {{ member_count }} Active Units</div>
+            </div>
+
+            <div class="members-list">
+                {% for member in members %}
+                <div class="member-item action-open-profile" data-id="{{ member.id }}">
+                    {% if member.profile.profile_pic %}
+                        <img src="{{ member.profile.profile_pic.url }}" class="member-pic {% if member.username == 'ai_commander' %}ai-pic{% endif %}" alt="Profile">
+                    {% else %}
+                        <img class="member-pic auto-avatar {% if member.username == 'ai_commander' %}ai-pic{% endif %}" 
+                             data-name="{% if member.username == 'ai_commander' %}AI{% else %}{{ member.username }}{% endif %}" 
+                             data-bg="{% if member.username == 'ai_commander' %}ff0055{% else %}00d4ff{% endif %}" 
+                             data-color="{% if member.username == 'ai_commander' %}fff{% else %}000{% endif %}" 
+                             alt="Profile">
+                    {% endif %}
+                    <div>
+                        <div class="member-name" {% if member.username == 'ai_commander' %}style="color: var(--ai-neon); text-shadow: 0 0 10px rgba(255,0,85,0.5); font-family: 'Orbitron', sans-serif;"{% endif %}>
+                            {% if member.username == 'ai_commander' %}<i class="fas fa-robot"></i>{% endif %}
+                            {{ member.first_name|default:member.username }}
+                        </div>
+                        <div class="member-role" {% if member.username == 'ai_commander' %}style="color: #fff;"{% endif %}>
+                            {% if member.is_teacher %} <i class="fas fa-shield-alt"></i> Commander {% else %} Cadet {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="chat-header">
+                <h3><i class="fas fa-satellite-dish"></i> SECURE COMMLINK</h3>
+                <form method="GET" class="search-box">
+                    <input type="text" name="q" placeholder="Search transmissions..." value="{{ search_query }}">
+                    <button type="submit" class="btn-transparent" aria-label="Search"><i class="fas fa-search"></i></button>
+                </form>
+            </div>
+
+            <div class="pinned-container-wrapper">
+                {% if pinned_messages %}
+                <div class="pinned-bar action-cycle-pin" title="Click to jump to pinned message">
+                    <i class="fas fa-thumbtack pinned-icon"></i>
+                    <div class="pinned-content">
+                        <div class="pinned-title">Pinned Message <span id="pinned-count-display" style="color:var(--text-muted); font-size:0.7rem; margin-left:10px;">1/{{ pinned_messages.count }}</span></div>
+                        <div class="pinned-text" id="pinned-text-display">{{ pinned_messages.0.text|truncatechars:70 }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="chat-box" id="chatBox">
+                {% for message in chat_messages %}
+                    <div class="msg-wrapper {% if message.sender == request.user %}my-msg-wrapper{% else %}other-msg-wrapper{% endif %}" id="msg-{{ message.id }}" style="--anim-delay: calc({{ forloop.counter0 }} * 50ms);">
+                        
+                        <span class="msg-sender action-open-profile {% if message.sender.username == 'ai_commander' %}ai-sender{% endif %}" data-id="{{ message.sender.id }}">
+                            {% if message.sender.username == 'ai_commander' %}
+                                <i class="fas fa-robot"></i> {{ message.sender.first_name|default:message.sender.username }}
+                            {% else %}
+                                {{ message.sender.first_name|default:message.sender.username }}
+                            {% endif %}
+                        </span>
+                        
+                        <div class="msg {% if message.sender == request.user %}my-msg{% else %}other-msg{% endif %} {% if message.sender.username == 'ai_commander' %}ai-msg{% endif %}">
+                            
+                            <div class="msg-actions">
+                                <i class="fas fa-reply action-reply-btn" data-msg-id="{{ message.id }}" data-sender-name="{{ message.sender.first_name|default:message.sender.username }}" data-msg-text="{% if message.text %}{{ message.text|escapejs|truncatechars:30 }}{% endif %}" title="Reply"></i>
+                                <i class="fas fa-thumbtack action-pin-btn {% if message.is_pinned %}active-pin{% endif %}" data-msg-id="{{ message.id }}" title="Pin/Unpin"></i>
+                                <i class="fas fa-smile action-react-btn" data-msg-id="{{ message.id }}" title="React"></i>
+                            </div>
+
+                            <div class="emoji-picker-menu" id="emoji-menu-{{ message.id }}">
+                                <span class="action-emoji-select" data-msg-id="{{ message.id }}" data-emoji="like">👍</span>
+                                <span class="action-emoji-select" data-msg-id="{{ message.id }}" data-emoji="love">❤️</span>
+                                <span class="action-emoji-select" data-msg-id="{{ message.id }}" data-emoji="haha">😂</span>
+                                <span class="action-emoji-select" data-msg-id="{{ message.id }}" data-emoji="wow">😮</span>
+                                <span class="action-emoji-select" data-msg-id="{{ message.id }}" data-emoji="sad">😢</span>
+                                <span class="action-emoji-select" data-msg-id="{{ message.id }}" data-emoji="handshake">🤝</span>
+                            </div>
+
+                            {% if message.is_pinned %}
+                                <div class="pinned-indicator"><i class="fas fa-thumbtack" style="font-size:0.7rem; margin-right:4px;"></i> Pinned</div>
+                            {% endif %}
+
+                            {% if message.reply_to %}
+                            <div class="reply-context action-scroll-to" data-target-id="{{ message.reply_to.id }}">
+                                <i class="fas fa-reply icon-small"></i>
+                                <b>{{ message.reply_to.sender.first_name }}:</b> {{ message.reply_to.text|truncatechars:40 }}
+                            </div>
+                            {% endif %}
+
+                            {% if message.text %}
+                                <div class="message-body-text js-parse-code" data-raw="{{ message.text|escapejs }}" style="display:none;"></div>
+                                <div class="parsed-output message-body-text"></div> 
+                            {% endif %}
+
+                            {% if message.attachment %}
+                                {% if '.jpg' in message.attachment.name or '.png' in message.attachment.name or '.jpeg' in message.attachment.name or '.gif' in message.attachment.name %}
+                                    <div style="margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--neon-cyan);">
+                                        <img src="{{ message.attachment.url }}" style="max-width: 100%; height: auto; display: block;" alt="Image">
+                                    </div>
+                                {% elif '.mp3' in message.attachment.name or '.wav' in message.attachment.name or '.ogg' in message.attachment.name %}
+                                    <div style="margin-top: 10px;">
+                                        <audio controls style="height: 35px; outline: none; border-radius: 30px;">
+                                            <source src="{{ message.attachment.url }}" type="audio/mpeg">
+                                        </audio>
+                                    </div>
+                                {% else %}
+                                    <br><a href="{{ message.attachment.url }}" target="_blank" class="attachment-box" style="display:inline-block; margin-top:8px; color:var(--neon-cyan); text-decoration:none; background:rgba(0,0,0,0.3); padding:8px 15px; border-radius:8px; font-size:0.9rem; border: 1px solid rgba(0, 243, 255, 0.2);"><i class="fas fa-file-download"></i> Open Attached File</a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                        <div class="meta-footer">
+                            <div class="reactions-display" id="reactions-{{ message.id }}">
+                                {% for emoji, count in message.reaction_counts.items %}
+                                    <div class="reaction-badge">
+                                        {% if emoji == 'like' %}👍{% elif emoji == 'love' %}❤️{% elif emoji == 'haha' %}😂{% elif emoji == 'sad' %}😢{% elif emoji == 'wow' %}😮{% elif emoji == 'handshake' %}🤝{% elif emoji == 'fire' %}🔥{% endif %}
+                                        <span>{{ count }}</span>
+                                        <div class="reactor-names">
+                                            {% for r in message.reactions.all %}
+                                                {% if r.reaction_type == emoji %}
+                                                    <div class="reactor-item">
+                                                        <i class="fas fa-user icon-small" style="color:var(--neon-cyan);"></i> 
+                                                        {{ r.user.first_name|default:r.user.username }}
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <span class="msg-time">{{ message.created_at|date:"M d, g:i a" }}</span>
+                        </div>
+
+                    </div>
+                {% empty %}
+                    <div style="text-align: center; color: var(--text-muted); margin-top: 80px;">
+                        <i class="fas fa-radar" style="font-size: 4rem; margin-bottom: 20px; color: rgba(0, 243, 255, 0.2); animation: floatOrb 5s infinite alternate;"></i>
+                        <h2 style="font-family: 'Orbitron'; color: #fff; letter-spacing: 1px;">NO TRANSMISSIONS YET</h2>
+                        <p style="margin-top: 10px; font-size: 1.1rem;">Initialize the communication protocol.</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="chat-input-container">
+                <div class="replying-to-bar" id="replyBar">
+                    <div><i class="fas fa-reply icon-small"></i> Replying to <b id="replyTargetName"></b>: <span id="replyTargetText" style="color:#aaa;"></span></div>
+                    <i class="fas fa-times cancel-reply" id="cancelReplyBtn"></i>
+                </div>
+                
+                <div class="file-preview-badge" id="filePreviewBadge">
+                    <i class="fas fa-file-alt"></i> <span id="fileNameDisplay">file.pdf</span> 
+                    <span class="remove-file" id="removeFileBtn">&times;</span>
+                </div>
+
+                <form id="chat-form" class="chat-form" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="reply_to_id" id="replyInputId" value="">
+                    
+                    <div class="attachment-wrapper">
+                        <i class="fas fa-paperclip file-upload-label" id="attachMenuBtn" title="Attach Files"></i>
+                        
+                        <div class="attachment-menu" id="attachmentMenu">
+                            <div class="attach-item" data-accept="image/png, image/jpeg, image/jpg, image/gif">
+                                <div class="icon-circle img-bg"><i class="fas fa-image"></i></div>
+                                Image
+                            </div>
+                            <div class="attach-item" data-accept="application/pdf">
+                                <div class="icon-circle pdf-bg"><i class="fas fa-file-pdf"></i></div>
+                                PDF
+                            </div>
+                            <div class="attach-item" data-accept=".doc,.docx,.txt">
+                                <div class="icon-circle doc-bg"><i class="fas fa-file-word"></i></div>
+                                Document
+                            </div>
+                            <div class="attach-item" data-accept=".ppt,.pptx">
+                                <div class="icon-circle ppt-bg"><i class="fas fa-file-powerpoint"></i></div>
+                                PPT
+                            </div>
+                            <div class="attach-item" data-accept="audio/*">
+                                <div class="icon-circle audio-bg"><i class="fas fa-microphone"></i></div>
+                                Voice
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input type="file" name="attachment" id="file-upload">
+
+                    <textarea name="message_text" class="chat-input" id="mainChatInput" placeholder="Type message (Start with '/ai' to ask the bot)..."></textarea>
+
+                    <button type="submit" class="send-btn" id="sendBtn" aria-label="Transmit"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="profileModal">
+        <div class="profile-modal" id="profileModalContent">
+            <i class="fas fa-times close-modal" id="closeModalBtn"></i>
+            <img src="" id="modalImg" class="p-modal-img" alt="Profile">
+            <h2 class="p-modal-name" id="modalName">Loading...</h2>
+            <div class="p-modal-role" id="modalRole">Student</div>
+            <div class="p-modal-detail"><b><i class="fas fa-bolt modal-icon-field"></i> Level:</b> <span id="modalLevel"></span></div>
+            <div class="p-modal-detail"><b><i class="fas fa-graduation-cap modal-icon-field"></i> Stream:</b> <span id="modalStream"></span></div>
+            <div class="p-modal-detail no-border"><b><i class="fas fa-info-circle modal-icon-field"></i> Bio:</b> <br><span id="modalBio" class="modal-bio-text"></span></div>
+        </div>
+    </div>
+
+
+    <script>
+        const csrftokenValue = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const chatBox = document.getElementById('chatBox');
+        let aiPollInterval; 
+        
+        function loadAvatars() {
+            var h = 'ht' + 'tps://';
+            document.querySelectorAll('.auto-avatar:not(.loaded)').forEach(img => {
+                let name = img.getAttribute('data-name');
+                let bg = img.getAttribute('data-bg');
+                let c = img.getAttribute('data-color');
+                img.src = h + 'ui-avatars.com/api/?name=' + name + '&background=' + bg + '&color=' + c + '&rounded=true';
+                img.classList.add('loaded');
+            });
+        }
+        
+        function formatMessages() {
+            document.querySelectorAll('.js-parse-code:not(.parsed)').forEach(el => {
+                let rawText = el.getAttribute('data-raw');
+                if (!rawText) return;
+                
+                let decodedText = rawText.replace(/\\u([0-9A-Fa-f]{4})/g, function(match, hex) {
+                    return String.fromCharCode(parseInt(hex, 16));
+                });
+                
+                let safeText = decodedText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                
+                const codeRegex = /```([a-zA-Z0-9#\+\-\.]*)\s*\n([\s\S]*?)```/g;
+                let formattedHTML = safeText.replace(codeRegex, function(match, lang, code) {
+                    lang = lang ? lang.trim().toLowerCase() : 'text';
+                    return `</div><div class="code-snippet-wrapper" onclick="event.stopPropagation()">
+                                <div class="code-header">
+                                    <span class="code-lang">${lang}</span>
+                                    <button class="copy-btn" type="button" onclick="copySnippet(this, event)">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                                <pre><code class="language-${lang}">${code.trim()}</code></pre>
+                            </div><div class="message-body-text">`;
+                });
+                
+                formattedHTML = formattedHTML.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--neon-cyan); font-weight:700;">$1</strong>');
+                formattedHTML = formattedHTML.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                let outputSpan = el.nextElementSibling;
+                outputSpan.innerHTML = `<div>${formattedHTML}</div>`;
+                
+                setTimeout(() => { if (window.Prism) Prism.highlightAllUnder(outputSpan); }, 100);
+                el.classList.add('parsed');
+            });
+        }
+
+        window.copySnippet = function(btn, event) {
+            event.stopPropagation();
+            const codeBlock = btn.parentElement.nextElementSibling.innerText;
+            navigator.clipboard.writeText(codeBlock).then(() => {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied';
+                btn.style.color = '#00f3ff';
+                setTimeout(() => { btn.innerHTML = originalHTML; btn.style.color = ''; }, 2000);
+            });
+        }
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+        loadAvatars();
+        setTimeout(formatMessages, 100);
+        
+        const chatInput = document.getElementById('mainChatInput');
+        chatInput.addEventListener('input', function() {
+            this.style.height = '44px';
+            this.style.height = (this.scrollHeight) + 'px';
+            if(this.scrollHeight > 120) { this.style.overflowY = 'auto'; } else { this.style.overflowY = 'hidden'; }
+        });
+
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('sendBtn').click();
+            }
+        });
+
+        // ====================================================
+        // NEW: WHATSAPP STYLE ATTACHMENT MENU LOGIC
+        // ====================================================
+        const attachMenuBtn = document.getElementById('attachMenuBtn');
+        const attachmentMenu = document.getElementById('attachmentMenu');
+        const fileInput = document.getElementById('file-upload');
+        const fileBadge = document.getElementById('filePreviewBadge');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const removeFileBtn = document.getElementById('removeFileBtn');
+
+        // Toggle Menu
+        attachMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            attachmentMenu.classList.toggle('show');
+            attachMenuBtn.style.color = attachmentMenu.classList.contains('show') ? 'var(--neon-cyan)' : 'var(--text-muted)';
+        });
+
+        // Close menu if clicked outside
+        document.addEventListener('click', function(e) {
+            if (!attachmentMenu.contains(e.target) && e.target !== attachMenuBtn) {
+                attachmentMenu.classList.remove('show');
+                attachMenuBtn.style.color = 'var(--text-muted)';
+            }
+        });
+
+        // Handle clicking on specific attachment type
+        document.querySelectorAll('.attach-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.stopPropagation();
+                // Set the accept attribute dynamically based on what user clicked
+                fileInput.accept = this.getAttribute('data-accept');
+                fileInput.click(); // Open file picker
+                attachmentMenu.classList.remove('show');
+                attachMenuBtn.style.color = 'var(--text-muted)';
+            });
+        });
+
+        // Show File Badge when file is selected
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                let fileName = this.files[0].name;
+                if(fileName.length > 20) fileName = fileName.substring(0, 17) + '...';
+                fileNameDisplay.innerText = fileName;
+                fileBadge.style.display = 'flex';
+                attachMenuBtn.style.color = '#00f3ff';
+            }
+        });
+
+        // Remove File
+        removeFileBtn.addEventListener('click', function() {
+            fileInput.value = '';
+            fileBadge.style.display = 'none';
+            attachMenuBtn.style.color = 'var(--text-muted)';
+        });
+
+
+        // 4. SMART SILENT RELOAD
+        function fetchAndInjectChat(scrollToBottom = false) {
+            fetch(window.location.href)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const currentMessageCount = chatBox.querySelectorAll('.msg-wrapper').length;
+                const newMessagesList = doc.getElementById('chatBox').querySelectorAll('.msg-wrapper');
+                
+                if (newMessagesList.length > currentMessageCount || currentMessageCount === 0) {
+                    if(window.aiPollInterval) {
+                        clearInterval(window.aiPollInterval);
+                        window.aiPollInterval = null;
+                        const typingIndicator = document.getElementById('ai-typing-indicator');
+                        if (typingIndicator) typingIndicator.remove();
+                    }
+
+                    const currentScroll = chatBox.scrollTop;
+                    chatBox.innerHTML = doc.getElementById('chatBox').innerHTML;
+                    
+                    const newPinnedBar = doc.querySelector('.pinned-container-wrapper');
+                    const oldPinnedBar = document.querySelector('.pinned-container-wrapper');
+                    if(oldPinnedBar && newPinnedBar) {
+                        oldPinnedBar.innerHTML = newPinnedBar.innerHTML;
+                        bindPinnedBarEvent(); 
+                    }
+                    
+                    if(scrollToBottom) chatBox.scrollTop = chatBox.scrollHeight;
+                    else chatBox.scrollTop = currentScroll;
+                    
+                    loadAvatars();
+                    formatMessages();
+                    bindDynamicEvents();
+                }
+            });
+        }
+
+        // 5. NEW MESSAGE SUBMISSION
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const msgText = document.getElementById('mainChatInput').value.trim();
+            
+            if(!msgText && !fileInput.value) return;
+
+            // Reset UI
+            document.getElementById('mainChatInput').value = '';
+            document.getElementById('mainChatInput').style.height = '44px';
+            document.getElementById('mainChatInput').style.overflowY = 'hidden';
+            document.getElementById('replyInputId').value = '';
+            document.getElementById('replyBar').style.display = 'none';
+            fileInput.value = '';
+            fileBadge.style.display = 'none';
+            attachMenuBtn.style.color = 'var(--text-muted)';
+
+            fetch(window.location.href, { method: 'POST', body: formData })
+            .then(() => {
+                fetchAndInjectChat(true); 
+                
+                if (msgText.toLowerCase().startsWith('/ai')) {
+                    chatBox.insertAdjacentHTML('beforeend', `
+                        <div class="msg-wrapper other-msg-wrapper" id="ai-typing-indicator">
+                            <span class="msg-sender ai-sender"><i class="fas fa-robot"></i> AI Commander</span>
+                            <div class="msg ai-msg">
+                                <span class="typing-dots">Thinking<span>.</span><span>.</span><span>.</span></span>
+                            </div>
+                        </div>
+                    `);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+
+                    let pollCount = 0;
+                    window.aiPollInterval = setInterval(() => {
+                        pollCount++;
+                        fetchAndInjectChat(true);
+                        if(pollCount > 15) {
+                            clearInterval(window.aiPollInterval);
+                            const ind = document.getElementById('ai-typing-indicator');
+                            if(ind) ind.remove();
+                        }
+                    }, 1500);
+                }
+            });
+        });
+
+        // 6. MASTER EVENT BINDER
+        function bindDynamicEvents() {
+            document.querySelectorAll('.action-pin-btn').forEach(el => {
+                el.addEventListener('click', function() {
+                    fetch(`/api/chat/pin/${this.dataset.msgId}/`, { method: 'POST', headers: { 'X-CSRFToken': csrftokenValue } })
+                    .then(res => res.json()).then(data => { if(data.status === 'success') { fetchAndInjectChat(); } });
+                });
+            });
+            
+            document.querySelectorAll('.action-emoji-select').forEach(el => {
+                el.addEventListener('click', function() {
+                    fetch(`/api/chat/react/${this.dataset.msgId}/`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftokenValue },
+                        body: JSON.stringify({ reaction_type: this.dataset.emoji })
+                    }).then(res => res.json()).then(data => { if(data.status === 'success') { fetchAndInjectChat(); } });
+                });
+            });
+
+            document.querySelectorAll('.action-react-btn').forEach(el => {
+                el.addEventListener('click', function(event) {
+                    document.querySelectorAll('.emoji-picker-menu').forEach(menu => menu.classList.remove('show'));
+                    document.getElementById('emoji-menu-' + this.dataset.msgId).classList.toggle('show');
+                    event.stopPropagation(); 
+                });
+            });
+
+            document.querySelectorAll('.action-reply-btn').forEach(el => {
+                el.addEventListener('click', function() {
+                    document.getElementById('replyInputId').value = this.dataset.msgId;
+                    document.getElementById('replyTargetName').innerText = this.dataset.senderName;
+                    document.getElementById('replyTargetText').innerText = this.dataset.msgText;
+                    document.getElementById('replyBar').style.display = 'flex';
+                    document.getElementById('mainChatInput').focus();
+                });
+            });
+
+            const profileModal = document.getElementById('profileModal');
+            document.querySelectorAll('.action-open-profile').forEach(el => {
+                el.addEventListener('click', function() {
+                    profileModal.classList.add('show');
+                    document.getElementById('modalName').innerText = "Loading...";
+                    fetch(`/api/chat/user-info/${this.dataset.id}/`).then(res => res.json()).then(data => {
+                        if(data.status === 'success') {
+                            const info = data.data;
+                            document.getElementById('modalName').innerText = info.name;
+                            document.getElementById('modalRole').innerText = info.is_teacher ? 'COMMANDER' : 'CADET';
+                            document.getElementById('modalLevel').innerText = info.level;
+                            document.getElementById('modalStream').innerText = info.stream;
+                            document.getElementById('modalBio').innerText = info.bio;
+                            document.getElementById('modalImg').src = info.image_url ? info.image_url : '//ui-avatars.com/api/?name=' + info.username + '&background=00d4ff&color=000';
+                        }
+                    });
+                });
+            });
+
+            document.querySelectorAll('.action-scroll-to').forEach(el => {
+                el.addEventListener('click', function() { scrollToMessage(this.dataset.targetId); });
+            });
+        }
+
+        document.addEventListener('click', () => document.querySelectorAll('.emoji-picker-menu').forEach(el => el.classList.remove('show')));
+        
+        document.getElementById('cancelReplyBtn').addEventListener('click', function() {
+            document.getElementById('replyInputId').value = '';
+            document.getElementById('replyBar').style.display = 'none';
+        });
+
+        const profileModalObj = document.getElementById('profileModal');
+        document.getElementById('closeModalBtn').addEventListener('click', () => profileModalObj.classList.remove('show'));
+        profileModalObj.addEventListener('click', (e) => { if(e.target === profileModalObj) profileModalObj.classList.remove('show'); });
+        document.getElementById('profileModalContent').addEventListener('click', (e) => e.stopPropagation());
+
+        let currentPinnedIndex = 0;
+        function bindPinnedBarEvent() {
+            const cyclePinBtn = document.querySelector('.action-cycle-pin');
+            if(cyclePinBtn) {
+                cyclePinBtn.addEventListener('click', function() {
+                    const dataElement = document.getElementById('pinned-messages-data');
+                    if(!dataElement) return;
+                    const pinnedList = JSON.parse(dataElement.textContent);
+                    if(pinnedList.length === 0) return;
+                    
+                    const currentMsg = pinnedList[currentPinnedIndex];
+                    scrollToMessage(currentMsg.id);
+
+                    if(pinnedList.length > 1) {
+                        currentPinnedIndex = (currentPinnedIndex + 1) % pinnedList.length;
+                        const nextMsg = pinnedList[currentPinnedIndex];
+                        document.getElementById('pinned-text-display').innerText = nextMsg.text;
+                        document.getElementById('pinned-count-display').innerText = `${currentPinnedIndex + 1}/${pinnedList.length}`;
+                    }
+                });
+            }
+        }
+
+        function scrollToMessage(msgId) {
+            const targetMsg = document.getElementById('msg-' + msgId);
+            if(targetMsg) {
+                targetMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetMsg.classList.add('highlight-flash');
+                setTimeout(() => { targetMsg.classList.remove('highlight-flash'); }, 2500);
+            }
+        }
+
+        bindDynamicEvents();
+        bindPinnedBarEvent();
+
+    </script>
+</body>
+</html>

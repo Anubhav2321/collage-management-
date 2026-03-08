@@ -1,20 +1,35 @@
-# Environments (remove the virtual environment )
+# =========================
+# 1. Environments & Secrets (MOST IMPORTANT)
+# =========================
 .env
-.venv
 .venv/
 venv/
 ENV/
+env/
 
-# Python cache (Unnecessary cache files)
-__pycache__/
-*.pyc
-
-# Database (Excluding local database)
+# =========================
+# 2. Database
+# =========================
 db.sqlite3
+db.sqlite3-journal
 
-# Media Files (Excluding media folders)
+# =========================
+# 3. Python Cache
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# 4. Media & Static Files
+# =========================
 media/
+# staticfiles/  (Keep commenting, if you do collectstatic in the future, you will provide the hash)
 
-# OS generated files
+# =========================
+# 5. OS & IDE Generated Files
+# =========================
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/

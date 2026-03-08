@@ -6,10 +6,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
 
 <script>
-    // Check if user has a profile picture and get its URL
-    // We check for 'profile_pic' because that was in your forms.py
-    const userHasProfileImg = "{{ request.user.profile.profile_pic|default:'false'|lower }}" === 'true';
-    const userProfileImgUrl = "{{ request.user.profile.profile_pic.url|default:'' }}";
+    // CRITICAL FIX: Securely check for profile picture to prevent ValueError and VS Code Redeclaration Error
+    const userHasProfileImg = {% if request.user.profile.profile_pic %}true{% else %}false{% endif %};
+    const userProfileImgUrl = "{% if request.user.profile.profile_pic %}{{ request.user.profile.profile_pic.url }}{% else %}{% endif %}";
 </script>
 
 <style>
@@ -38,6 +37,21 @@
         max-width: 1400px;
         margin: 0 auto;
     }
+
+    /* --- VS CODE WARNING FIXES (Utility Classes for Inline CSS) --- */
+    .delay-2 { animation-delay: 0.2s; }
+    .icon-neon { color: var(--neon-blue); }
+    .thumb-placeholder { display: flex; align-items: center; justify-content: center; background: #050505; }
+    .icon-dark { color: #333; }
+    .status-progress { color: var(--neon-blue); }
+    .empty-state-box { grid-column: 1/-1; text-align: center; padding: 80px; border: 1px dashed #333; border-radius: 15px; }
+    .empty-state-icon { font-size: 3rem; color: #333; margin-bottom: 20px; }
+    .empty-state-text { color: #666; }
+    .empty-state-link { color: var(--neon-blue); text-decoration: none; font-weight: bold; }
+    .cursor-pointer-white { cursor: pointer; color: #fff; }
+    .empty-notice { color: #666; text-align: center; padding: 20px; }
+    .icon-cyan { color: #00f3ff; }
+    #chat-loader { display: none; }
 
     /* --- ANIMATIONS --- */
     .fade-in-up {
@@ -177,11 +191,24 @@
         background: var(--neon-blue); color: #000; border-color: var(--neon-blue);
     }
 
+    /* --- COMMUNITY CHAT BUTTON --- */
+    .btn-community {
+        display: block; width: 100%; padding: 12px 0; margin-top: 10px;
+        background: rgba(0, 212, 255, 0.1); border: 1px solid var(--neon-blue);
+        color: var(--neon-blue); text-align: center; text-decoration: none;
+        font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+        border-radius: 8px; transition: 0.3s;
+    }
+    .btn-community:hover {
+        background: var(--neon-blue); color: #000; box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+    }
+
     /* --- NOTIFICATION MODAL --- */
     .modal-overlay {
         display: none; position: fixed; inset: 0;
         background: rgba(0,0,0,0.8); z-index: 9999;
         justify-content: center; align-items: center;
+        -webkit-backdrop-filter: blur(5px);
         backdrop-filter: blur(5px);
     }
     
@@ -253,7 +280,8 @@
         width: 400px; height: 550px; min-width: 320px; min-height: 400px;
         max-width: 90vw; max-height: 90vh;
         background: var(--chat-bg-glass);
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
         border: var(--chat-border); border-radius: 25px; /* More curved */
         display: flex; flex-direction: column; z-index: 9999;
         box-shadow: 0 20px 50px rgba(0,0,0,0.6);
@@ -406,9 +434,9 @@
         </div>
     </div>
 
-    <div class="fade-in-up" style="animation-delay: 0.2s;">
+    <div class="fade-in-up delay-2">
         <div class="section-title">
-            <i class="fas fa-layer-group" style="color:var(--neon-blue)"></i> My Active Courses
+            <i class="fas fa-layer-group icon-neon"></i> My Active Courses
         </div>
         
         <div class="courses-grid">
@@ -418,15 +446,15 @@
                     {% if enrollment.course.thumbnail %}
                         <img src="{{ enrollment.course.thumbnail.url }}" class="card-thumb" alt="Course">
                     {% else %}
-                        <div class="card-thumb" style="display:flex;align-items:center;justify-content:center;background:#050505;">
-                            <i class="fas fa-code fa-3x" style="color:#333;"></i>
+                        <div class="card-thumb thumb-placeholder">
+                            <i class="fas fa-code fa-3x icon-dark"></i>
                         </div>
                     {% endif %}
                     
                     <div class="course-title">{{ enrollment.course.title }}</div>
                     <div class="course-meta">
                         <span><i class="fas fa-cube"></i> {{ enrollment.course.total_modules }} Modules</span>
-                        <span style="color: var(--neon-blue);">In Progress</span>
+                        <span class="status-progress">In Progress</span>
                     </div>
 
                     <div class="progress-track">
@@ -436,13 +464,17 @@
                     <a href="{% url 'course_watch' enrollment.course.id %}" class="btn-action">
                         Continue Learning
                     </a>
+                    
+                    <a href="{% url 'course_community_chat' slug=enrollment.course.slug %}" class="btn-community">
+                        <i class="fas fa-comments"></i> Community Chat
+                    </a>
                 </div>
                 {% endfor %}
             {% else %}
-                <div style="grid-column: 1/-1; text-align: center; padding: 80px; border: 1px dashed #333; border-radius: 15px;">
-                    <i class="fas fa-rocket" style="font-size: 3rem; color: #333; margin-bottom: 20px;"></i>
-                    <h3 style="color: #666;">No active courses found.</h3>
-                    <a href="{% url 'all_courses' %}" style="color: var(--neon-blue); text-decoration: none; font-weight: bold;">Browse Library &rarr;</a>
+                <div class="empty-state-box">
+                    <i class="fas fa-rocket empty-state-icon"></i>
+                    <h3 class="empty-state-text">No active courses found.</h3>
+                    <a href="{% url 'all_courses' %}" class="empty-state-link">Browse Library &rarr;</a>
                 </div>
             {% endif %}
         </div>
@@ -453,7 +485,7 @@
     <div class="modal-box">
         <div class="modal-header">
             <span><i class="fas fa-bell"></i> NOTIFICATIONS</span>
-            <i class="fas fa-times" onclick="closeNotificationModal()" style="cursor:pointer; color:#fff;"></i>
+            <i class="fas fa-times cursor-pointer-white" onclick="closeNotificationModal()"></i>
         </div>
         <div class="notice-list-modal">
             {% for notice in notifications %}
@@ -463,7 +495,7 @@
                 <span class="n-date">{{ notice.created_at|date:"d M, Y • h:i A" }}</span>
             </div>
             {% empty %}
-                <p style="color: #666; text-align: center; padding: 20px;">No new notifications.</p>
+                <p class="empty-notice">No new notifications.</p>
             {% endfor %}
         </div>
     </div>
@@ -477,7 +509,7 @@
 <div id="ai-chat-container" class="closed">
     <div class="chat-header">
         <div class="header-title">
-            <i class="fas fa-brain" style="color: #00f3ff;"></i> 
+            <i class="fas fa-brain icon-cyan"></i> 
             <span>LMS AI Assistant</span>
         </div>
         <div class="header-controls">
@@ -490,26 +522,26 @@
         <div class="message bot-msg">
             <div class="msg-avatar"><i class="fas fa-robot"></i></div>
             <div class="msg-text">
-                Hello, <span><b>{{ user.first_name }}</b></span></h1> I am your <b>AI Study Companion</b>. 
+                Hello, <span><b>{{ user.first_name }}</b></span> <br>I am your <b>AI Study Companion</b>. 
                 <br>I can help with coding, explain concepts, and solve errors. 😊
                 <br><i>How can I help you today?</i>
             </div>
         </div>
     </div>
 
-    <div id="chat-loader" style="display: none;">
+    <div id="chat-loader">
         <div class="typing-dots">
             <span></span><span></span><span></span>
         </div>
     </div>
 
     <div class="chat-input-area">
-        <button id="mic-btn" onclick="toggleVoiceSearch()" title="Speak to AI">
+        <button id="mic-btn" onclick="toggleVoiceSearch()" aria-label="Toggle Voice Search" title="Speak to AI">
             <i class="fas fa-microphone"></i>
         </button>
 
         <input type="text" id="user-input" placeholder="Type or speak..." autocomplete="off">
-        <button onclick="sendMessage()" id="send-btn">
+        <button onclick="sendMessage()" id="send-btn" aria-label="Send Message">
             <i class="fas fa-paper-plane"></i>
         </button>
     </div>

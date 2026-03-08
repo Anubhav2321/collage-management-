@@ -4,16 +4,23 @@ Django settings for lms_core project.
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv  # <--- NEW: Import dotenv
-
-# Load environment variables from .env file
-load_dotenv()  # <--- NEW: Load variables
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ==========================================
+# --- 100% SECURE & FAIL-PROOF .env LOADER ---
+# ==========================================
+# এটি গ্যারান্টি দেবে যে .env ফাইলটি ঠিকঠাক রিড হচ্ছে
+env_path = BASE_DIR / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# টার্মিনালে চেক করার জন্য একটি প্রিন্ট মেসেজ (কাজ হয়ে গেলে এটি মুছে দিতে পারেন)
+print("✅ Loading Google Client ID:", "SUCCESS" if os.getenv('GOOGLE_CLIENT_ID') else "FAILED")
+
 # Quick-start development settings - unsuitable for production
-SECRET_KEY = 'django-insecure-change-this-key-for-production'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-key-for-production')
 DEBUG = True
 ALLOWED_HOSTS = []
 
@@ -30,6 +37,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',  # <--- Google Provider Added
     
     # My Apps
     'students',
@@ -96,7 +104,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'frontend/static'] # Frontend Static Linked
 
-# --- MEDIA FILES CONFIGURATION (Corrected) ---
+# --- MEDIA FILES CONFIGURATION ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -116,6 +124,41 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
+# ==========================================
+# --- ALLAUTH & GOOGLE OAUTH SETTINGS ---
+# ==========================================
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+
+# --- Skip the intermediate confirmation page ---
+SOCIALACCOUNT_LOGIN_ON_GET = True 
+
+# --- Skip the intermediate sign-up form ---
+SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'APP': {
+            # --- SECURED: Now perfectly reading from .env file ---
+            'client_id': os.getenv('GOOGLE_CLIENT_ID', ''), 
+            'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
+            'key': ''
+        }
+    }
+}
+
+# ==========================================
 # --- GROQ AI CONFIGURATION ---
+# ==========================================
 # Reads the key from your .env file
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
