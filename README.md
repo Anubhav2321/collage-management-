@@ -7,15 +7,6 @@
 
 > **Learning-365** is a futuristic, AI-powered Learning Management System designed to bridge the gap between students and modern education. Featuring a **Cyberpunk/Glassmorphism UI**, it offers secure AI exams, live class integration, and a rich digital library.
 
----
-
-## 📸 Project Glimpse
-
-| Student Dashboard | AI Exam Portal |
-| :---: | :---: |
-| ![Dashboard](https://via.placeholder.com/600x300/111/00d4ff?text=Dashboard+UI) | ![Exam](https://via.placeholder.com/600x300/111/ff3366?text=Secure+Exam+UI) |
-
----
 
 ## 🚀 Key Features
 
