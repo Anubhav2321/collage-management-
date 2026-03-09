@@ -11,16 +11,15 @@ from django.http import JsonResponse
 from django.db.models import Q
 from .models import Course, Enrollment, CourseGroupMessage, MessageReaction, User
 
-# .env ফাইল লোড করার চেষ্টা
+# .env file loded 
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
     pass
 
-# ==========================================
 # --- AI BOT BACKGROUND WORKERS (VISION ENABLED) ---
-# ==========================================
+
 def generate_ai_reply(course_id, prompt, reply_to_id=None, image_path=None):
     """
     Calls Groq API in the background. Now supports Image Vision!
@@ -117,10 +116,7 @@ def check_and_auto_reply(course_id, message_id, prompt):
     except Exception as e:
         print(f"Auto Reply Error: {e}")
 
-
-# ==========================================
 # --- 1. MAIN COMMUNITY CHAT VIEW ---
-# ==========================================
 @login_required
 def course_community_chat(request, slug):
     course = get_object_or_404(Course, slug=slug)
@@ -163,9 +159,8 @@ def course_community_chat(request, slug):
                 reply_to=reply_msg
             )
 
-            # ==========================================
             # --- AI BOT TRIGGERS (VISION ENABLED) ---
-            # ==========================================
+
             text_lower = message_text.strip().lower()
             
             # Check if it's an AI Command
@@ -208,10 +203,8 @@ def course_community_chat(request, slug):
     
     return render(request, 'community_chat.html', context)
 
-
-# ==========================================
 # --- 2. PIN MESSAGE API (AJAX) ---
-# ==========================================
+
 @login_required
 def toggle_pin_message(request, message_id):
     if request.method == "POST":
@@ -221,10 +214,8 @@ def toggle_pin_message(request, message_id):
         return JsonResponse({'status': 'success', 'is_pinned': msg.is_pinned})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
-
-# ==========================================
 # --- 3. EMOJI REACTION API (AJAX) ---
-# ==========================================
+
 @login_required
 def add_message_reaction(request, message_id):
     if request.method == "POST":
@@ -252,10 +243,8 @@ def add_message_reaction(request, message_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
-
-# ==========================================
 # --- 4. STUDENT PROFILE API (AJAX) ---
-# ==========================================
+
 @login_required
 def get_student_info(request, user_id):
     user = get_object_or_404(User, id=user_id)

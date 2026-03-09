@@ -9,14 +9,12 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ==========================================
 # --- 100% SECURE & FAIL-PROOF .env LOADER ---
-# ==========================================
-# এটি গ্যারান্টি দেবে যে .env ফাইলটি ঠিকঠাক রিড হচ্ছে
+# This will guarantee that the .env file will be read properly 
 env_path = BASE_DIR / '.env'
 load_dotenv(dotenv_path=env_path)
 
-# টার্মিনালে চেক করার জন্য একটি প্রিন্ট মেসেজ (কাজ হয়ে গেলে এটি মুছে দিতে পারেন)
+# A print message to check in the terminal  
 print("✅ Loading Google Client ID:", "SUCCESS" if os.getenv('GOOGLE_CLIENT_ID') else "FAILED")
 
 # Quick-start development settings - unsuitable for production
@@ -124,9 +122,7 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
-# ==========================================
 # --- ALLAUTH & GOOGLE OAUTH SETTINGS ---
-# ==========================================
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
@@ -156,9 +152,6 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
-
-# ==========================================
 # --- GROQ AI CONFIGURATION ---
-# ==========================================
 # Reads the key from your .env file
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")

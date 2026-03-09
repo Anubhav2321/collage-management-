@@ -77,9 +77,7 @@ admin.site.register(LibraryDocument)
 admin.site.register(QuizResult)
 admin.site.register(Quiz) # Dummy Quiz model registered if needed   
 
-# ==========================================
 # --- 5. COMMUNITY CHAT ADMIN ---
-# ==========================================
 
 @admin.register(CourseGroupMessage)
 class CourseGroupMessageAdmin(admin.ModelAdmin):

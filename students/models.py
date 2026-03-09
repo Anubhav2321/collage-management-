@@ -356,9 +356,7 @@ def delete_document_file(sender, instance, **kwargs):
     if instance.file and os.path.isfile(instance.file.path):
         os.remove(instance.file.path)
 
-# ==========================================
 # --- GOOGLE PROFILE PICTURE AUTO-SAVE ---
-# ==========================================
 
 @receiver(user_logged_in)
 def fetch_google_profile_pic(request, user, **kwargs):
@@ -387,9 +385,7 @@ def fetch_google_profile_pic(request, user, **kwargs):
         # If any error occurs (like profile not created yet), skip it safely
         print(f"Could not save Google profile picture: {e}")
 
-# ==========================================
 # --- COURSE COMMUNITY / WHATSAPP STYLE GROUP ---
-# ==========================================
 
 class CourseGroupMessage(models.Model):
     # which course group is being message to .
