@@ -145,4 +145,17 @@ https://github.com/Anubhav2321?tab=repositories
 ```
 Email: anubhavsamanta2005@gmail.com
 
+## 📬 Contact / Credits
+
+Created with ❤️ by **Anubhav2321**.
+
+If you want me to:
+
+* generate a project badge, or
+* create GIFs/screenshots for the repo, or
+* commit this README directly to your repo for you,
+
+tell me which one and I’ll prepare it.
+
+
           
