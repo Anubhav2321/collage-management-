@@ -11,15 +11,16 @@ from django.http import JsonResponse
 from django.db.models import Q
 from .models import Course, Enrollment, CourseGroupMessage, MessageReaction, User
 
-# .env file loded 
+# .env file loaded 
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
     pass
 
+# ==========================================
 # --- AI BOT BACKGROUND WORKERS (VISION ENABLED) ---
-
+# ==========================================
 def generate_ai_reply(course_id, prompt, reply_to_id=None, image_path=None):
     """
     Calls Groq API in the background. Now supports Image Vision!
@@ -116,7 +117,9 @@ def check_and_auto_reply(course_id, message_id, prompt):
     except Exception as e:
         print(f"Auto Reply Error: {e}")
 
+# ==========================================
 # --- 1. MAIN COMMUNITY CHAT VIEW ---
+# ==========================================
 @login_required
 def course_community_chat(request, slug):
     course = get_object_or_404(Course, slug=slug)
@@ -160,7 +163,6 @@ def course_community_chat(request, slug):
             )
 
             # --- AI BOT TRIGGERS (VISION ENABLED) ---
-
             text_lower = message_text.strip().lower()
             
             # Check if it's an AI Command
@@ -203,8 +205,9 @@ def course_community_chat(request, slug):
     
     return render(request, 'community_chat.html', context)
 
+# ==========================================
 # --- 2. PIN MESSAGE API (AJAX) ---
-
+# ==========================================
 @login_required
 def toggle_pin_message(request, message_id):
     if request.method == "POST":
@@ -214,8 +217,9 @@ def toggle_pin_message(request, message_id):
         return JsonResponse({'status': 'success', 'is_pinned': msg.is_pinned})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
+# ==========================================
 # --- 3. EMOJI REACTION API (AJAX) ---
-
+# ==========================================
 @login_required
 def add_message_reaction(request, message_id):
     if request.method == "POST":
@@ -243,8 +247,9 @@ def add_message_reaction(request, message_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
+# ==========================================
 # --- 4. STUDENT PROFILE API (AJAX) ---
-
+# ==========================================
 @login_required
 def get_student_info(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -267,3 +272,41 @@ def get_student_info(request, user_id):
     }
     
     return JsonResponse({'status': 'success', 'data': data})
+
+# ==========================================
+# --- 5. DELETE MESSAGE API (AJAX) ---
+# ==========================================
+@login_required
+def delete_message(request, message_id):
+    if request.method == "POST":
+        msg = get_object_or_404(CourseGroupMessage, id=message_id)
+        
+        # Security: Only the sender of the message or a teacher can delete the message.
+        if msg.sender == request.user or request.user.is_teacher:
+            msg.delete()
+            return JsonResponse({'status': 'success'})
+            
+    return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
+
+# ==========================================
+# --- 6. EDIT MESSAGE API (AJAX) ---
+# ==========================================
+@login_required
+def edit_message(request, message_id):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            new_text = data.get('text', '').strip()
+            msg = get_object_or_404(CourseGroupMessage, id=message_id)
+            
+            # Security: Only the sender of the message can edit its message.
+            if msg.sender == request.user and new_text:
+                msg.text = new_text
+                msg.is_edited = True 
+                msg.save()
+                return JsonResponse({'status': 'success', 'new_text': msg.text})
+                
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)

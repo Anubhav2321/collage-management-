@@ -1,4 +1,6 @@
 from django.urls import path
+
+from students import community_views
 from . import views
 
 urlpatterns = [
@@ -38,4 +40,8 @@ urlpatterns = [
     path('admin-panel/students/<int:user_id>/block/', views.admin_toggle_block, name='admin_toggle_block'),
     path('admin-panel/students/<int:user_id>/delete/', views.admin_delete_student, name='admin_delete_student'),
     path('admin-panel/students/<int:user_id>/reset-pass/', views.admin_reset_password, name='admin_reset_password'),
+
+    # Delete & Edit Messages API
+    path('api/chat/delete/<int:message_id>/', views.delete_message, name='delete_message'),
+    path('api/chat/edit/<int:message_id>/', views.edit_message, name='edit_message'),
 ]

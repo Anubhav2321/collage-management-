@@ -443,6 +443,14 @@
                             
                             <div class="msg-actions">
                                 <i class="fas fa-reply action-reply-btn" data-msg-id="{{ message.id }}" data-sender-name="{{ message.sender.first_name|default:message.sender.username }}" data-msg-text="{% if message.text %}{{ message.text|escapejs|truncatechars:30 }}{% endif %}" title="Reply"></i>
+                                
+                                {% if message.sender == request.user %}
+                                    <i class="fas fa-edit action-edit-btn" data-msg-id="{{ message.id }}" data-msg-text="{% if message.text %}{{ message.text|escapejs }}{% endif %}" title="Edit Message"></i>
+                                    <i class="fas fa-trash-alt action-delete-btn" style="color: var(--danger-red);" data-msg-id="{{ message.id }}" title="Delete for everyone"></i>
+                                {% elif request.user.is_teacher %}
+                                    <i class="fas fa-trash-alt action-delete-btn" style="color: var(--danger-red);" data-msg-id="{{ message.id }}" title="Delete Student Message"></i>
+                                {% endif %}
+
                                 <i class="fas fa-thumbtack action-pin-btn {% if message.is_pinned %}active-pin{% endif %}" data-msg-id="{{ message.id }}" title="Pin/Unpin"></i>
                                 <i class="fas fa-smile action-react-btn" data-msg-id="{{ message.id }}" title="React"></i>
                             </div>
@@ -508,7 +516,13 @@
                                     </div>
                                 {% endfor %}
                             </div>
-                            <span class="msg-time">{{ message.created_at|date:"M d, g:i a" }}</span>
+                            
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span class="msg-time">{{ message.created_at|date:"M d, g:i a" }}</span>
+                                {% if message.is_edited %}
+                                    <span style="font-size: 0.65rem; color: var(--text-muted); font-style: italic;">(edited)</span>
+                                {% endif %}
+                            </div>
                         </div>
 
                     </div>
@@ -667,9 +681,7 @@
             }
         });
 
-        // ====================================================
-        // NEW: WHATSAPP STYLE ATTACHMENT MENU LOGIC
-        // ====================================================
+        // Attachment Menu Logic
         const attachMenuBtn = document.getElementById('attachMenuBtn');
         const attachmentMenu = document.getElementById('attachmentMenu');
         const fileInput = document.getElementById('file-upload');
@@ -677,14 +689,12 @@
         const fileNameDisplay = document.getElementById('fileNameDisplay');
         const removeFileBtn = document.getElementById('removeFileBtn');
 
-        // Toggle Menu
         attachMenuBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             attachmentMenu.classList.toggle('show');
             attachMenuBtn.style.color = attachmentMenu.classList.contains('show') ? 'var(--neon-cyan)' : 'var(--text-muted)';
         });
 
-        // Close menu if clicked outside
         document.addEventListener('click', function(e) {
             if (!attachmentMenu.contains(e.target) && e.target !== attachMenuBtn) {
                 attachmentMenu.classList.remove('show');
@@ -692,19 +702,16 @@
             }
         });
 
-        // Handle clicking on specific attachment type
         document.querySelectorAll('.attach-item').forEach(item => {
             item.addEventListener('click', function(e) {
                 e.stopPropagation();
-                // Set the accept attribute dynamically based on what user clicked
                 fileInput.accept = this.getAttribute('data-accept');
-                fileInput.click(); // Open file picker
+                fileInput.click(); 
                 attachmentMenu.classList.remove('show');
                 attachMenuBtn.style.color = 'var(--text-muted)';
             });
         });
 
-        // Show File Badge when file is selected
         fileInput.addEventListener('change', function() {
             if (this.files && this.files.length > 0) {
                 let fileName = this.files[0].name;
@@ -715,15 +722,12 @@
             }
         });
 
-        // Remove File
         removeFileBtn.addEventListener('click', function() {
             fileInput.value = '';
             fileBadge.style.display = 'none';
             attachMenuBtn.style.color = 'var(--text-muted)';
         });
 
-
-        // 4. SMART SILENT RELOAD
         function fetchAndInjectChat(scrollToBottom = false) {
             fetch(window.location.href)
             .then(res => res.text())
@@ -734,7 +738,8 @@
                 const currentMessageCount = chatBox.querySelectorAll('.msg-wrapper').length;
                 const newMessagesList = doc.getElementById('chatBox').querySelectorAll('.msg-wrapper');
                 
-                if (newMessagesList.length > currentMessageCount || currentMessageCount === 0) {
+                // Re-inject if new message, OR if a message was deleted (count decreased)
+                if (newMessagesList.length !== currentMessageCount || currentMessageCount === 0) {
                     if(window.aiPollInterval) {
                         clearInterval(window.aiPollInterval);
                         window.aiPollInterval = null;
@@ -762,7 +767,6 @@
             });
         }
 
-        // 5. NEW MESSAGE SUBMISSION
         document.getElementById('chat-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -770,7 +774,6 @@
             
             if(!msgText && !fileInput.value) return;
 
-            // Reset UI
             document.getElementById('mainChatInput').value = '';
             document.getElementById('mainChatInput').style.height = '44px';
             document.getElementById('mainChatInput').style.overflowY = 'hidden';
@@ -809,8 +812,54 @@
             });
         });
 
-        // 6. MASTER EVENT BINDER
+        // 6. MASTER EVENT BINDER (Now includes Delete & Edit)
         function bindDynamicEvents() {
+            
+            // --- NEW: DELETE MESSAGE LOGIC ---
+            document.querySelectorAll('.action-delete-btn').forEach(el => {
+                el.addEventListener('click', function() {
+                    if(confirm("Are you sure you want to delete this message for everyone?")) {
+                        fetch(`/api/chat/delete/${this.dataset.msgId}/`, { 
+                            method: 'POST', 
+                            headers: { 'X-CSRFToken': csrftokenValue } 
+                        })
+                        .then(res => res.json())
+                        .then(data => { 
+                            if(data.status === 'success') {
+                                // Force reload to show deletion
+                                chatBox.innerHTML = '';
+                                fetchAndInjectChat(false); 
+                            }
+                        });
+                    }
+                });
+            });
+
+            // --- NEW: EDIT MESSAGE LOGIC ---
+            document.querySelectorAll('.action-edit-btn').forEach(el => {
+                el.addEventListener('click', function() {
+                    // Replace safe HTML quotes back to normal quotes for editing
+                    let currentText = this.dataset.msgText.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+                    let newText = prompt("Edit your message:", currentText);
+                    
+                    if(newText !== null && newText.trim() !== "" && newText !== currentText) {
+                        fetch(`/api/chat/edit/${this.dataset.msgId}/`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftokenValue },
+                            body: JSON.stringify({ text: newText })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if(data.status === 'success') {
+                                // Clear and fetch to show edited text
+                                chatBox.innerHTML = '';
+                                fetchAndInjectChat(false);
+                            }
+                        });
+                    }
+                });
+            });
+
             document.querySelectorAll('.action-pin-btn').forEach(el => {
                 el.addEventListener('click', function() {
                     fetch(`/api/chat/pin/${this.dataset.msgId}/`, { method: 'POST', headers: { 'X-CSRFToken': csrftokenValue } })
