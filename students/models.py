@@ -1,6 +1,6 @@
 import os
-import re  # <--- CRITICAL IMPORT: Video fix er jonno eta must lagbe
-import requests # <--- NEW: Google profile picture download er jonno
+import re  # CRITICAL IMPORT: Video fix er jonno eta must lagbe
+import requests #  NEW: Google profile picture download er jonno
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.text import slugify
@@ -8,9 +8,9 @@ from django.utils import timezone
 from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from django.core.files.base import ContentFile # <--- NEW: Image save korar jonno
-from allauth.account.signals import user_logged_in # <--- NEW: Login signal
-from allauth.socialaccount.models import SocialAccount # <--- NEW: Google data fetch korar jonno
+from django.core.files.base import ContentFile #  NEW: Image save korar jonno
+from allauth.account.signals import user_logged_in #  NEW: Login signal
+from allauth.socialaccount.models import SocialAccount # NEW: Google data fetch korar jonno
 
 # 1. CUSTOM USER MODEL
 

@@ -18,9 +18,8 @@ try:
 except ImportError:
     pass
 
-# ==========================================
 # --- AI BOT BACKGROUND WORKERS (VISION ENABLED) ---
-# ==========================================
+
 def generate_ai_reply(course_id, prompt, reply_to_id=None, image_path=None):
     """
     Calls Groq API in the background. Now supports Image Vision!
@@ -50,7 +49,7 @@ def generate_ai_reply(course_id, prompt, reply_to_id=None, image_path=None):
         client = Groq(api_key=api_key)
         
         # Base setup for AI
-        system_prompt = "You are an expert AI teaching assistant for a tech community. Provide short, clear, and very helpful answers. DO NOT use markdown asterisks (**) or bold text. Instead, use relevant emojis 🚀💡💻 to highlight key points. Format code blocks using standard markdown."
+        system_prompt = "You are an expert AI teaching assistant for a tech community. Provide short, clear, and very helpful answers. DO NOT use markdown asterisks (**) or bold text. Instead, use relevant emojis 🚀💡💻 🤖 to highlight key points. Format code blocks using standard markdown."
         
         # 3. Check if an Image was provided to use the Vision Model
         if image_path and os.path.exists(image_path):
@@ -117,9 +116,8 @@ def check_and_auto_reply(course_id, message_id, prompt):
     except Exception as e:
         print(f"Auto Reply Error: {e}")
 
-# ==========================================
 # --- 1. MAIN COMMUNITY CHAT VIEW ---
-# ==========================================
+
 @login_required
 def course_community_chat(request, slug):
     course = get_object_or_404(Course, slug=slug)
@@ -205,9 +203,8 @@ def course_community_chat(request, slug):
     
     return render(request, 'community_chat.html', context)
 
-# ==========================================
 # --- 2. PIN MESSAGE API (AJAX) ---
-# ==========================================
+
 @login_required
 def toggle_pin_message(request, message_id):
     if request.method == "POST":
@@ -217,9 +214,8 @@ def toggle_pin_message(request, message_id):
         return JsonResponse({'status': 'success', 'is_pinned': msg.is_pinned})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
-# ==========================================
 # --- 3. EMOJI REACTION API (AJAX) ---
-# ==========================================
+
 @login_required
 def add_message_reaction(request, message_id):
     if request.method == "POST":
@@ -247,9 +243,8 @@ def add_message_reaction(request, message_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
-# ==========================================
 # --- 4. STUDENT PROFILE API (AJAX) ---
-# ==========================================
+
 @login_required
 def get_student_info(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -273,9 +268,8 @@ def get_student_info(request, user_id):
     
     return JsonResponse({'status': 'success', 'data': data})
 
-# ==========================================
 # --- 5. DELETE MESSAGE API (AJAX) ---
-# ==========================================
+
 @login_required
 def delete_message(request, message_id):
     if request.method == "POST":
@@ -288,9 +282,8 @@ def delete_message(request, message_id):
             
     return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
 
-# ==========================================
 # --- 6. EDIT MESSAGE API (AJAX) ---
-# ==========================================
+
 @login_required
 def edit_message(request, message_id):
     if request.method == "POST":
