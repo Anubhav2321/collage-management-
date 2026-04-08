@@ -49,7 +49,9 @@ from .models import (
 
 User = get_user_model()
 
+# ==================================================
 # 1. PUBLIC VIEWS (LANDING, CONTACT)
+# ==================================================
 
 def home_view(request):
     """
@@ -82,14 +84,15 @@ def contact_developers_view(request):
         
     return render(request, 'contact.html')
 
+# ==================================================
 # 2. AUTHENTICATION (REGISTER, LOGIN, LOGOUT)
+# ==================================================
 
 def register_view(request):
     """
     Handles Student Registration.
     """
     if request.user.is_authenticated:
-        # UPDATE: Changed to success (Green)
         messages.success(request, "You are already logged in.")
         return redirect('dashboard')
         
@@ -97,11 +100,9 @@ def register_view(request):
         form = StudentRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Use first_name for success message
             messages.success(request, f"Account created successfully for {user.first_name}! Please login.")
             return redirect('login')
         else:
-            # Show specific form errors
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{error}")
@@ -116,7 +117,6 @@ def login_view(request):
     Handles User Login.
     """
     if request.user.is_authenticated:
-        # UPDATE: Added success message (Green)
         messages.success(request, "You are already logged in.")
         if request.user.is_staff or request.user.is_superuser:
             return redirect('admin_dashboard')
@@ -153,11 +153,12 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    # UPDATE: Changed to error (Red)
     messages.error(request, "You have been logged out successfully.")
     return redirect('login')
 
+# ==================================================
 # 3. STUDENT DASHBOARD & PROFILE FEATURES
+# ==================================================
 
 @login_required
 def student_dashboard(request):
@@ -219,7 +220,9 @@ def profile_view(request):
     }
     return render(request, 'student_profile.html', context)
 
+# ==================================================
 # 4. COURSE & LEARNING LOGIC
+# ==================================================
 
 @login_required
 def all_courses(request):
@@ -291,6 +294,32 @@ def process_payment(request, course_id):
     return redirect('all_courses')
 
 
+# --- 🪙 BUY COURSE WITH COINS LOGIC 🪙 ---
+@login_required
+def purchase_with_coins(request, course_id):
+    if request.method == "POST":
+        course = get_object_or_404(Course, id=course_id)
+        required_coins = int(course.price) * 10
+        
+        # Check if the user has enough coins
+        if request.user.lms_coins >= required_coins:
+            # Deduct coins securely
+            request.user.lms_coins -= required_coins
+            request.user.save(update_fields=['lms_coins'])
+            
+            # Enroll the student in the course
+            Enrollment.objects.get_or_create(student=request.user, course=course)
+            
+            # Success Message with 'Coin' keyword to trigger the Golden Popup
+            messages.success(request, f"🎉 <b>Course Unlocked!</b> You purchased '{course.title}' using {required_coins} LMS Coins.")
+            return redirect('dashboard')
+        else:
+            messages.error(request, "❌ Insufficient coins! Keep learning to earn more.")
+            return redirect('payment_page', course_id=course.id)
+            
+    return redirect('all_courses')
+
+
 # --- COURSE WATCH ---
 @login_required
 def course_watch(request, course_id, lesson_id=None):
@@ -337,10 +366,26 @@ def course_watch(request, course_id, lesson_id=None):
             
             # Only update if the user has progressed FURTHER than before
             if new_progress > enrollment.progress:
+                
+                # ==================================================
+                # --- 🪙 LMS COIN REWARD SYSTEM (VIDEO WATCH) 🪙 ---
+                # ==================================================
+                request.user.lms_coins += 20
+                messages.success(request, "🎉 +20 LMS Coins for completing a lesson!")
+                
+                if new_progress >= 100.0 and enrollment.progress < 100.0:
+                    request.user.lms_coins += 500
+                    messages.success(request, "🏆 Course Completed! +500 Bonus LMS Coins!")
+                    
+                request.user.save(update_fields=['lms_coins'])
+                # ==================================================
+
                 if hasattr(enrollment, 'update_progress'):
                     enrollment.update_progress(new_progress)
                 else:
                     enrollment.progress = new_progress
+                    if new_progress >= 100.0:
+                        enrollment.is_completed = True
                     enrollment.save()
 
             # --- YOUTUBE ID EXTRACTION ---
@@ -425,7 +470,9 @@ def library_view(request):
 
     return render(request, 'student_library.html', {'documents': documents})
 
+# ==================================================
 # 5. QUIZ & EXAMS
+# ==================================================
 
 @login_required
 def student_exam_list(request):
@@ -611,6 +658,23 @@ def submit_quiz_view(request, exam_id):
         
         percentage = int((score / total_questions) * 100) if total_questions > 0 else 0
         
+        # ==================================================
+        # --- 🪙 LMS COIN REWARD SYSTEM (QUIZ SCORE) 🪙 ---
+        # ==================================================
+        if percentage >= 80:
+            # Check if they have previously scored 80%+ on this specific exam
+            past_success_count = QuizResult.objects.filter(
+                student=request.user, 
+                exam=exam, 
+                score__gte=(total_questions * 0.8)
+            ).count()
+            
+            if past_success_count == 1:
+                request.user.lms_coins += 100
+                request.user.save(update_fields=['lms_coins'])
+                messages.success(request, "🎯 Excellent! You scored 80%+ and earned 100 LMS Coins!")
+        # ==================================================
+
         context = {
             'exam': exam,
             'score': score,
@@ -648,7 +712,9 @@ def ai_chat(request):
     return JsonResponse({'error': "Invalid request"}, status=400)
 
 
+# ==================================================
 # 6. ADMIN PANEL SYSTEM (FULL CREATE/DELETE LOGIC)
+# ==================================================
 
 @staff_member_required
 def admin_dashboard(request):

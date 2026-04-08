@@ -27,6 +27,7 @@
     .pay-card {
         width: 1000px;
         background: rgba(20, 20, 25, 0.7);
+        -webkit-backdrop-filter: blur(20px); /* Fixed Warning */
         backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 25px;
@@ -74,6 +75,13 @@
         color: #00ff88;
         border-left-color: #00ff88;
     }
+    
+    /* 🪙 COIN STORE SIDEBAR ITEM 🪙 */
+    .method-item.coin-active {
+        background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), transparent);
+        color: #ffd700;
+        border-left-color: #ffd700;
+    }
 
     /* --- MAIN CONTENT --- */
     .main-content {
@@ -92,14 +100,31 @@
         border: 1px solid rgba(255, 255, 255, 0.05);
         margin-bottom: 30px;
     }
+    
+    .summary-title { color: #888; font-size: 0.8rem; margin-bottom: 5px; }
+    .summary-course-name { color: #fff; font-weight: bold; font-size: 1.1rem; }
+    .summary-total-label { color: #888; font-size: 0.8rem; margin-bottom: 5px; text-align: right; }
+    
     .price-tag {
         font-size: 1.8rem;
         font-weight: 800;
         color: #00ff88;
         text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
     }
+    
+    /* Coin Price Tag */
+    .coin-price-tag {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #ffd700;
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
 
     /* Inputs */
+    .form-group { margin-bottom: 20px; }
+    .form-group-split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-group-upi { display: flex; gap: 10px; }
+    
     .form-group label {
         display: block;
         color: #ccc;
@@ -113,12 +138,15 @@
         border: 1px solid #333;
         border-radius: 10px;
         color: white;
-        margin-bottom: 20px;
         outline: none;
         transition: 0.3s;
         font-family: monospace;
         font-size: 1rem;
     }
+    .input-field-margin { margin-bottom: 20px; }
+    .input-field-nomargin { margin-bottom: 0; }
+    .select-pointer { cursor: pointer; }
+    
     .input-field:focus {
         border-color: #00ff88;
         box-shadow: 0 0 10px rgba(0, 255, 136, 0.1);
@@ -144,11 +172,44 @@
         transform: translateY(-2px);
         box-shadow: 0 10px 20px rgba(0, 255, 136, 0.2);
     }
+    .btn-pay-small { width: 120px; margin: 0; }
+    .btn-pay-qr { margin-top: 20px; }
+
+    /* 🪙 COIN BUTTON STYLES 🪙 */
+    .btn-coin {
+        background: linear-gradient(135deg, #ffd700, #ffaa00);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    }
+    .btn-coin:hover {
+        box-shadow: 0 10px 30px rgba(255, 215, 0, 0.6);
+    }
+    .btn-disabled {
+        background: #333; color: #777; cursor: not-allowed; box-shadow: none;
+    }
+    .btn-disabled:hover { transform: none; box-shadow: none; }
+
+    .coin-balance-display {
+        text-align: center; margin: 30px 0; padding: 20px;
+        background: rgba(255, 215, 0, 0.05); border: 1px dashed rgba(255, 215, 0, 0.3);
+        border-radius: 15px;
+    }
 
     /* Tabs Logic */
+    .d-none { display: none !important; }
     .tab-view { display: none; animation: slideUp 0.4s ease; }
     .tab-view.active { display: block; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Text Alignments & Utilities */
+    .text-center { text-align: center; }
+    .text-white { color: white; }
+    .text-muted { color: #666; }
+    .text-danger { color: #ff3366; font-size: 0.9rem; font-weight: bold; margin-top: 10px; }
+    .text-success { color: #00ff88; font-weight: bold; margin-top: 20px; }
+    .mb-20 { margin-bottom: 20px; }
+    .my-20 { margin: 20px 0; }
+    
+    .qr-container { background: white; padding: 15px; display: inline-block; border-radius: 10px; }
 
     /* UPI Grid */
     .upi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
@@ -157,6 +218,10 @@
         cursor: pointer; display: flex; align-items: center; gap: 10px; color: #fff; transition: 0.3s;
     }
     .upi-box:hover { border-color: #00ff88; transform: translateY(-3px); }
+    .gpay-icon { color: #fff; }
+    .phonepe-icon { color: #5f259f; }
+    .paytm-icon { color: #00baf2; }
+    .bhim-icon { color: #f26522; }
 
     /* ========================================= */
     /* --- SUPER COOL ANIMATION OVERLAY --- */
@@ -165,7 +230,9 @@
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.95); z-index: 9999;
         display: none; align-items: center; justify-content: center;
-        flex-direction: column; backdrop-filter: blur(15px);
+        flex-direction: column; 
+        -webkit-backdrop-filter: blur(15px); /* Fixed Warning */
+        backdrop-filter: blur(15px);
         overflow: hidden; /* For Confetti */
     }
 
@@ -177,13 +244,21 @@
         border-radius: 50%;
         animation: spin 1s linear infinite;
         position: relative;
+        margin: 0 auto;
     }
     .loader::before {
         content: ""; position: absolute; top: 5px; left: 5px; right: 5px; bottom: 5px;
         border: 3px solid transparent; border-top-color: #00d4ff; border-radius: 50%;
         animation: spin 2s linear infinite;
     }
+    .loader-gold { border-top-color: #ffd700; }
+    .loader-gold::before { border-top-color: #ffaa00; }
+    
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .processing-title { color: white; margin-top: 30px; font-family: 'Orbitron', sans-serif; letter-spacing: 2px; font-size: 1.5rem; text-align: center; }
+    .processing-text { color: #00ff88; font-size: 0.9rem; margin-top: 10px; text-align: center; }
+    .processing-text-gold { color: #ffd700; }
 
     /* 2. Success Animation */
     .success-container { text-align: center; display: none; transform: scale(0.5); opacity: 0; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -195,8 +270,12 @@
         margin: 0 auto 30px; box-shadow: 0 0 60px rgba(0, 255, 136, 0.6);
         animation: pulse 1.5s infinite;
     }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,255,136, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(0,255,136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0,255,136, 0); } }
+    .check-icon-gold { background: #ffd700; box-shadow: 0 0 60px rgba(255, 215, 0, 0.6); }
     
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,255,136, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(0,255,136, 0); } 100% { box-shadow: 0 0 0 0 rgba(0,255,136, 0); } }
+    @keyframes pulse-gold { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
+    .check-icon-gold { animation: pulse-gold 1.5s infinite; }
+
     .check-icon i { color: #000; font-size: 4rem; }
 
     .status-msg { color: #fff; font-size: 2rem; font-weight: 800; margin-bottom: 10px; letter-spacing: 1px; }
@@ -204,12 +283,8 @@
 
     /* 3. Money Rain / Confetti */
     .money-bill {
-        position: absolute;
-        top: -100px;
-        font-size: 30px;
-        animation: fall linear forwards;
-        z-index: 10000; /* Above everything */
-        opacity: 0.9;
+        position: absolute; top: -100px; font-size: 30px;
+        animation: fall linear forwards; z-index: 10000; opacity: 0.9;
     }
     @keyframes fall {
         0% { transform: translateY(0) rotate(0deg); }
@@ -219,21 +294,19 @@
 </style>
 
 <div id="overlay-screen">
-    
-    <div id="state-processing" style="text-align:center;">
-        <div class="loader"></div>
-        <h2 style="color:white; margin-top:30px; font-family:'Orbitron', sans-serif; letter-spacing:2px; font-size: 1.5rem;">PROCESSING</h2>
-        <p style="color:#00ff88; font-size:0.9rem; margin-top: 10px;" id="loading-text">Securely connecting to bank...</p>
+    <div id="state-processing">
+        <div class="loader" id="main-loader"></div>
+        <h2 class="processing-title">PROCESSING</h2>
+        <p class="processing-text" id="loading-text">Securely connecting to bank...</p>
     </div>
 
     <div id="state-success" class="success-container">
-        <div class="check-icon">
+        <div class="check-icon" id="success-check">
             <i class="fas fa-check"></i>
         </div>
-        <div class="status-msg">PAYMENT SUCCESSFUL!</div>
-        <div class="sub-msg">Transaction ID: #TXN{{ course.id }}8829</div>
+        <div class="status-msg" id="success-title">PAYMENT SUCCESSFUL!</div>
+        <div class="sub-msg" id="success-sub">Transaction ID: #TXN{{ course.id }}8829</div>
     </div>
-
 </div>
 
 <div class="checkout-wrapper">
@@ -253,30 +326,45 @@
             <div class="method-item" onclick="setTab('qr', this)">
                 <i class="fas fa-qrcode"></i> Scan QR
             </div>
+            
+            <div class="method-item" onclick="setTab('coin', this)" style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                <i class="fas fa-coins" style="color:#ffd700;"></i> LMS Coin Store
+            </div>
         </div>
 
         <div class="main-content">
             
-            <div class="summary-box">
+            <div class="summary-box" id="rupee-header">
                 <div>
-                    <div style="color:#888; font-size:0.8rem; margin-bottom:5px;">PAYING FOR</div>
-                    <div style="color:#fff; font-weight:bold; font-size:1.1rem;">{{ course.title }}</div>
+                    <div class="summary-title">PAYING FOR</div>
+                    <div class="summary-course-name">{{ course.title }}</div>
                 </div>
                 <div>
-                    <div style="color:#888; font-size:0.8rem; margin-bottom:5px; text-align:right;">TOTAL</div>
+                    <div class="summary-total-label">TOTAL</div>
                     <div class="price-tag">₹{{ course.price }}</div>
                 </div>
             </div>
 
+            <div class="summary-box d-none" id="coin-header" style="border-color: rgba(255, 215, 0, 0.3); background: rgba(255, 215, 0, 0.05);">
+                <div>
+                    <div class="summary-title" style="color: #ffd700;">UNLOCKING</div>
+                    <div class="summary-course-name">{{ course.title }}</div>
+                </div>
+                <div>
+                    <div class="summary-total-label" style="color: #ffd700;">COIN PRICE</div>
+                    <div class="coin-price-tag" id="required-coins"></div>
+                </div>
+            </div>
+
             <div id="tab-card" class="tab-view active">
-                <h3 style="color:white; margin-bottom:20px;">Enter Card Details</h3>
-                <form action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return handlePayment(event, this)">
+                <h3 class="text-white mb-20">Enter Card Details</h3>
+                <form action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return handlePayment(event, this, 'rupee')">
                     {% csrf_token %}
                     <div class="form-group">
                         <label>Card Number</label>
-                        <input type="text" class="input-field" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                        <input type="text" class="input-field input-field-margin" placeholder="0000 0000 0000 0000" maxlength="19" required>
                     </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div class="form-group-split">
                         <div class="form-group">
                             <label>Expiry Date</label>
                             <input type="text" class="input-field" placeholder="MM / YY" required>
@@ -290,58 +378,74 @@
                         <label>Card Holder Name</label>
                         <input type="text" class="input-field" placeholder="Name on card" required>
                     </div>
-                    <button class="btn-pay">PAY ₹{{ course.price }}</button>
+                    <button type="submit" class="btn-pay">PAY ₹{{ course.price }}</button>
                 </form>
             </div>
 
             <div id="tab-upi" class="tab-view">
-                <h3 style="color:white; margin-bottom:20px;">Pay via UPI App</h3>
+                <h3 class="text-white mb-20">Pay via UPI App</h3>
                 <div class="upi-grid">
-                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fab fa-google-pay" style="color:#fff;"></i> Google Pay</div>
-                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fas fa-rupee-sign" style="color:#5f259f;"></i> PhonePe</div>
-                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fas fa-wallet" style="color:#00baf2;"></i> Paytm</div>
-                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fas fa-mobile" style="color:#f26522;"></i> BHIM</div>
+                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fab fa-google-pay gpay-icon"></i> Google Pay</div>
+                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fas fa-rupee-sign phonepe-icon"></i> PhonePe</div>
+                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fas fa-wallet paytm-icon"></i> Paytm</div>
+                    <div class="upi-box" onclick="triggerDirectPay()"><i class="fas fa-mobile bhim-icon"></i> BHIM</div>
                 </div>
                 
-                <p style="text-align:center; color:#666; margin:20px 0;">-- OR ENTER UPI ID --</p>
+                <p class="text-center text-muted my-20">-- OR ENTER UPI ID --</p>
                 
-                <form action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return handlePayment(event, this)">
+                <form action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return handlePayment(event, this, 'rupee')">
                     {% csrf_token %}
                     <div class="form-group">
                         <label>UPI ID</label>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" class="input-field" placeholder="mobileNumber@upi" style="margin:0;" required>
-                            <button class="btn-pay" style="width:120px; margin:0;">VERIFY</button>
+                        <div class="form-group-upi">
+                            <input type="text" class="input-field input-field-nomargin" placeholder="mobileNumber@upi" required>
+                            <button type="submit" class="btn-pay btn-pay-small">VERIFY</button>
                         </div>
                     </div>
                 </form>
-                
-                <form id="hidden-form" action="{% url 'process_payment' course.id %}" method="POST" style="display:none;">{% csrf_token %}</form>
+                <form id="hidden-form" action="{% url 'process_payment' course.id %}" method="POST" class="d-none">{% csrf_token %}</form>
             </div>
 
             <div id="tab-net" class="tab-view">
-                <h3 style="color:white; margin-bottom:20px;">Select Bank</h3>
-                <form action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return handlePayment(event, this)">
+                <h3 class="text-white mb-20">Select Bank</h3>
+                <form action="{% url 'process_payment' course.id %}" method="POST" onsubmit="return handlePayment(event, this, 'rupee')">
                     {% csrf_token %}
                     <div class="form-group">
-                        <select class="input-field" style="cursor:pointer;">
+                        <select class="input-field select-pointer">
                             <option>State Bank of India</option>
                             <option>HDFC Bank</option>
                             <option>ICICI Bank</option>
                             <option>Axis Bank</option>
                         </select>
                     </div>
-                    <button class="btn-pay">PAY ₹{{ course.price }}</button>
+                    <button type="submit" class="btn-pay">PAY ₹{{ course.price }}</button>
                 </form>
             </div>
 
-            <div id="tab-qr" class="tab-view" style="text-align:center;">
-                <h3 style="color:white; margin-bottom:20px;">Scan QR to Pay</h3>
-                <div style="background:white; padding:15px; display:inline-block; border-radius:10px;">
+            <div id="tab-qr" class="tab-view text-center">
+                <h3 class="text-white mb-20">Scan QR to Pay</h3>
+                <div class="qr-container">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=learning365@upi&pn=Learning365&am={{ course.price }}" alt="QR">
                 </div>
-                <p style="color:#00ff88; margin-top:20px; font-weight:bold;">Waiting for payment...</p>
-                <button class="btn-pay" onclick="handlePayment(event, document.getElementById('hidden-form'))" style="margin-top:20px;">I Have Paid</button>
+                <p class="text-success">Waiting for payment...</p>
+                <button type="button" class="btn-pay btn-pay-qr" onclick="handlePayment(event, document.getElementById('hidden-form'), 'rupee')">I Have Paid</button>
+            </div>
+
+            <div id="tab-coin" class="tab-view text-center">
+                <h3 style="color:#ffd700; margin-bottom:10px;"><i class="fas fa-crown"></i> Premium Unlock</h3>
+                <p class="text-muted">Use your hard-earned learning coins to get this course for free!</p>
+                
+                <div class="coin-balance-display">
+                    <div style="color:#888; font-size:0.9rem; margin-bottom:10px; text-transform: uppercase;">Your Current Balance</div>
+                    <div style="font-size:2.5rem; font-family:'Orbitron'; color:#fff; font-weight:bold;">
+                        <i class="fas fa-coins" style="color:#ffd700;"></i> <span id="user-balance">{{ request.user.lms_coins }}</span>
+                    </div>
+                </div>
+
+                <form id="coin-purchase-form" action="{% url 'purchase_with_coins' course.id %}" method="POST" onsubmit="return handlePayment(event, this, 'coin')">
+                    {% csrf_token %}
+                    <div id="coin-action-area"></div>
+                </form>
             </div>
 
         </div>
@@ -349,42 +453,104 @@
 </div>
 
 <script>
+    // --- 🪙 COIN SYSTEM LOGIC 🪙 ---
+    const coursePrice = parseInt("{{ course.price }}");
+    const requiredCoins = coursePrice * 10; // 1 Rupee = 10 Coins
+    const userCoins = parseInt("{{ request.user.lms_coins }}");
+    
+    // Set UI Values
+    document.getElementById('required-coins').innerText = requiredCoins;
+    const actionArea = document.getElementById('coin-action-area');
+
+    if (userCoins >= requiredCoins) {
+        actionArea.innerHTML = `<button type="submit" class="btn-pay btn-coin"><i class="fas fa-unlock-alt"></i> UNLOCK WITH ${requiredCoins} COINS</button>`;
+    } else {
+        const shortage = requiredCoins - userCoins;
+        actionArea.innerHTML = `
+            <button type="button" class="btn-pay btn-disabled" disabled><i class="fas fa-lock"></i> NOT ENOUGH COINS</button>
+            <div class="text-danger">You need ${shortage} more coins. Keep learning to earn!</div>
+        `;
+    }
+
     // --- Tabs Logic ---
     function setTab(id, btn) {
         document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.method-item').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.method-item').forEach(b => {
+            b.classList.remove('active');
+            b.classList.remove('coin-active');
+        });
         
         document.getElementById('tab-' + id).classList.add('active');
-        btn.classList.add('active');
+        
+        // Handle UI Swaps for Coin Store
+        if(id === 'coin') {
+            btn.classList.add('coin-active');
+            document.getElementById('rupee-header').classList.add('d-none');
+            document.getElementById('coin-header').classList.remove('d-none');
+        } else {
+            btn.classList.add('active');
+            document.getElementById('rupee-header').classList.remove('d-none');
+            document.getElementById('coin-header').classList.add('d-none');
+        }
     }
 
     // --- PAYMENT ANIMATION LOGIC ---
-    function handlePayment(e, form) {
-        e.preventDefault(); // Stop form submit
+    function handlePayment(e, form, type) {
+        e.preventDefault(); 
 
         const overlay = document.getElementById('overlay-screen');
         const processing = document.getElementById('state-processing');
         const success = document.getElementById('state-success');
         const text = document.getElementById('loading-text');
         
+        // Theme Elements
+        const mainLoader = document.getElementById('main-loader');
+        const successCheck = document.getElementById('success-check');
+        const successTitle = document.getElementById('success-title');
+        const successSub = document.getElementById('success-sub');
+
         // Sounds
         const processSound = document.getElementById('sound-processing');
         const successSound = document.getElementById('sound-success');
+
+        // Apply Gold Theme if paying with coins
+        if(type === 'coin') {
+            mainLoader.classList.add('loader-gold');
+            text.classList.add('processing-text-gold');
+            text.innerText = "Verifying Coin Balance...";
+        } else {
+            mainLoader.classList.remove('loader-gold');
+            text.classList.remove('processing-text-gold');
+            text.innerText = "Securely connecting to bank...";
+        }
 
         // 1. Start Processing Phase
         overlay.style.display = 'flex';
         processSound.volume = 0.5;
         processSound.play().catch(e => console.log("Audio play failed (browser policy):", e));
 
-        // Simulate Bank Connection Steps
-        setTimeout(() => { text.innerText = "Verifying Credentials..."; }, 1500);
-        setTimeout(() => { text.innerText = "Requesting Bank Authorization..."; }, 3000);
+        // Simulate Connection Steps
+        if(type === 'rupee') {
+            setTimeout(() => { text.innerText = "Verifying Credentials..."; }, 1500);
+            setTimeout(() => { text.innerText = "Requesting Bank Authorization..."; }, 3000);
+        } else {
+            setTimeout(() => { text.innerText = "Deducting " + requiredCoins + " Coins..."; }, 1500);
+            setTimeout(() => { text.innerText = "Unlocking Course Content..."; }, 3000);
+        }
 
         // 2. Success Phase (After 4.5 seconds)
         setTimeout(() => {
             processing.style.display = 'none';
             success.style.display = 'block';
-            setTimeout(() => success.classList.add('show'), 50); // Pop effect
+            
+            if(type === 'coin') {
+                successCheck.classList.add('check-icon-gold');
+                successTitle.innerText = "COURSE UNLOCKED!";
+                successTitle.style.color = "#ffd700";
+                successSub.innerText = "-" + requiredCoins + " Coins Deducted";
+            }
+
+            setTimeout(() => success.classList.add('show'), 50); 
             
             // Stop processing sound & Play Success "Ding"
             processSound.pause();
@@ -395,7 +561,7 @@
             if (navigator.vibrate) navigator.vibrate([200]);
 
             // Trigger Money Rain
-            createMoneyRain();
+            createMoneyRain(type);
 
             // 3. Final Redirect (After animation)
             setTimeout(() => {
@@ -410,13 +576,17 @@
     function triggerDirectPay() {
         if(confirm("Open App to complete payment?")) {
             const form = document.getElementById('hidden-form');
-            handlePayment({ preventDefault: () => {} }, form);
+            handlePayment({ preventDefault: () => {} }, form, 'rupee');
         }
     }
 
     // --- MONEY RAIN ANIMATION ---
-    function createMoneyRain() {
-        const symbols = ['💵', '💰', '✨', '🎉', '💸', '🤑'];
+    function createMoneyRain(type) {
+        let symbols = ['💵', '💰', '✨', '🎉', '💸', '🤑'];
+        if (type === 'coin') {
+            symbols = ['🪙', '⭐', '✨', '🏆', '👑']; // Golden items for coin payment
+        }
+
         const overlay = document.getElementById('overlay-screen');
 
         for (let i = 0; i < 60; i++) {

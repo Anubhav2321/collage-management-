@@ -1,5 +1,5 @@
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -46,7 +46,7 @@
 
     <style>
         /* =========================================
-           ADVANCED CYBER-BLUE THEME
+           ADVANCED CYBER-BLUE THEME & UTILITIES
            ========================================= */
         :root {
             --bg-dark: #030508;
@@ -60,6 +60,20 @@
             --other-msg-bg: rgba(20, 25, 40, 0.9);
             --danger-red: #ff3366;
             --ai-neon: #ff0055;
+            --gold-bounty: #ffd700;
+        }
+
+        /* Matrix Easter Egg Theme */
+        body.matrix-theme {
+            --bg-dark: #000000;
+            --neon-cyan: #00ff41;
+            --deep-blue: #008f11;
+            --text-main: #00ff41;
+            --text-muted: #008f11;
+            --glass-border: #00ff41;
+            --my-msg-bg: rgba(0, 255, 65, 0.1);
+            --other-msg-bg: rgba(0, 50, 0, 0.9);
+            font-family: 'Courier New', Courier, monospace !important;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -69,21 +83,49 @@
             background-color: var(--bg-dark);
             color: var(--text-main);
             height: 100vh; display: flex; overflow: hidden; position: relative;
+            transition: background-color 0.5s, color 0.5s;
         }
 
+        /* --- Utility Classes --- */
         .btn-transparent { background: transparent; border: none; outline: none; cursor: pointer; }
         .active-pin { color: var(--neon-cyan) !important; text-shadow: 0 0 10px var(--neon-cyan); }
         .icon-small { font-size: 0.7rem; margin-right: 5px; }
+        .icon-xs { font-size: 0.7rem; margin-right: 4px; }
         .modal-icon-field { color: var(--neon-cyan); width: 20px; }
         .modal-bio-text { font-size: 0.95rem; color: #aaa; margin-top: 5px; display: inline-block; }
         .no-border { border: none !important; }
+        .text-muted-sm { color: var(--text-muted); font-size: 0.7rem; margin-left: 10px; }
+        .msg-time-wrapper { display: flex; align-items: center; gap: 5px; }
+        .edited-tag { font-size: 0.65rem; color: var(--text-muted); font-style: italic; }
+        .d-none { display: none !important; }
+        .text-danger { color: var(--danger-red) !important; }
+        .text-neon-cyan { color: var(--neon-cyan) !important; }
+        .text-light-grey { color: #aaa; }
+        .fw-bold { font-weight: 700; }
+        
+        .ai-name-text { color: var(--ai-neon); text-shadow: 0 0 10px rgba(255,0,85,0.5); font-family: 'Orbitron', sans-serif; }
+        .ai-role-text { color: #fff; }
 
+        /* Media Utility Classes */
+        .msg-img-container { margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--neon-cyan); }
+        .msg-img { max-width: 100%; height: auto; display: block; }
+        .msg-audio-container { margin-top: 10px; }
+        .msg-audio { height: 35px; outline: none; border-radius: 30px; }
+        .attachment-box { display:inline-block; margin-top:8px; color:var(--neon-cyan); text-decoration:none; background:rgba(0,0,0,0.3); padding:8px 15px; border-radius:8px; font-size:0.9rem; border: 1px solid rgba(0, 243, 255, 0.2); transition: 0.3s;}
+        .attachment-box:hover { background: rgba(0, 243, 255, 0.1); }
+
+        .empty-chat { text-align: center; color: var(--text-muted); margin-top: 80px; }
+        .empty-chat-icon { font-size: 4rem; margin-bottom: 20px; color: rgba(0, 243, 255, 0.2); animation: floatOrb 5s infinite alternate; }
+        .empty-chat-h2 { font-family: 'Orbitron'; color: #fff; letter-spacing: 1px; }
+        .empty-chat-p { margin-top: 10px; font-size: 1.1rem; }
+
+        /* Background & Structure */
         .vfx-bg {
             position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
             background-image: linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
             background-size: 40px 40px;
         }
-        .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.2; animation: floatOrb 25s infinite alternate ease-in-out; }
+        .orb { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.2; animation: floatOrb 25s infinite alternate ease-in-out; transition: background 0.5s;}
         .orb-1 { width: 450px; height: 450px; background: var(--deep-blue); top: -10%; left: -10%; }
         .orb-2 { width: 350px; height: 350px; background: var(--neon-cyan); bottom: -10%; right: -5%; animation-delay: -5s; opacity: 0.15;}
 
@@ -93,12 +135,14 @@
             100% { transform: translate(-40px, 40px) scale(0.9); }
         }
 
-        .app-container { display: flex; width: 100%; height: 100%; padding: 20px; gap: 20px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+        .app-container { display: flex; width: 100%; height: 100%; padding: 20px; gap: 20px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: 0.5s; }
 
+        /* Sidebar */
         .sidebar {
             width: 320px; background: var(--glass-bg); border: 1px solid var(--glass-border);
             border-radius: 20px; display: flex; flex-direction: column;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; flex-shrink: 0;
+            transition: 0.5s;
         }
 
         .sidebar-header { padding: 25px 20px; background: rgba(0, 243, 255, 0.03); border-bottom: 1px solid var(--glass-border); }
@@ -125,10 +169,11 @@
         .member-name { font-weight: 600; font-size: 1.05rem; color: #fff; }
         .member-role { font-size: 0.8rem; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
 
+        /* Chat Area */
         .chat-area {
             flex: 1; display: flex; flex-direction: column; background: var(--glass-bg);
             border: 1px solid var(--glass-border); border-radius: 20px; position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; transition: 0.5s;
         }
 
         .chat-header {
@@ -138,9 +183,13 @@
         .chat-header h3 { font-family: 'Orbitron'; color: #fff; font-size: 1.2rem; display: flex; gap: 10px; align-items: center; }
         .chat-header h3 i { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
         
+        .header-actions { display: flex; align-items: center; gap: 15px; }
+        .header-action-btn { background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.2); color: var(--neon-cyan); padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; }
+        .header-action-btn:hover { background: rgba(0, 243, 255, 0.2); box-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
+
         .search-box { display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 20px; padding: 5px 15px; transition: 0.3s; }
         .search-box:focus-within { border-color: var(--neon-cyan); }
-        .search-box input { background: transparent; border: none; color: #fff; padding: 5px; outline: none; font-family: 'Rajdhani'; }
+        .search-box input { background: transparent; border: none; color: #fff; padding: 5px; outline: none; font-family: 'Rajdhani'; width: 150px; }
         .search-box button { color: var(--text-muted); transition: 0.3s;}
         .search-box button:hover { color: var(--neon-cyan); }
 
@@ -158,7 +207,6 @@
         .pinned-title { font-size: 0.75rem; color: var(--neon-cyan); font-weight: 700; text-transform: uppercase; margin-bottom: 2px;}
         .pinned-text { font-size: 0.95rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
-        /* FIXED: Removed scroll-behavior: smooth to prevent initial load glitches */
         .chat-box { 
             flex: 1; padding: 30px; overflow-y: auto; overflow-x: hidden;
             display: flex; flex-direction: column; scroll-behavior: auto; 
@@ -170,7 +218,7 @@
             display: flex; flex-direction: column; max-width: 75%; position: relative; 
             margin-bottom: 25px; margin-top: 10px;
             animation: msgPop 0.3s forwards;
-            animation-delay: var(--anim-delay, 0s);
+            opacity: 0; 
         }
         .my-msg-wrapper { align-self: flex-end; align-items: flex-end; }
         .other-msg-wrapper { align-self: flex-start; align-items: flex-start; }
@@ -178,9 +226,6 @@
         .msg-sender { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; cursor: pointer; transition: 0.2s; color: #8ab4f8; }
         .msg-sender:hover { text-decoration: underline; color: var(--neon-cyan); }
         .my-msg-wrapper .msg-sender { display: none; }
-
-        .ai-sender { color: var(--ai-neon) !important; text-shadow: 0 0 10px rgba(255, 0, 85, 0.5); font-family: 'Orbitron', sans-serif; letter-spacing: 1px;}
-        .ai-sender:hover { color: #fff !important; text-decoration: none; }
 
         .msg {
             padding: 12px 18px; border-radius: 16px; font-size: 1.05rem; word-wrap: break-word;
@@ -194,7 +239,44 @@
         
         .ai-msg { background-color: rgba(255, 0, 85, 0.05); border-left: 3px solid var(--ai-neon); border-bottom-left-radius: 4px; box-shadow: 0 5px 20px rgba(255, 0, 85, 0.1); border-top: 1px solid rgba(255, 0, 85, 0.1); border-right: 1px solid rgba(255, 0, 85, 0.1); border-bottom: 1px solid rgba(255, 0, 85, 0.1);}
 
-        /* AI TYPING INDICATOR */
+        /* =========================================
+           💰 BOUNTY BOARD STYLES 💰
+           ========================================= */
+        .bounty-badge {
+            background: linear-gradient(135deg, #ffae00, #ff5200);
+            color: #000; font-weight: 700; font-family: 'Orbitron', sans-serif;
+            padding: 4px 12px; border-radius: 20px; font-size: 0.85rem;
+            display: inline-flex; align-items: center; gap: 6px;
+            box-shadow: 0 0 15px rgba(255, 174, 0, 0.5);
+            margin-bottom: 8px; border: 1px solid #ffe600;
+        }
+        .bounty-badge.resolved {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            box-shadow: 0 0 15px rgba(0, 176, 155, 0.5); border-color: #a8ff78;
+        }
+
+        .accept-bounty-btn {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            color: #fff; font-weight: bold; border: none; border-radius: 20px;
+            padding: 5px 12px; font-size: 0.85rem; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 5px;
+            box-shadow: 0 5px 15px rgba(0, 176, 155, 0.4); transition: 0.3s;
+            margin-top: 10px; width: max-content;
+        }
+        .accept-bounty-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 176, 155, 0.6); }
+
+        .bounty-input-wrapper {
+            display: flex; align-items: center; background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--gold-bounty); border-radius: 20px; padding: 2px 10px;
+            height: 40px; transition: 0.3s; margin-right: 10px;
+        }
+        .bounty-input-wrapper i { color: var(--gold-bounty); margin-right: 5px; }
+        .bounty-input {
+            background: transparent; border: none; outline: none; color: #fff;
+            width: 50px; font-weight: bold; font-family: 'Rajdhani';
+        }
+        .bounty-input::placeholder { color: rgba(255, 215, 0, 0.5); }
+
         .typing-dots { font-weight: bold; color: var(--ai-neon); font-size: 1.2rem; letter-spacing: 2px;}
         .typing-dots span { animation: blink 1.4s infinite both; }
         .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
@@ -287,7 +369,7 @@
 
         .msg-time { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; padding: 0 5px; }
 
-        /* --- INPUT AREA & NEW ATTACHMENT MENU --- */
+        /* Input Area */
         .chat-input-container { padding: 15px 30px 25px; background: transparent; position: relative; flex-shrink: 0; border-top: 1px solid var(--glass-border); }
         
         .replying-to-bar {
@@ -305,9 +387,8 @@
         }
         .chat-form:focus-within { border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 243, 255, 0.15); }
 
-        /* WHATSAPP STYLE ATTACHMENT MENU */
+        /* Attachment Menu */
         .attachment-wrapper { position: relative; display: flex; align-items: center; }
-        
         .file-upload-label { color: var(--text-muted); cursor: pointer; font-size: 1.4rem; padding: 10px; transition: 0.3s; border-radius: 50%; }
         .file-upload-label:hover { color: var(--neon-cyan); background: rgba(0, 243, 255, 0.1); transform: scale(1.1); }
         
@@ -333,7 +414,6 @@
         
         #file-upload { display: none; }
 
-        /* File Selected Badge */
         .file-preview-badge {
             position: absolute; top: -35px; left: 20px; background: rgba(0, 243, 255, 0.15); border: 1px solid var(--neon-cyan);
             color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; display: none; align-items: center; gap: 8px;
@@ -366,6 +446,60 @@
         .p-modal-name { font-family: 'Orbitron'; font-size: 1.4rem; color: #fff; margin-bottom: 5px; }
         .p-modal-role { color: var(--neon-cyan); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; margin-bottom: 15px; }
         .p-modal-detail { font-size: 1rem; color: #ccc; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; text-align: left;}
+        
+        /* =========================================
+           🎨 NEW: WHITEBOARD MODAL STYLES 🎨
+           ========================================= */
+        .whiteboard-modal {
+            background: #1a1c23; border: 1px solid var(--neon-cyan); width: 800px; height: 600px;
+            border-radius: 15px; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 50px rgba(0, 243, 255, 0.2);
+            transform: scale(0.9); transition: 0.3s; position: relative;
+        }
+        .modal-overlay.show .whiteboard-modal { transform: scale(1); }
+        
+        .wb-header { background: #282a36; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; }
+        .wb-title { color: #fff; font-family: 'Orbitron'; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        
+        .wb-toolbar { background: #333; padding: 10px; display: flex; gap: 15px; align-items: center; justify-content: center;}
+        .color-picker { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s;}
+        .color-picker.active { border-color: #fff; transform: scale(1.1); }
+        
+        .wb-btn { background: #444; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 600; transition: 0.2s;}
+        .wb-btn:hover { background: #555; }
+        .wb-btn-primary { background: var(--neon-cyan); color: #000; }
+        .wb-btn-primary:hover { background: #00d4ff; box-shadow: 0 0 10px var(--neon-cyan);}
+        
+        #drawingCanvas { flex: 1; background: #fff; cursor: crosshair; touch-action: none; }
+
+        /* =========================================
+           🎧 NEW: FOCUS MODE (LO-FI) STYLES 🎧
+           ========================================= */
+        body.focus-mode-active .app-container { opacity: 0.1; filter: blur(5px); pointer-events: none; }
+        body.focus-mode-active { background: #000; }
+        
+        #focus-overlay {
+            position: fixed; inset: 0; z-index: 8000; display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;
+            opacity: 0; transition: opacity 0.5s ease;
+        }
+        #focus-overlay.show { display: flex; opacity: 1; }
+        
+        .focus-timer { font-size: 8rem; text-shadow: 0 0 30px rgba(0, 243, 255, 0.4); margin-bottom: 20px; font-weight: bold;}
+        .focus-text { font-family: 'Rajdhani'; font-size: 1.5rem; color: #aaa; margin-bottom: 40px; letter-spacing: 2px;}
+        
+        .focus-controls { display: flex; gap: 20px; }
+        .focus-btn {
+            background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan);
+            width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: 0.3s;
+        }
+        .focus-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); transform: scale(1.1);}
+        .focus-btn-danger { border-color: var(--danger-red); color: var(--danger-red); }
+        .focus-btn-danger:hover { background: var(--danger-red); color: #fff; box-shadow: 0 0 20px var(--danger-red); }
 
     </style>
 </head>
@@ -373,7 +507,18 @@
 
     <div class="vfx-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
 
-    <div class="app-container">
+    <div id="focus-overlay">
+        <div class="focus-timer" id="focusTimerDisplay">25:00</div>
+        <div class="focus-text">Deep Work Protocol Engaged</div>
+        <div class="focus-controls">
+            <button class="focus-btn" id="focusPlayPauseBtn" title="Play/Pause Timer"><i class="fas fa-pause"></i></button>
+            <button class="focus-btn" id="focusMusicBtn" title="Toggle Lo-Fi Music"><i class="fas fa-music"></i></button>
+            <button class="focus-btn focus-btn-danger" id="focusExitBtn" title="Exit Focus Mode"><i class="fas fa-times"></i></button>
+        </div>
+        <audio id="lofiAudio" src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" loop preload="auto"></audio>
+    </div>
+
+    <div class="app-container" id="mainAppContainer">
         <div class="sidebar">
             <div class="sidebar-header">
                 <a href="{% url 'dashboard' %}" class="back-btn"><i class="fas fa-arrow-left"></i> Return to Base</a>
@@ -394,11 +539,11 @@
                              alt="Profile">
                     {% endif %}
                     <div>
-                        <div class="member-name" {% if member.username == 'ai_commander' %}style="color: var(--ai-neon); text-shadow: 0 0 10px rgba(255,0,85,0.5); font-family: 'Orbitron', sans-serif;"{% endif %}>
+                        <div class="member-name {% if member.username == 'ai_commander' %}ai-name-text{% endif %}">
                             {% if member.username == 'ai_commander' %}<i class="fas fa-robot"></i>{% endif %}
                             {{ member.first_name|default:member.username }}
                         </div>
-                        <div class="member-role" {% if member.username == 'ai_commander' %}style="color: #fff;"{% endif %}>
+                        <div class="member-role {% if member.username == 'ai_commander' %}ai-role-text{% endif %}">
                             {% if member.is_teacher %} <i class="fas fa-shield-alt"></i> Commander {% else %} Cadet {% endif %}
                         </div>
                     </div>
@@ -410,10 +555,16 @@
         <div class="chat-area">
             <div class="chat-header">
                 <h3><i class="fas fa-satellite-dish"></i> SECURE COMMLINK</h3>
-                <form method="GET" class="search-box">
-                    <input type="text" name="q" placeholder="Search transmissions..." value="{{ search_query }}">
-                    <button type="submit" class="btn-transparent" aria-label="Search"><i class="fas fa-search"></i></button>
-                </form>
+                
+                <div class="header-actions">
+                    <button class="header-action-btn" id="openWhiteboardBtn" title="Open Whiteboard"><i class="fas fa-chalkboard"></i></button>
+                    <button class="header-action-btn" id="enterFocusModeBtn" title="Focus Mode"><i class="fas fa-headphones"></i></button>
+                    
+                    <form method="GET" class="search-box">
+                        <input type="text" name="q" placeholder="Search..." value="{{ search_query }}">
+                        <button type="submit" class="btn-transparent" aria-label="Search"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
             </div>
 
             <div class="pinned-container-wrapper">
@@ -421,7 +572,7 @@
                 <div class="pinned-bar action-cycle-pin" title="Click to jump to pinned message">
                     <i class="fas fa-thumbtack pinned-icon"></i>
                     <div class="pinned-content">
-                        <div class="pinned-title">Pinned Message <span id="pinned-count-display" style="color:var(--text-muted); font-size:0.7rem; margin-left:10px;">1/{{ pinned_messages.count }}</span></div>
+                        <div class="pinned-title">Pinned Message <span id="pinned-count-display" class="text-muted-sm">1/{{ pinned_messages.count }}</span></div>
                         <div class="pinned-text" id="pinned-text-display">{{ pinned_messages.0.text|truncatechars:70 }}</div>
                     </div>
                 </div>
@@ -430,7 +581,7 @@
 
             <div class="chat-box" id="chatBox">
                 {% for message in chat_messages %}
-                    <div class="msg-wrapper {% if message.sender == request.user %}my-msg-wrapper{% else %}other-msg-wrapper{% endif %}" id="msg-{{ message.id }}" style="--anim-delay: calc({{ forloop.counter0 }} * 50ms);">
+                    <div class="msg-wrapper {% if message.sender == request.user %}my-msg-wrapper{% else %}other-msg-wrapper{% endif %}" id="msg-{{ message.id }}">
                         
                         <span class="msg-sender action-open-profile {% if message.sender.username == 'ai_commander' %}ai-sender{% endif %}" data-id="{{ message.sender.id }}">
                             {% if message.sender.username == 'ai_commander' %}
@@ -447,9 +598,9 @@
                                 
                                 {% if message.sender == request.user %}
                                     <i class="fas fa-edit action-edit-btn" data-msg-id="{{ message.id }}" data-msg-text="{% if message.text %}{{ message.text|escapejs }}{% endif %}" title="Edit Message"></i>
-                                    <i class="fas fa-trash-alt action-delete-btn" style="color: var(--danger-red);" data-msg-id="{{ message.id }}" title="Delete for everyone"></i>
+                                    <i class="fas fa-trash-alt action-delete-btn text-danger" data-msg-id="{{ message.id }}" title="Delete for everyone"></i>
                                 {% elif request.user.is_teacher %}
-                                    <i class="fas fa-trash-alt action-delete-btn" style="color: var(--danger-red);" data-msg-id="{{ message.id }}" title="Delete Student Message"></i>
+                                    <i class="fas fa-trash-alt action-delete-btn text-danger" data-msg-id="{{ message.id }}" title="Delete Student Message"></i>
                                 {% endif %}
 
                                 <i class="fas fa-thumbtack action-pin-btn {% if message.is_pinned %}active-pin{% endif %}" data-msg-id="{{ message.id }}" title="Pin/Unpin"></i>
@@ -466,35 +617,51 @@
                             </div>
 
                             {% if message.is_pinned %}
-                                <div class="pinned-indicator"><i class="fas fa-thumbtack" style="font-size:0.7rem; margin-right:4px;"></i> Pinned</div>
+                                <div class="pinned-indicator"><i class="fas fa-thumbtack icon-xs"></i> Pinned</div>
+                            {% endif %}
+
+                            {% if message.bounty_amount > 0 %}
+                                <div class="bounty-badge {% if message.is_bounty_resolved %}resolved{% endif %}">
+                                    <i class="fas fa-coins"></i> {{ message.bounty_amount }} Coins
+                                    {% if message.is_bounty_resolved %}
+                                        | ✅ Solved by {{ message.bounty_winner.first_name|default:message.bounty_winner.username }}
+                                    {% endif %}
+                                </div>
                             {% endif %}
 
                             {% if message.reply_to %}
                             <div class="reply-context action-scroll-to" data-target-id="{{ message.reply_to.id }}">
                                 <i class="fas fa-reply icon-small"></i>
-                                <b>{{ message.reply_to.sender.first_name }}:</b> {{ message.reply_to.text|truncatechars:40 }}
+                                <b>{{ message.reply_to.sender.first_name }}:</b> <span class="text-light-grey">{{ message.reply_to.text|truncatechars:40 }}</span>
                             </div>
                             {% endif %}
 
                             {% if message.text %}
-                                <div class="message-body-text js-parse-code" data-raw="{{ message.text|escapejs }}" style="display:none;"></div>
+                                <div class="message-body-text js-parse-code d-none" data-raw="{{ message.text|escapejs }}"></div>
                                 <div class="parsed-output message-body-text"></div> 
                             {% endif %}
 
                             {% if message.attachment %}
                                 {% if '.jpg' in message.attachment.name or '.png' in message.attachment.name or '.jpeg' in message.attachment.name or '.gif' in message.attachment.name %}
-                                    <div style="margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--neon-cyan);">
-                                        <img src="{{ message.attachment.url }}" style="max-width: 100%; height: auto; display: block;" alt="Image">
+                                    <div class="msg-img-container">
+                                        <img src="{{ message.attachment.url }}" class="msg-img" alt="Image">
                                     </div>
                                 {% elif '.mp3' in message.attachment.name or '.wav' in message.attachment.name or '.ogg' in message.attachment.name %}
-                                    <div style="margin-top: 10px;">
-                                        <audio controls style="height: 35px; outline: none; border-radius: 30px;">
+                                    <div class="msg-audio-container">
+                                        <audio controls class="msg-audio">
                                             <source src="{{ message.attachment.url }}" type="audio/mpeg">
                                         </audio>
                                     </div>
                                 {% else %}
-                                    <br><a href="{{ message.attachment.url }}" target="_blank" class="attachment-box" style="display:inline-block; margin-top:8px; color:var(--neon-cyan); text-decoration:none; background:rgba(0,0,0,0.3); padding:8px 15px; border-radius:8px; font-size:0.9rem; border: 1px solid rgba(0, 243, 255, 0.2);"><i class="fas fa-file-download"></i> Open Attached File</a>
+                                    <br><a href="{{ message.attachment.url }}" target="_blank" class="attachment-box"><i class="fas fa-file-download"></i> Open Attached File</a>
                                 {% endif %}
+                            {% endif %}
+                            
+                            {% if message.reply_to and message.reply_to.bounty_amount > 0 and message.reply_to.sender == request.user and not message.reply_to.is_bounty_resolved and message.sender != request.user %}
+                                <br>
+                                <button type="button" class="accept-bounty-btn action-accept-bounty" data-reply-id="{{ message.id }}">
+                                    <i class="fas fa-check-circle"></i> Accept & Award
+                                </button>
                             {% endif %}
                         </div>
 
@@ -508,7 +675,7 @@
                                             {% for r in message.reactions.all %}
                                                 {% if r.reaction_type == emoji %}
                                                     <div class="reactor-item">
-                                                        <i class="fas fa-user icon-small" style="color:var(--neon-cyan);"></i> 
+                                                        <i class="fas fa-user icon-small text-neon-cyan"></i> 
                                                         {{ r.user.first_name|default:r.user.username }}
                                                     </div>
                                                 {% endif %}
@@ -518,33 +685,33 @@
                                 {% endfor %}
                             </div>
                             
-                            <div style="display: flex; align-items: center; gap: 5px;">
+                            <div class="msg-time-wrapper">
                                 <span class="msg-time">{{ message.created_at|date:"M d, g:i a" }}</span>
                                 {% if message.is_edited %}
-                                    <span style="font-size: 0.65rem; color: var(--text-muted); font-style: italic;">(edited)</span>
+                                    <span class="edited-tag">(edited)</span>
                                 {% endif %}
                             </div>
                         </div>
 
                     </div>
                 {% empty %}
-                    <div style="text-align: center; color: var(--text-muted); margin-top: 80px;">
-                        <i class="fas fa-radar" style="font-size: 4rem; margin-bottom: 20px; color: rgba(0, 243, 255, 0.2); animation: floatOrb 5s infinite alternate;"></i>
-                        <h2 style="font-family: 'Orbitron'; color: #fff; letter-spacing: 1px;">NO TRANSMISSIONS YET</h2>
-                        <p style="margin-top: 10px; font-size: 1.1rem;">Initialize the communication protocol.</p>
+                    <div class="empty-chat">
+                        <i class="fas fa-radar empty-chat-icon"></i>
+                        <h2 class="empty-chat-h2">NO TRANSMISSIONS YET</h2>
+                        <p class="empty-chat-p">Initialize the communication protocol.</p>
                     </div>
                 {% endfor %}
             </div>
 
             <div class="chat-input-container">
                 <div class="replying-to-bar" id="replyBar">
-                    <div><i class="fas fa-reply icon-small"></i> Replying to <b id="replyTargetName"></b>: <span id="replyTargetText" style="color:#aaa;"></span></div>
-                    <i class="fas fa-times cancel-reply" id="cancelReplyBtn"></i>
+                    <div><i class="fas fa-reply icon-small"></i> Replying to <b id="replyTargetName"></b>: <span id="replyTargetText" class="text-light-grey"></span></div>
+                    <i class="fas fa-times cancel-reply text-danger" id="cancelReplyBtn"></i>
                 </div>
                 
                 <div class="file-preview-badge" id="filePreviewBadge">
                     <i class="fas fa-file-alt"></i> <span id="fileNameDisplay">file.pdf</span> 
-                    <span class="remove-file" id="removeFileBtn">&times;</span>
+                    <span class="remove-file text-danger" id="removeFileBtn">&times;</span>
                 </div>
 
                 <form id="chat-form" class="chat-form" enctype="multipart/form-data">
@@ -580,7 +747,12 @@
                     
                     <input type="file" name="attachment" id="file-upload">
 
-                    <textarea name="message_text" class="chat-input" id="mainChatInput" placeholder="Type message (Start with '/ai' to ask the bot)..."></textarea>
+                    <div class="bounty-input-wrapper" title="Set a Bounty in Coins (Optional)">
+                        <i class="fas fa-coins"></i>
+                        <input type="number" name="bounty_amount" id="bountyInput" class="bounty-input" min="0" max="{{ request.user.lms_coins }}" placeholder="0">
+                    </div>
+
+                    <textarea name="message_text" class="chat-input" id="mainChatInput" placeholder="Type message... (/matrix for magic)"></textarea>
 
                     <button type="submit" class="send-btn" id="sendBtn" aria-label="Transmit"><i class="fas fa-paper-plane"></i></button>
                 </form>
@@ -600,6 +772,32 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="whiteboardModal">
+        <div class="whiteboard-modal" id="whiteboardContent">
+            <div class="wb-header">
+                <div class="wb-title"><i class="fas fa-paint-brush" style="color:var(--neon-cyan)"></i> Strategy Canvas</div>
+                <i class="fas fa-times" id="closeWbBtn" style="color:#aaa; cursor:pointer; font-size:1.2rem;"></i>
+            </div>
+            
+            <div class="wb-toolbar">
+                <div class="color-picker active" style="background:#000;" data-color="#000000"></div>
+                <div class="color-picker" style="background:#ff3366;" data-color="#ff3366"></div>
+                <div class="color-picker" style="background:#00d4ff;" data-color="#00d4ff"></div>
+                <div class="color-picker" style="background:#00e676;" data-color="#00e676"></div>
+                
+                <div style="width: 1px; height: 20px; background: #555; margin: 0 10px;"></div>
+                
+                <button class="wb-btn" id="wbEraser"><i class="fas fa-eraser"></i></button>
+                <button class="wb-btn" id="wbClear"><i class="fas fa-trash"></i></button>
+                
+                <div style="flex:1;"></div>
+                
+                <button class="wb-btn wb-btn-primary" id="wbAttachBtn"><i class="fas fa-paperclip"></i> Attach to Chat</button>
+            </div>
+            
+            <canvas id="drawingCanvas"></canvas>
+        </div>
+    </div>
 
     <script>
         const csrftokenValue = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -642,7 +840,7 @@
                             </div><div class="message-body-text">`;
                 });
                 
-                formattedHTML = formattedHTML.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--neon-cyan); font-weight:700;">$1</strong>');
+                formattedHTML = formattedHTML.replace(/\*\*(.*?)\*\*/g, '<strong class="text-neon-cyan fw-bold">$1</strong>');
                 formattedHTML = formattedHTML.replace(/\*(.*?)\*/g, '<em>$1</em>');
                 
                 let outputSpan = el.nextElementSibling;
@@ -664,7 +862,6 @@
             });
         }
 
-        // --- NEW: FORCED INITIAL SCROLL LOGIC ---
         function forceScrollBottom() {
             chatBox.scrollTop = chatBox.scrollHeight;
             setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 300);
@@ -674,6 +871,11 @@
         
         loadAvatars();
         setTimeout(formatMessages, 100);
+
+        document.querySelectorAll('.msg-wrapper').forEach((el, index) => {
+            el.style.animationDelay = (index * 50) + 'ms';
+            el.style.opacity = 1; 
+        });
         
         const chatInput = document.getElementById('mainChatInput');
         chatInput.addEventListener('input', function() {
@@ -689,7 +891,6 @@
             }
         });
 
-        // Attachment Menu Logic
         const attachMenuBtn = document.getElementById('attachMenuBtn');
         const attachmentMenu = document.getElementById('attachmentMenu');
         const fileInput = document.getElementById('file-upload');
@@ -736,7 +937,16 @@
             attachMenuBtn.style.color = 'var(--text-muted)';
         });
 
-        // --- FIXED: ADDED forceUpdate FOR PINS & EMOJIS ---
+        // Convert base64 DataURL from Canvas to a File object for the form
+        function dataURLtoFile(dataurl, filename) {
+            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], filename, {type:mime});
+        }
+
         function fetchAndInjectChat(scrollToBottom = false, forceUpdate = false) {
             fetch(window.location.href)
             .then(res => res.text())
@@ -747,7 +957,6 @@
                 const currentMessageCount = chatBox.querySelectorAll('.msg-wrapper').length;
                 const newMessagesList = doc.getElementById('chatBox').querySelectorAll('.msg-wrapper');
                 
-                // Now updates if forced (reactions/pins/edits) OR if message count changes
                 if (forceUpdate || newMessagesList.length !== currentMessageCount || currentMessageCount === 0) {
                     if(window.aiPollInterval && newMessagesList.length !== currentMessageCount) {
                         clearInterval(window.aiPollInterval);
@@ -772,6 +981,11 @@
                         chatBox.scrollTop = currentScroll;
                     }
                     
+                    document.querySelectorAll('.msg-wrapper').forEach((el, index) => {
+                        el.style.animationDelay = (index * 50) + 'ms';
+                        el.style.opacity = 1; 
+                    });
+
                     loadAvatars();
                     formatMessages();
                     bindDynamicEvents();
@@ -783,15 +997,30 @@
             e.preventDefault();
             const formData = new FormData(this);
             const msgText = document.getElementById('mainChatInput').value.trim();
+            const bountyAmt = document.getElementById('bountyInput').value;
             
-            if(!msgText && !fileInput.value) return;
+            if(!msgText && !fileInput.files.length && !formData.get('attachment').size) return;
+
+            // Matrix Easter Egg
+            if(msgText === "/matrix") {
+                document.body.classList.toggle('matrix-theme');
+                document.getElementById('mainChatInput').value = '';
+                return;
+            }
 
             document.getElementById('mainChatInput').value = '';
+            document.getElementById('bountyInput').value = '';
             document.getElementById('mainChatInput').style.height = '44px';
             document.getElementById('mainChatInput').style.overflowY = 'hidden';
             document.getElementById('replyInputId').value = '';
             document.getElementById('replyBar').style.display = 'none';
+            
+            // Reset File Inputs
             fileInput.value = '';
+            // If using DataTransfer (like from whiteboard), reset it
+            const dt = new DataTransfer();
+            fileInput.files = dt.files;
+            
             fileBadge.style.display = 'none';
             attachMenuBtn.style.color = 'var(--text-muted)';
 
@@ -801,7 +1030,7 @@
                 
                 if (msgText.toLowerCase().startsWith('/ai')) {
                     chatBox.insertAdjacentHTML('beforeend', `
-                        <div class="msg-wrapper other-msg-wrapper" id="ai-typing-indicator">
+                        <div class="msg-wrapper other-msg-wrapper" id="ai-typing-indicator" style="opacity: 1;">
                             <span class="msg-sender ai-sender"><i class="fas fa-robot"></i> AI Commander</span>
                             <div class="msg ai-msg">
                                 <span class="typing-dots">Thinking<span>.</span><span>.</span><span>.</span></span>
@@ -824,28 +1053,16 @@
             });
         });
 
-        // 6. MASTER EVENT BINDER
         function bindDynamicEvents() {
-            
-            // DELETE MESSAGE LOGIC
             document.querySelectorAll('.action-delete-btn').forEach(el => {
                 el.addEventListener('click', function() {
                     if(confirm("Are you sure you want to delete this message for everyone?")) {
-                        fetch(`/api/chat/delete/${this.dataset.msgId}/`, { 
-                            method: 'POST', 
-                            headers: { 'X-CSRFToken': csrftokenValue } 
-                        })
-                        .then(res => res.json())
-                        .then(data => { 
-                            if(data.status === 'success') {
-                                fetchAndInjectChat(false, true); 
-                            }
-                        });
+                        fetch(`/api/chat/delete/${this.dataset.msgId}/`, { method: 'POST', headers: { 'X-CSRFToken': csrftokenValue } })
+                        .then(res => res.json()).then(data => { if(data.status === 'success') { fetchAndInjectChat(false, true); } });
                     }
                 });
             });
 
-            // EDIT MESSAGE LOGIC
             document.querySelectorAll('.action-edit-btn').forEach(el => {
                 el.addEventListener('click', function() {
                     let currentText = this.dataset.msgText.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
@@ -857,12 +1074,7 @@
                             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftokenValue },
                             body: JSON.stringify({ text: newText })
                         })
-                        .then(res => res.json())
-                        .then(data => {
-                            if(data.status === 'success') {
-                                fetchAndInjectChat(false, true);
-                            }
-                        });
+                        .then(res => res.json()).then(data => { if(data.status === 'success') { fetchAndInjectChat(false, true); } });
                     }
                 });
             });
@@ -898,6 +1110,26 @@
                     document.getElementById('replyTargetText').innerText = this.dataset.msgText;
                     document.getElementById('replyBar').style.display = 'flex';
                     document.getElementById('mainChatInput').focus();
+                });
+            });
+
+            document.querySelectorAll('.action-accept-bounty').forEach(el => {
+                el.addEventListener('click', function() {
+                    if(confirm("Are you sure this answer solved your problem? The coins will be transferred to this user.")) {
+                        const replyId = this.dataset.replyId;
+                        fetch(`/api/chat/accept-bounty/${replyId}/`, { 
+                            method: 'POST', 
+                            headers: { 'X-CSRFToken': csrftokenValue } 
+                        })
+                        .then(res => res.json())
+                        .then(data => { 
+                            if(data.status === 'success') {
+                                window.location.reload(); 
+                            } else {
+                                alert(data.message);
+                            }
+                        });
+                    }
                 });
             });
 
@@ -974,6 +1206,198 @@
 
         bindDynamicEvents();
         bindPinnedBarEvent();
+
+        // =========================================
+        // 🎨 WHITEBOARD LOGIC 🎨
+        // =========================================
+        const wbModal = document.getElementById('whiteboardModal');
+        const openWbBtn = document.getElementById('openWhiteboardBtn');
+        const closeWbBtn = document.getElementById('closeWbBtn');
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const wbAttachBtn = document.getElementById('wbAttachBtn');
+        const wbClearBtn = document.getElementById('wbClear');
+        const wbEraserBtn = document.getElementById('wbEraser');
+        const colorPickers = document.querySelectorAll('.color-picker');
+
+        let isDrawing = false;
+        let currentColor = '#000000';
+        let currentLineWidth = 2;
+        let isEraser = false;
+
+        // Resize Canvas to fit container
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight - 50; // minus toolbar header height roughly
+            // Fill background white
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        openWbBtn.addEventListener('click', () => {
+            wbModal.classList.add('show');
+            setTimeout(resizeCanvas, 300); // Wait for transition
+        });
+
+        closeWbBtn.addEventListener('click', () => wbModal.classList.remove('show'));
+
+        // Drawing events
+        function getMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (evt.clientX || evt.touches[0].clientX) - rect.left,
+                y: (evt.clientY || evt.touches[0].clientY) - rect.top
+            };
+        }
+
+        function startPosition(e) {
+            isDrawing = true;
+            draw(e);
+        }
+
+        function endPosition() {
+            isDrawing = false;
+            ctx.beginPath(); // Reset path
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getMousePos(e);
+            
+            ctx.lineWidth = isEraser ? 20 : currentLineWidth;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = isEraser ? '#ffffff' : currentColor;
+
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('touchstart', startPosition, {passive: false});
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw, {passive: false});
+
+        // Tools
+        colorPickers.forEach(picker => {
+            picker.addEventListener('click', function() {
+                isEraser = false;
+                currentColor = this.getAttribute('data-color');
+                colorPickers.forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                wbEraserBtn.style.color = '#fff';
+            });
+        });
+
+        wbEraserBtn.addEventListener('click', () => {
+            isEraser = true;
+            colorPickers.forEach(p => p.classList.remove('active'));
+            wbEraserBtn.style.color = 'var(--neon-cyan)';
+        });
+
+        wbClearBtn.addEventListener('click', () => {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Attach to chat
+        wbAttachBtn.addEventListener('click', () => {
+            const dataUrl = canvas.toDataURL("image/png");
+            const file = dataURLtoFile(dataUrl, 'whiteboard_sketch.png');
+            
+            // Programmatically set the file input using DataTransfer
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            
+            // Update UI to show file is attached
+            fileNameDisplay.innerText = "Whiteboard Sketch";
+            fileBadge.style.display = 'flex';
+            attachMenuBtn.style.color = '#00f3ff';
+            
+            wbModal.classList.remove('show');
+        });
+
+        // =========================================
+        // 🎧 FOCUS MODE LOGIC 🎧
+        // =========================================
+        const enterFocusBtn = document.getElementById('enterFocusModeBtn');
+        const exitFocusBtn = document.getElementById('focusExitBtn');
+        const focusOverlay = document.getElementById('focus-overlay');
+        const focusTimerDisplay = document.getElementById('focusTimerDisplay');
+        const focusPlayPauseBtn = document.getElementById('focusPlayPauseBtn');
+        const focusMusicBtn = document.getElementById('focusMusicBtn');
+        const lofiAudio = document.getElementById('lofiAudio');
+        
+        let focusTimer;
+        let timeLeft = 25 * 60; // 25 minutes
+        let isTimerRunning = false;
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            focusTimerDisplay.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        enterFocusBtn.addEventListener('click', () => {
+            document.body.classList.add('focus-mode-active');
+            focusOverlay.classList.add('show');
+            updateTimerDisplay();
+        });
+
+        exitFocusBtn.addEventListener('click', () => {
+            document.body.classList.remove('focus-mode-active');
+            focusOverlay.classList.remove('show');
+            clearInterval(focusTimer);
+            isTimerRunning = false;
+            focusPlayPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            lofiAudio.pause();
+            focusMusicBtn.style.color = 'var(--neon-cyan)';
+            focusMusicBtn.style.borderColor = 'var(--neon-cyan)';
+        });
+
+        focusPlayPauseBtn.addEventListener('click', () => {
+            if (isTimerRunning) {
+                clearInterval(focusTimer);
+                isTimerRunning = false;
+                focusPlayPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            } else {
+                isTimerRunning = true;
+                focusPlayPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                focusTimer = setInterval(() => {
+                    if(timeLeft > 0) {
+                        timeLeft--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(focusTimer);
+                        // Play a sound when done
+                        let ping = new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3');
+                        ping.play();
+                    }
+                }, 1000);
+            }
+        });
+
+        let isMusicPlaying = false;
+        focusMusicBtn.addEventListener('click', () => {
+            if (isMusicPlaying) {
+                lofiAudio.pause();
+                isMusicPlaying = false;
+                focusMusicBtn.style.color = 'var(--neon-cyan)';
+                focusMusicBtn.style.borderColor = 'var(--neon-cyan)';
+            } else {
+                lofiAudio.volume = 0.4;
+                lofiAudio.play();
+                isMusicPlaying = true;
+                focusMusicBtn.style.color = '#fff';
+                focusMusicBtn.style.borderColor = '#fff';
+            }
+        });
 
     </script>
 </body>

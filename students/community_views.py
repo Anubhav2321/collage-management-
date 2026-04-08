@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q
+from django.db import transaction  # NEW: For secure coin transfer
 from .models import Course, Enrollment, CourseGroupMessage, MessageReaction, User
 
 # .env file loaded 
@@ -116,7 +117,7 @@ def check_and_auto_reply(course_id, message_id, prompt):
     except Exception as e:
         print(f"Auto Reply Error: {e}")
 
-# --- 1. MAIN COMMUNITY CHAT VIEW ---
+# 1. MAIN COMMUNITY CHAT VIEW 
 
 @login_required
 def course_community_chat(request, slug):
@@ -145,19 +146,38 @@ def course_community_chat(request, slug):
         message_text = request.POST.get('message_text', '')
         attachment = request.FILES.get('attachment')
         reply_to_id = request.POST.get('reply_to_id')
+        
+        #  BOUNTY DEDUCTION LOGIC 
+
+        bounty_amount_str = request.POST.get('bounty_amount', '0')
+        try:
+            bounty_amount = int(bounty_amount_str) if bounty_amount_str else 0
+        except ValueError:
+            bounty_amount = 0
+
+        # Check if user has enough coins
+        if bounty_amount > 0:
+            if request.user.lms_coins < bounty_amount:
+                messages.error(request, "Insufficient LMS Coins to set this bounty.")
+                return redirect('course_community_chat', slug=course.slug)
+            
+            # Deduct coins safely
+            request.user.lms_coins -= bounty_amount
+            request.user.save(update_fields=['lms_coins'])
 
         if message_text or attachment:
             reply_msg = None
             if reply_to_id:
                 reply_msg = CourseGroupMessage.objects.filter(id=reply_to_id).first()
 
-            # Save the new message to DB
+            # Save the new message to DB with Bounty Amount
             msg = CourseGroupMessage.objects.create(
                 course=course,
                 sender=request.user,
                 text=message_text,
                 attachment=attachment,
-                reply_to=reply_msg
+                reply_to=reply_msg,
+                bounty_amount=bounty_amount # <--- Added here
             )
 
             # --- AI BOT TRIGGERS (VISION ENABLED) ---
@@ -302,4 +322,53 @@ def edit_message(request, message_id):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
             
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+# --- 7. ACCEPT BOUNTY API (AJAX) ---
+
+@login_required
+def accept_bounty(request, reply_id):
+    if request.method == "POST":
+        try:
+            reply_msg = get_object_or_404(CourseGroupMessage, id=reply_id)
+            parent_msg = reply_msg.reply_to
+            
+            # Security Checks
+            if not parent_msg:
+                return JsonResponse({'status': 'error', 'message': 'This is not a reply to a bounty.'})
+            
+            if parent_msg.sender != request.user:
+                return JsonResponse({'status': 'error', 'message': 'Only the creator of the bounty can accept an answer.'})
+                
+            if parent_msg.is_bounty_resolved:
+                return JsonResponse({'status': 'error', 'message': 'This bounty is already resolved.'})
+                
+            if parent_msg.bounty_amount <= 0:
+                return JsonResponse({'status': 'error', 'message': 'There is no bounty on this message.'})
+
+            if reply_msg.sender == request.user:
+                return JsonResponse({'status': 'error', 'message': 'You cannot accept your own answer.'})
+
+            # Execute Transaction Securely
+            with transaction.atomic():
+                # 1. Mark bounty as resolved
+                parent_msg.is_bounty_resolved = True
+                parent_msg.bounty_winner = reply_msg.sender
+                parent_msg.save()
+                
+                # 2. Add coins to the winner
+                winner = reply_msg.sender
+                winner.lms_coins += parent_msg.bounty_amount
+                winner.save(update_fields=['lms_coins'])
+                
+                # 3. Create the global notification that triggers our Golden Popup!
+                # Note: The word 'Coin' must be in the message for the JS to trigger the golden style
+                winner_name = winner.first_name if winner.first_name else winner.username
+                messages.success(request, f"🎉 <b>Bounty Resolved!</b> {parent_msg.bounty_amount} LMS Coins awarded to {winner_name}!")
+                
+            return JsonResponse({'status': 'success'})
+            
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)

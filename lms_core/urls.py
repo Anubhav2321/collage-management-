@@ -26,6 +26,7 @@ from students.views import (
     # 4. Payment System
     payment_page,
     process_payment,
+    purchase_with_coins, # <--- 🪙 NEW: Imported for Coin Payment
 
     # 5. Quiz & AI
     student_exam_list,  # Exam List View
@@ -73,7 +74,8 @@ from students.community_views import (
     add_message_reaction,
     get_student_info,
     delete_message,   # ADDED for Delete API
-    edit_message      # ADDED for Edit API
+    edit_message,     # ADDED for Edit API
+    accept_bounty     # <--- NEW: ADDED for Bounty System API
 )
 
 urlpatterns = [
@@ -104,6 +106,9 @@ urlpatterns = [
     # Payment Flow
     path('courses/payment/<int:course_id>/', payment_page, name='payment_page'),
     path('courses/payment/<int:course_id>/process/', process_payment, name='process_payment'),
+    
+    # --- 🪙 NEW: BUY COURSE WITH COINS URL ---
+    path('courses/payment/<int:course_id>/coin-purchase/', purchase_with_coins, name='purchase_with_coins'),
 
     # Watch Course
     path('courses/watch/<int:course_id>/', course_watch, name='course_watch'),
@@ -125,6 +130,9 @@ urlpatterns = [
     # --- NEW: Delete & Edit Messages API ---
     path('api/chat/delete/<int:message_id>/', delete_message, name='delete_message'),
     path('api/chat/edit/<int:message_id>/', edit_message, name='edit_message'),
+    
+    # --- NEW: Bounty System API ---
+    path('api/chat/accept-bounty/<int:reply_id>/', accept_bounty, name='accept_bounty'), 
     
     # 5. Quiz & AI System
     
