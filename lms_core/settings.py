@@ -20,7 +20,7 @@ print("✅ Loading Google Client ID:", "SUCCESS" if os.getenv('GOOGLE_CLIENT_ID'
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-this-key-for-production')
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -102,6 +102,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'frontend/static'] # Frontend Static Linked
 
+# --- 🚀 NEW: STATIC_ROOT FOR DEPLOYMENT (PythonAnywhere) ---
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 # --- MEDIA FILES CONFIGURATION ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -152,6 +155,7 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
 # --- GROQ AI CONFIGURATION ---
 # Reads the key from your .env file
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
