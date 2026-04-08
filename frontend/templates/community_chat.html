@@ -158,9 +158,10 @@
         .pinned-title { font-size: 0.75rem; color: var(--neon-cyan); font-weight: 700; text-transform: uppercase; margin-bottom: 2px;}
         .pinned-text { font-size: 0.95rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
+        /* FIXED: Removed scroll-behavior: smooth to prevent initial load glitches */
         .chat-box { 
             flex: 1; padding: 30px; overflow-y: auto; overflow-x: hidden;
-            display: flex; flex-direction: column; scroll-behavior: smooth; 
+            display: flex; flex-direction: column; scroll-behavior: auto; 
         }
         .chat-box::-webkit-scrollbar { width: 6px; }
         .chat-box::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.3); border-radius: 10px; }
@@ -663,7 +664,14 @@
             });
         }
 
-        chatBox.scrollTop = chatBox.scrollHeight;
+        // --- NEW: FORCED INITIAL SCROLL LOGIC ---
+        function forceScrollBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 300);
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 800);
+        }
+        forceScrollBottom();
+        
         loadAvatars();
         setTimeout(formatMessages, 100);
         
@@ -728,7 +736,8 @@
             attachMenuBtn.style.color = 'var(--text-muted)';
         });
 
-        function fetchAndInjectChat(scrollToBottom = false) {
+        // --- FIXED: ADDED forceUpdate FOR PINS & EMOJIS ---
+        function fetchAndInjectChat(scrollToBottom = false, forceUpdate = false) {
             fetch(window.location.href)
             .then(res => res.text())
             .then(html => {
@@ -738,9 +747,9 @@
                 const currentMessageCount = chatBox.querySelectorAll('.msg-wrapper').length;
                 const newMessagesList = doc.getElementById('chatBox').querySelectorAll('.msg-wrapper');
                 
-                // Re-inject if new message, OR if a message was deleted (count decreased)
-                if (newMessagesList.length !== currentMessageCount || currentMessageCount === 0) {
-                    if(window.aiPollInterval) {
+                // Now updates if forced (reactions/pins/edits) OR if message count changes
+                if (forceUpdate || newMessagesList.length !== currentMessageCount || currentMessageCount === 0) {
+                    if(window.aiPollInterval && newMessagesList.length !== currentMessageCount) {
                         clearInterval(window.aiPollInterval);
                         window.aiPollInterval = null;
                         const typingIndicator = document.getElementById('ai-typing-indicator');
@@ -757,8 +766,11 @@
                         bindPinnedBarEvent(); 
                     }
                     
-                    if(scrollToBottom) chatBox.scrollTop = chatBox.scrollHeight;
-                    else chatBox.scrollTop = currentScroll;
+                    if(scrollToBottom) {
+                        forceScrollBottom();
+                    } else {
+                        chatBox.scrollTop = currentScroll;
+                    }
                     
                     loadAvatars();
                     formatMessages();
@@ -796,7 +808,7 @@
                             </div>
                         </div>
                     `);
-                    chatBox.scrollTop = chatBox.scrollHeight;
+                    forceScrollBottom();
 
                     let pollCount = 0;
                     window.aiPollInterval = setInterval(() => {
@@ -812,10 +824,10 @@
             });
         });
 
-        // 6. MASTER EVENT BINDER (Now includes Delete & Edit)
+        // 6. MASTER EVENT BINDER
         function bindDynamicEvents() {
             
-            // --- NEW: DELETE MESSAGE LOGIC ---
+            // DELETE MESSAGE LOGIC
             document.querySelectorAll('.action-delete-btn').forEach(el => {
                 el.addEventListener('click', function() {
                     if(confirm("Are you sure you want to delete this message for everyone?")) {
@@ -826,19 +838,16 @@
                         .then(res => res.json())
                         .then(data => { 
                             if(data.status === 'success') {
-                                // Force reload to show deletion
-                                chatBox.innerHTML = '';
-                                fetchAndInjectChat(false); 
+                                fetchAndInjectChat(false, true); 
                             }
                         });
                     }
                 });
             });
 
-            // --- NEW: EDIT MESSAGE LOGIC ---
+            // EDIT MESSAGE LOGIC
             document.querySelectorAll('.action-edit-btn').forEach(el => {
                 el.addEventListener('click', function() {
-                    // Replace safe HTML quotes back to normal quotes for editing
                     let currentText = this.dataset.msgText.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
                     let newText = prompt("Edit your message:", currentText);
                     
@@ -851,9 +860,7 @@
                         .then(res => res.json())
                         .then(data => {
                             if(data.status === 'success') {
-                                // Clear and fetch to show edited text
-                                chatBox.innerHTML = '';
-                                fetchAndInjectChat(false);
+                                fetchAndInjectChat(false, true);
                             }
                         });
                     }
@@ -863,7 +870,7 @@
             document.querySelectorAll('.action-pin-btn').forEach(el => {
                 el.addEventListener('click', function() {
                     fetch(`/api/chat/pin/${this.dataset.msgId}/`, { method: 'POST', headers: { 'X-CSRFToken': csrftokenValue } })
-                    .then(res => res.json()).then(data => { if(data.status === 'success') { fetchAndInjectChat(); } });
+                    .then(res => res.json()).then(data => { if(data.status === 'success') { fetchAndInjectChat(false, true); } });
                 });
             });
             
@@ -872,7 +879,7 @@
                     fetch(`/api/chat/react/${this.dataset.msgId}/`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftokenValue },
                         body: JSON.stringify({ reaction_type: this.dataset.emoji })
-                    }).then(res => res.json()).then(data => { if(data.status === 'success') { fetchAndInjectChat(); } });
+                    }).then(res => res.json()).then(data => { if(data.status === 'success') { fetchAndInjectChat(false, true); } });
                 });
             });
 
@@ -914,7 +921,14 @@
             });
 
             document.querySelectorAll('.action-scroll-to').forEach(el => {
-                el.addEventListener('click', function() { scrollToMessage(this.dataset.targetId); });
+                el.addEventListener('click', function() {
+                    const targetMsg = document.getElementById('msg-' + this.dataset.targetId);
+                    if(targetMsg) {
+                        targetMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetMsg.classList.add('highlight-flash');
+                        setTimeout(() => { targetMsg.classList.remove('highlight-flash'); }, 2500);
+                    }
+                });
             });
         }
 
@@ -941,7 +955,12 @@
                     if(pinnedList.length === 0) return;
                     
                     const currentMsg = pinnedList[currentPinnedIndex];
-                    scrollToMessage(currentMsg.id);
+                    const targetMsg = document.getElementById('msg-' + currentMsg.id);
+                    if(targetMsg) {
+                        targetMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        targetMsg.classList.add('highlight-flash');
+                        setTimeout(() => { targetMsg.classList.remove('highlight-flash'); }, 2500);
+                    }
 
                     if(pinnedList.length > 1) {
                         currentPinnedIndex = (currentPinnedIndex + 1) % pinnedList.length;
@@ -950,15 +969,6 @@
                         document.getElementById('pinned-count-display').innerText = `${currentPinnedIndex + 1}/${pinnedList.length}`;
                     }
                 });
-            }
-        }
-
-        function scrollToMessage(msgId) {
-            const targetMsg = document.getElementById('msg-' + msgId);
-            if(targetMsg) {
-                targetMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                targetMsg.classList.add('highlight-flash');
-                setTimeout(() => { targetMsg.classList.remove('highlight-flash'); }, 2500);
             }
         }
 

@@ -11,6 +11,21 @@
         margin: 0 auto;
     }
 
+    /* Helper Classes for Utility (Removes Inline CSS warnings) */
+    .link-back { color: #888; text-decoration: none; margin-bottom: 20px; display: inline-block; transition: 0.3s; }
+    .link-back:hover { color: #00d4ff; }
+    .margin-left-10 { margin-left: 10px; }
+    .margin-bottom-10 { margin-bottom: 10px; }
+    .margin-bottom-15 { margin-bottom: 15px; }
+    .text-center { text-align: center; }
+    .text-grey { color: #aaa; }
+    .text-dark-grey { color: #666; }
+    .text-danger { color: #ff3366; }
+    .padding-20 { padding: 20px; }
+    .border-dark { border-color: #444 !important; }
+    .input-dark { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; margin-bottom: 5px; outline: none; }
+    .input-dark:focus { border-color: #00d4ff; }
+
     /* Top Profile Card */
     .profile-card {
         background: #111;
@@ -21,6 +36,7 @@
         align-items: center;
         gap: 30px;
         margin-bottom: 30px;
+        position: relative; /* For Absolute Positioning of Coin Badge */
     }
 
     .big-avatar {
@@ -51,6 +67,30 @@
         border: 1px solid #444;
         margin-top: 10px;
         display: inline-block;
+    }
+
+    /* --- NEW: Coin Badge in Admin --- */
+    .admin-coin-badge {
+        position: absolute;
+        top: 30px;
+        right: 30px;
+        background: rgba(0, 243, 255, 0.1);
+        border: 1px solid #00f3ff;
+        padding: 10px 20px;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .admin-coin-badge i {
+        color: #00f3ff;
+        font-size: 1.5rem;
+    }
+    .admin-coin-badge .coin-val {
+        color: #fff;
+        font-size: 1.5rem;
+        font-weight: bold;
+        font-family: 'Orbitron', sans-serif;
     }
 
     /* Grid Layout */
@@ -95,24 +135,18 @@
         text-decoration: none;
     }
 
-    .btn-block {
-        background: #ff9f43;
-        color: #000;
-    }
+    .btn-block { background: #ff9f43; color: #000; }
     .btn-block:hover { background: #e67e22; }
 
-    .btn-delete {
-        background: #ff3366;
-        color: #fff;
-    }
+    .btn-delete { background: #ff3366; color: #fff; }
     .btn-delete:hover { background: #d63031; }
 
-    .btn-password {
-        background: #333;
-        color: #fff;
-        border: 1px solid #444;
-    }
+    .btn-password { background: #333; color: #fff; border: 1px solid #444; }
     .btn-password:hover { background: #444; }
+
+    /* NEW: Coin Update Button */
+    .btn-coin { background: rgba(0, 243, 255, 0.1); color: #00f3ff; border: 1px solid #00f3ff; }
+    .btn-coin:hover { background: #00f3ff; color: #000; box-shadow: 0 0 15px #00f3ff; }
 
     /* Enrollment List */
     .enroll-item {
@@ -132,7 +166,7 @@
 
 <div class="detail-container">
     
-    <a href="{% url 'admin_student_list' %}" style="color: #888; text-decoration: none; margin-bottom: 20px; display: inline-block;">
+    <a href="{% url 'admin_student_list' %}" class="link-back">
         <i class="fas fa-arrow-left"></i> Back to Student List
     </a>
 
@@ -140,14 +174,19 @@
         {% if student.profile.profile_pic %}
             <img src="{{ student.profile.profile_pic.url }}" class="big-avatar" alt="Profile">
         {% else %}
-            <img src="https://via.placeholder.com/100" class="big-avatar" alt="Profile">
+            <img src="https://ui-avatars.com/api/?name={{ student.username }}&background=00d4ff&color=000" class="big-avatar" alt="Profile">
         {% endif %}
         
         <div class="profile-info">
             <h2>{{ student.first_name }} {{ student.last_name }}</h2>
             <p>{{ student.email }}</p>
             <div class="id-badge">User ID: #{{ student.id }}</div>
-            <div class="id-badge" style="margin-left: 10px;">Joined: {{ student.date_joined|date:"d M, Y" }}</div>
+            <div class="id-badge margin-left-10">Joined: {{ student.date_joined|date:"d M, Y" }}</div>
+        </div>
+
+        <div class="admin-coin-badge" title="Current LMS Coins">
+            <i class="fas fa-coins"></i>
+            <span class="coin-val">{{ student.lms_coins }}</span>
         </div>
     </div>
 
@@ -163,22 +202,22 @@
                     <span class="progress-text">{{ enroll.progress }}% Complete</span>
                 </div>
                 {% empty %}
-                <p style="color: #666; text-align: center; padding: 20px;">No active enrollments.</p>
+                <p class="text-dark-grey text-center padding-20">No active enrollments.</p>
                 {% endfor %}
             </div>
 
             <div class="section-card">
                 <h3 class="section-title"><i class="fas fa-info-circle"></i> Personal Information</h3>
-                <p style="color: #aaa; margin-bottom: 10px;"><strong>Phone:</strong> {{ student.profile.phone|default:"Not Provided" }}</p>
-                <p style="color: #aaa; margin-bottom: 10px;"><strong>Stream:</strong> {{ student.stream|default:"General" }}</p>
-                <p style="color: #aaa; margin-bottom: 10px;"><strong>Level:</strong> {{ student.student_level }}</p>
-                <p style="color: #aaa;"><strong>Bio:</strong> {{ student.profile.bio|default:"No bio available." }}</p>
+                <p class="text-grey margin-bottom-10"><strong>Phone:</strong> {{ student.profile.phone|default:"Not Provided" }}</p>
+                <p class="text-grey margin-bottom-10"><strong>Stream:</strong> {{ student.stream|default:"General" }}</p>
+                <p class="text-grey margin-bottom-10"><strong>Level:</strong> {{ student.student_level }}</p>
+                <p class="text-grey"><strong>Bio:</strong> {{ student.profile.bio|default:"No bio available." }}</p>
             </div>
         </div>
 
         <div class="action-column">
-            <div class="section-card" style="border-color: #444;">
-                <h3 class="section-title" style="color: #ff3366;">Admin Actions</h3>
+            <div class="section-card border-dark">
+                <h3 class="section-title text-danger">Admin Actions</h3>
                 
                 <a href="{% url 'admin_toggle_block' student.id %}" class="action-btn btn-block">
                     {% if student.is_active %}
@@ -188,11 +227,20 @@
                     {% endif %}
                 </a>
 
-                <form action="{% url 'admin_reset_password' student.id %}" method="POST" style="margin-bottom: 15px;">
+                <form action="{% url 'admin_reset_password' student.id %}" method="POST" class="margin-bottom-15">
                     {% csrf_token %}
-                    <input type="text" name="new_password" placeholder="New Password" required style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; margin-bottom: 5px;">
+                    <input type="text" name="new_password" placeholder="New Password" required class="input-dark">
                     <button type="submit" class="action-btn btn-password">
                         <span><i class="fas fa-key"></i> Reset Password</span>
+                    </button>
+                </form>
+
+                <form action="{% url 'admin_update_student_info' student.id %}" method="POST" class="margin-bottom-15">
+                    {% csrf_token %}
+                    <input type="hidden" name="update_type" value="coins">
+                    <input type="number" name="new_coins" placeholder="Set Coin Balance" value="{{ student.lms_coins }}" required class="input-dark">
+                    <button type="submit" class="action-btn btn-coin">
+                        <span><i class="fas fa-plus-circle"></i> Update Coins</span>
                     </button>
                 </form>
 

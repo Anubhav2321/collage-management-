@@ -1,7 +1,7 @@
 import json
 import datetime
 import time
-import re  # <--- Regex Module for YouTube Link Parsing
+import re  # Regex Module for YouTube Link Parsing
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
@@ -795,21 +795,37 @@ def admin_student_detail(request, user_id):
 
 @staff_member_required
 def admin_update_student_info(request, user_id):
+    """
+    CRITICAL UPDATE: Now handles both Profile Updates AND Coin Updates securely.
+    """
     student = get_object_or_404(User, id=user_id)
     if request.method == "POST":
-        student.first_name = request.POST.get('first_name')
-        student.last_name = request.POST.get('last_name')
-        student.email = request.POST.get('email')
-        student.stream = request.POST.get('stream')
-        student.student_level = request.POST.get('student_level')
-        student.save()
-        
-        phone = request.POST.get('phone')
-        if phone:
-            student.profile.phone = phone
-            student.profile.save()
+        update_type = request.POST.get('update_type')
+
+        if update_type == 'coins':
+            # --- ONLY UPDATE COINS ---
+            new_coins = request.POST.get('new_coins')
+            if new_coins is not None:
+                student.lms_coins = int(new_coins)
+                student.save(update_fields=['lms_coins'])
+                messages.success(request, f"Coin balance updated to {new_coins} for {student.username}.")
+        else:
+            # --- NORMAL PROFILE UPDATE ---
+            # Added fallback to student's current name to prevent NOT NULL constraints
+            student.first_name = request.POST.get('first_name', student.first_name)
+            student.last_name = request.POST.get('last_name', student.last_name)
+            student.email = request.POST.get('email', student.email)
+            student.stream = request.POST.get('stream', student.stream)
+            student.student_level = request.POST.get('student_level', student.student_level)
+            student.save()
             
-        messages.success(request, "Student information updated successfully.")
+            phone = request.POST.get('phone')
+            if phone:
+                student.profile.phone = phone
+                student.profile.save()
+                
+            messages.success(request, "Student information updated successfully.")
+            
     return redirect('admin_student_detail', user_id=user_id)
 
 @staff_member_required

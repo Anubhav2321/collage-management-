@@ -25,6 +25,10 @@ class User(AbstractUser):
     )
     stream = models.CharField(max_length=100, blank=True, null=True, help_text="e.g., Science, Arts, Engineering")
     
+    # --- NEW: LMS COIN ECONOMY ---
+
+    lms_coins = models.PositiveIntegerField(default=100, help_text="Virtual coins for LMS Economy")
+    
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)
 
@@ -72,6 +76,11 @@ class Course(models.Model):
     
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_published = models.BooleanField(default=True)
+    
+    # --- NEW: Coin Purchase Logic ---
+
+    is_coin_purchasable = models.BooleanField(default=False, help_text="Check this to allow purchasing with coins")
+    coin_price = models.PositiveIntegerField(default=0, help_text="Price in LMS Coins (if purchasable)")
     
     total_modules = models.PositiveIntegerField(default=0)
     difficulty_level = models.CharField(
@@ -403,6 +412,21 @@ class CourseGroupMessage(models.Model):
     
     # --- NEW: Pin Feature ---
     is_pinned = models.BooleanField(default=False)
+    
+    # --- PREVIOUS NEW: Edit Feature (Restored) ---
+    is_edited = models.BooleanField(default=False)
+    
+    # =========================================
+    # --- NEW: Chat Bounty System ---
+    # =========================================
+    bounty_amount = models.PositiveIntegerField(default=0, help_text="Amount offered for solving this question")
+    is_bounty_resolved = models.BooleanField(default=False)
+    bounty_winner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL, 
+        null=True, blank=True, 
+        related_name="won_bounties"
+    )
     
     # While sending the message
     created_at = models.DateTimeField(auto_now_add=True)

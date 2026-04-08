@@ -1,19 +1,16 @@
 from django.urls import path
-
 from students import community_views
 from . import views
 
 urlpatterns = [
 
     # Authentication
-      
     path('', views.login_view, name='login'),  # Default to login page
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
 
     # Student Panel Features
-
     path('dashboard/', views.student_dashboard, name='dashboard'),
     path('courses/', views.all_courses, name='all_courses'),
     path('courses/watch/<int:course_id>/', views.course_watch, name='course_watch'),
@@ -25,11 +22,9 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
 
     # API (Chatbot)
-
     path('api/ai-chat/', views.ai_chat, name='ai_chat'),
 
-    # Admin Panel System (New)
-    
+    # Admin Panel System
     path('admin-panel/', views.admin_dashboard, name='admin_dashboard'),
     
     # Student Management List
@@ -41,7 +36,14 @@ urlpatterns = [
     path('admin-panel/students/<int:user_id>/delete/', views.admin_delete_student, name='admin_delete_student'),
     path('admin-panel/students/<int:user_id>/reset-pass/', views.admin_reset_password, name='admin_reset_password'),
 
-    # Delete & Edit Messages API
-    path('api/chat/delete/<int:message_id>/', views.delete_message, name='delete_message'),
-    path('api/chat/edit/<int:message_id>/', views.edit_message, name='edit_message'),
+    # --- COMMUNITY CHAT & API URLS ---
+
+    path('community/<slug:slug>/', community_views.course_community_chat, name='course_community_chat'),
+    path('api/chat/pin/<int:message_id>/', community_views.toggle_pin_message, name='toggle_pin_message'),
+    path('api/chat/react/<int:message_id>/', community_views.add_message_reaction, name='add_message_reaction'),
+    path('api/chat/user-info/<int:user_id>/', community_views.get_student_info, name='get_student_info'),
+    
+    # Delete & Edit Messages API (FIXED: Updated to community_views)
+    path('api/chat/delete/<int:message_id>/', community_views.delete_message, name='delete_message'),
+    path('api/chat/edit/<int:message_id>/', community_views.edit_message, name='edit_message'),
 ]

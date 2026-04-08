@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include  # <--- NEW: 'include'    
+from django.urls import path, include  # NEW: 'include'    
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -21,15 +21,15 @@ from students.views import (
     course_watch,       
     live_classes, 
     library_view, 
-    profile_view,       # <--- Profile View
+    profile_view,       #  Profile View
 
     # 4. Payment System
     payment_page,
     process_payment,
 
     # 5. Quiz & AI
-    student_exam_list,  # <--- Exam List View
-    take_exam,          # <--- Take Exam View
+    student_exam_list,  # Exam List View
+    take_exam,          # Take Exam View
     generate_quiz_view, 
     save_quiz_view, 
     submit_quiz_view,   
@@ -63,7 +63,7 @@ from students.views import (
     admin_create_live_class,
     admin_create_exam,
     add_library_view,
-    admin_add_lesson # <--- Lesson View
+    admin_add_lesson # Lesson View
 )
 
 # --- NEW: Importing views from the new community_views.py file ---
@@ -71,7 +71,9 @@ from students.community_views import (
     course_community_chat,
     toggle_pin_message,
     add_message_reaction,
-    get_student_info
+    get_student_info,
+    delete_message,   # ADDED for Delete API
+    edit_message      # ADDED for Edit API
 )
 
 urlpatterns = [
@@ -111,15 +113,18 @@ urlpatterns = [
     path('live-classes/', live_classes, name='live_classes'),
     path('library/', library_view, name='library'),
     
-    # ==================================================
     # --- 9. ADVANCED COMMUNITY CHAT URLs ---
-    # ==================================================
+
     path('community/<slug:slug>/', course_community_chat, name='course_community_chat'),
     
     # AJAX APIs for Chat Features
     path('api/chat/pin/<int:message_id>/', toggle_pin_message, name='toggle_pin_message'),
     path('api/chat/react/<int:message_id>/', add_message_reaction, name='add_message_reaction'),
     path('api/chat/user-info/<int:user_id>/', get_student_info, name='get_student_info'),
+    
+    # --- NEW: Delete & Edit Messages API ---
+    path('api/chat/delete/<int:message_id>/', delete_message, name='delete_message'),
+    path('api/chat/edit/<int:message_id>/', edit_message, name='edit_message'),
     
     # 5. Quiz & AI System
     

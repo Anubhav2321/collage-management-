@@ -14,6 +14,7 @@
         --neon-cyan: #00f3ff;
         --neon-purple: #bc13fe;
         --text-main: #e0e0e0;
+        --text-muted: #8892b0;
     }
 
     body {
@@ -35,6 +36,15 @@
         transform: translateY(30px);
     }
     @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* Helper Classes to remove inline CSS warnings */
+    .d-none { display: none; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .status-active { color: #00ff9d; }
+    .icon-cyan { color: var(--neon-cyan); }
+    .icon-play { margin-left: 5px; font-size: 0.8rem; }
+    .link-cyan { color: var(--neon-cyan); }
 
     /* --- PROFILE HEADER CARD --- */
     .profile-header {
@@ -106,6 +116,56 @@
         color: var(--neon-cyan);
         padding: 6px 20px; border-radius: 30px;
         font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+        margin-bottom: 15px; /* Added margin for coin card */
+    }
+
+    /* --- NEW: COIN BALANCE CARD --- */
+    .coin-balance-card {
+        background: linear-gradient(135deg, #1a1c29, #0a0f18); 
+        border: 1px solid var(--neon-cyan); 
+        border-radius: 12px; 
+        padding: 15px 25px; 
+        display: inline-flex; 
+        align-items: center; 
+        gap: 15px; 
+        box-shadow: 0 5px 15px rgba(0,243,255,0.2);
+        margin-top: 5px;
+        transition: 0.3s;
+    }
+    .coin-balance-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,243,255,0.4);
+    }
+    .coin-icon-wrapper {
+        background: var(--neon-cyan); 
+        color: #000; 
+        width: 45px; 
+        height: 45px; 
+        border-radius: 50%; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-size: 1.5rem; 
+        font-weight: bold;
+    }
+    .coin-label {
+        color: var(--text-muted); 
+        font-size: 0.85rem; 
+        text-transform: uppercase; 
+        font-weight: 700; 
+        letter-spacing: 1px;
+        text-align: left;
+    }
+    .coin-value {
+        color: #fff; 
+        font-size: 1.5rem; 
+        font-family: 'Orbitron', sans-serif; 
+        text-shadow: 0 0 10px var(--neon-cyan);
+        text-align: left;
+    }
+    .coin-text {
+        font-size: 0.9rem; 
+        color: var(--neon-cyan);
     }
 
     /* --- INFO GRID --- */
@@ -209,14 +269,26 @@
         <div class="user-role">
             {% if user.is_student %}Student Account{% else %}Instructor{% endif %}
         </div>
+        
+        <br> <div class="coin-balance-card">
+            <div class="coin-icon-wrapper">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div>
+                <div class="coin-label">My Balance</div>
+                <div class="coin-value">
+                    {{ user.lms_coins }} <span class="coin-text">Coins</span>
+                </div>
+            </div>
+        </div>
 
-        <form method="POST" enctype="multipart/form-data" id="avatar-form" style="display: none;">
+        <form method="POST" enctype="multipart/form-data" id="avatar-form" class="d-none">
             {% csrf_token %}
             {{ form.profile_pic }}
         </form>
     </div>
 
-    <div class="info-grid fade-in-up" style="animation-delay: 0.2s;">
+    <div class="info-grid fade-in-up delay-2">
         
         <div class="info-card">
             <div class="card-header">
@@ -258,14 +330,14 @@
             </div>
             <div class="data-row">
                 <span class="label">Status</span>
-                <span class="value" style="color: #00ff9d;">● Active</span>
+                <span class="value status-active">● Active</span>
             </div>
         </div>
     </div>
 
-    <div class="fade-in-up" style="animation-delay: 0.3s;">
+    <div class="fade-in-up delay-3">
         <div class="section-title">
-            <i class="fas fa-layer-group" style="color:var(--neon-cyan)"></i>
+            <i class="fas fa-layer-group icon-cyan"></i>
             Enrolled Courses ({{ enrollments.count }})
         </div>
 
@@ -277,14 +349,14 @@
                     <small>Enrolled: {{ enrollment.enrolled_at|date:"d M, Y" }}</small>
                 </div>
                 <a href="{% url 'course_watch' enrollment.course.id %}" class="btn-continue">
-                    RESUME <i class="fas fa-play" style="margin-left:5px; font-size:0.8rem;"></i>
+                    RESUME <i class="fas fa-play icon-play"></i>
                 </a>
             </div>
             {% endfor %}
         {% else %}
             <div class="empty-msg">
                 <p>No active enrollments found.</p>
-                <a href="{% url 'all_courses' %}" style="color:var(--neon-cyan);">Browse Library</a>
+                <a href="{% url 'all_courses' %}" class="link-cyan">Browse Library</a>
             </div>
         {% endif %}
     </div>
