@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',  # <--- Google Provider Added
+    'allauth.socialaccount.providers.google',  # Google Provider Added
     
     # My Apps
     'students',
@@ -148,7 +148,7 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'online',
         },
         'APP': {
-            # --- SECURED: Now perfectly reading from .env file ---
+            # SECURED: Now perfectly reading from .env file
             'client_id': os.getenv('GOOGLE_CLIENT_ID', ''), 
             'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
             'key': ''
