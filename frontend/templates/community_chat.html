@@ -28,7 +28,11 @@
                 h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js',
                 h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js',
                 h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js',
-                h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js'
+                h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js',
+                h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js',
+                h + 'cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js',
+                h + 'cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.js',
+                h + 'cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ext-language_tools.min.js'
             ];
             jsLinks.forEach(function(url) {
                 var s = document.createElement('script'); s.src = url; s.async = false; head.appendChild(s);
@@ -63,7 +67,6 @@
             --gold-bounty: #ffd700;
         }
 
-        /* Matrix Easter Egg Theme */
         body.matrix-theme {
             --bg-dark: #000000;
             --neon-cyan: #00ff41;
@@ -86,7 +89,6 @@
             transition: background-color 0.5s, color 0.5s;
         }
 
-        /* --- Utility Classes --- */
         .btn-transparent { background: transparent; border: none; outline: none; cursor: pointer; }
         .active-pin { color: var(--neon-cyan) !important; text-shadow: 0 0 10px var(--neon-cyan); }
         .icon-small { font-size: 0.7rem; margin-right: 5px; }
@@ -106,7 +108,6 @@
         .ai-name-text { color: var(--ai-neon); text-shadow: 0 0 10px rgba(255,0,85,0.5); font-family: 'Orbitron', sans-serif; }
         .ai-role-text { color: #fff; }
 
-        /* Media Utility Classes */
         .msg-img-container { margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--neon-cyan); }
         .msg-img { max-width: 100%; height: auto; display: block; }
         .msg-audio-container { margin-top: 10px; }
@@ -119,7 +120,6 @@
         .empty-chat-h2 { font-family: 'Orbitron'; color: #fff; letter-spacing: 1px; }
         .empty-chat-p { margin-top: 10px; font-size: 1.1rem; }
 
-        /* Background & Structure */
         .vfx-bg {
             position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
             background-image: linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
@@ -135,7 +135,7 @@
             100% { transform: translate(-40px, 40px) scale(0.9); }
         }
 
-        .app-container { display: flex; width: 100%; height: 100%; padding: 20px; gap: 20px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: 0.5s; }
+        .app-container { display: flex; width: 100%; height: 100%; padding: 20px; gap: 20px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: 0.5s; z-index: 10;}
 
         /* Sidebar */
         .sidebar {
@@ -370,7 +370,7 @@
         .msg-time { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; padding: 0 5px; }
 
         /* Input Area */
-        .chat-input-container { padding: 15px 30px 25px; background: transparent; position: relative; flex-shrink: 0; border-top: 1px solid var(--glass-border); }
+        .chat-input-container { padding: 15px 30px 25px; background: transparent; position: relative; flex-shrink: 0; border-top: 1px solid var(--glass-border); z-index: 20;}
         
         .replying-to-bar {
             display: none; justify-content: space-between; align-items: center;
@@ -448,68 +448,79 @@
         .p-modal-detail { font-size: 1rem; color: #ccc; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; text-align: left;}
         
         /* =========================================
-           🎨 NEW: WHITEBOARD MODAL STYLES 🎨
+           💻 VS CODE IDE MODAL STYLES 💻
            ========================================= */
-        .whiteboard-modal {
-            background: #1a1c23; border: 1px solid var(--neon-cyan); width: 800px; height: 600px;
-            border-radius: 15px; display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 10px 50px rgba(0, 243, 255, 0.2);
-            transform: scale(0.9); transition: 0.3s; position: relative;
+        .ide-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); 
+            z-index: 999999; justify-content: center; align-items: center; 
+            backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.3s ease;
         }
-        .modal-overlay.show .whiteboard-modal { transform: scale(1); }
-        
-        .wb-header { background: #282a36; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; }
-        .wb-title { color: #fff; font-family: 'Orbitron'; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
-        
-        .wb-toolbar { background: #333; padding: 10px; display: flex; gap: 15px; align-items: center; justify-content: center;}
-        .color-picker { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s;}
-        .color-picker.active { border-color: #fff; transform: scale(1.1); }
-        
-        .wb-btn { background: #444; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-family: 'Rajdhani'; font-weight: 600; transition: 0.2s;}
-        .wb-btn:hover { background: #555; }
-        .wb-btn-primary { background: var(--neon-cyan); color: #000; }
-        .wb-btn-primary:hover { background: #00d4ff; box-shadow: 0 0 10px var(--neon-cyan);}
-        
-        #drawingCanvas { flex: 1; background: #fff; cursor: crosshair; touch-action: none; }
+        .ide-modal-overlay.show { display: flex; opacity: 1; }
 
-        /* =========================================
-           🎧 NEW: FOCUS MODE (LO-FI) STYLES 🎧
-           ========================================= */
-        body.focus-mode-active .app-container { opacity: 0.1; filter: blur(5px); pointer-events: none; }
-        body.focus-mode-active { background: #000; }
-        
-        #focus-overlay {
-            position: fixed; inset: 0; z-index: 8000; display: none; flex-direction: column;
-            justify-content: center; align-items: center;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-            color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;
-            opacity: 0; transition: opacity 0.5s ease;
+        .vscode-container {
+            background: #1e1e1e; width: 95vw; height: 90vh; border-radius: 12px; 
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8); border: 1px solid #3c3c3c;
+            transform: scale(0.95); transition: transform 0.3s ease;
         }
-        #focus-overlay.show { display: flex; opacity: 1; }
-        
-        .focus-timer { font-size: 8rem; text-shadow: 0 0 30px rgba(0, 243, 255, 0.4); margin-bottom: 20px; font-weight: bold;}
-        .focus-text { font-family: 'Rajdhani'; font-size: 1.5rem; color: #aaa; margin-bottom: 40px; letter-spacing: 2px;}
-        
-        .focus-controls { display: flex; gap: 20px; }
-        .focus-btn {
-            background: transparent; border: 2px solid var(--neon-cyan); color: var(--neon-cyan);
-            width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transition: 0.3s;
-        }
-        .focus-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); transform: scale(1.1);}
-        .focus-btn-danger { border-color: var(--danger-red); color: var(--danger-red); }
-        .focus-btn-danger:hover { background: var(--danger-red); color: #fff; box-shadow: 0 0 20px var(--danger-red); }
+        .ide-modal-overlay.show .vscode-container { transform: scale(1); }
 
+        .vscode-header { 
+            background: #323233; padding: 8px 20px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 1px solid #1e1e1e; user-select: none;
+        }
+        .vscode-title { 
+            color: #cccccc; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 0.95rem; 
+            display: flex; align-items: center; gap: 8px; 
+        }
+        .vscode-controls i { color: #cccccc; cursor: pointer; font-size: 1.1rem; margin-left: 15px; transition: 0.2s;}
+        .vscode-controls i:hover { color: #ffffff; }
+        .vscode-controls .fa-times:hover { color: #f44336; } 
+
+        .vscode-toolbar { 
+            background: #252526; padding: 10px 20px; display: flex; gap: 15px; 
+            align-items: center; border-bottom: 1px solid #3c3c3c;
+        }
+        
+        .vscode-select { 
+            background: #3c3c3c; color: #cccccc; border: 1px solid #3c3c3c; padding: 6px 12px; 
+            border-radius: 4px; outline: none; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 0.9rem; cursor: pointer; 
+        }
+        .vscode-select:focus { border-color: #007acc; }
+
+        .vscode-btn { 
+            border: none; padding: 7px 16px; border-radius: 4px; cursor: pointer; font-family: 'Segoe UI', Tahoma, sans-serif; 
+            font-weight: 600; font-size: 0.85rem; transition: 0.2s; display: flex; align-items: center; gap: 6px;
+        }
+        .vscode-btn-run { background: #4CAF50; color: #ffffff; }
+        .vscode-btn-run:hover { background: #45a049; box-shadow: 0 0 10px rgba(76, 175, 80, 0.4); }
+        .vscode-btn-attach { background: #007acc; color: #ffffff; margin-left: auto; }
+        .vscode-btn-attach:hover { background: #005f9e; box-shadow: 0 0 10px rgba(0, 122, 204, 0.4);}
+
+        .vscode-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #vsAceEditor { flex: 6.5; width: 100%; font-size: 16px; font-family: 'Consolas', monospace; border-bottom: 1px solid #3c3c3c; }
+
+        .vscode-terminal { flex: 3.5; background: #1e1e1e; display: flex; flex-direction: column; }
+        .vscode-term-tabs { display: flex; background: #252526; border-bottom: 1px solid #3c3c3c; }
+        .vscode-term-tab {
+            padding: 8px 20px; color: #e7e7e7; font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #007acc; cursor: default;
+        }
+        #vscodeOutput { 
+            flex: 1; padding: 15px 20px; color: #cccccc; font-family: 'Consolas', monospace; font-size: 0.95rem; 
+            overflow-y: auto; margin: 0; white-space: pre-wrap; line-height: 1.5;
+        }
+        #vscodeOutput::-webkit-scrollbar { width: 10px; }
+        #vscodeOutput::-webkit-scrollbar-thumb { background: #424242; border-radius: 5px; }
     </style>
 </head>
 <body>
 
     <div class="vfx-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
 
-    <div id="focus-overlay">
-        <div class="focus-timer" id="focusTimerDisplay">25:00</div>
-        <div class="focus-text">Deep Work Protocol Engaged</div>
+    <div id="focus-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #111 0%, #000 100%);">
+        <div class="focus-timer" id="focusTimerDisplay" style="color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">25:00</div>
+        <div class="focus-text" style="color: var(--neon-cyan);">Deep Work Protocol Engaged</div>
         <div class="focus-controls">
             <button class="focus-btn" id="focusPlayPauseBtn" title="Play/Pause Timer"><i class="fas fa-pause"></i></button>
             <button class="focus-btn" id="focusMusicBtn" title="Toggle Lo-Fi Music"><i class="fas fa-music"></i></button>
@@ -557,7 +568,7 @@
                 <h3><i class="fas fa-satellite-dish"></i> SECURE COMMLINK</h3>
                 
                 <div class="header-actions">
-                    <button class="header-action-btn" id="openWhiteboardBtn" title="Open Whiteboard"><i class="fas fa-chalkboard"></i></button>
+                    <button class="header-action-btn" id="openCodeEditorBtn" title="Live Code Editor"><i class="fas fa-laptop-code"></i></button>
                     <button class="header-action-btn" id="enterFocusModeBtn" title="Focus Mode"><i class="fas fa-headphones"></i></button>
                     
                     <form method="GET" class="search-box">
@@ -772,30 +783,37 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="whiteboardModal">
-        <div class="whiteboard-modal" id="whiteboardContent">
-            <div class="wb-header">
-                <div class="wb-title"><i class="fas fa-paint-brush" style="color:var(--neon-cyan)"></i> Strategy Canvas</div>
-                <i class="fas fa-times" id="closeWbBtn" style="color:#aaa; cursor:pointer; font-size:1.2rem;"></i>
+    <div class="ide-modal-overlay" id="vsCodeModal">
+        <div class="vscode-container">
+            <div class="vscode-header">
+                <div class="vscode-title">
+                    <i class="fas fa-code" style="color: #007acc;"></i> <span id="vsTitleText">app.py - Local Execution Engine (Docker)</span>
+                </div>
+                <div class="vscode-controls">
+                    <i class="fas fa-expand" id="vsMaximizeBtn" title="Toggle Fullscreen"></i>
+                    <i class="fas fa-times" id="vsCloseBtn" title="Close"></i>
+                </div>
             </div>
             
-            <div class="wb-toolbar">
-                <div class="color-picker active" style="background:#000;" data-color="#000000"></div>
-                <div class="color-picker" style="background:#ff3366;" data-color="#ff3366"></div>
-                <div class="color-picker" style="background:#00d4ff;" data-color="#00d4ff"></div>
-                <div class="color-picker" style="background:#00e676;" data-color="#00e676"></div>
+            <div class="vscode-toolbar">
+                <select id="vsLanguage" class="vscode-select">
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                </select>
                 
-                <div style="width: 1px; height: 20px; background: #555; margin: 0 10px;"></div>
-                
-                <button class="wb-btn" id="wbEraser"><i class="fas fa-eraser"></i></button>
-                <button class="wb-btn" id="wbClear"><i class="fas fa-trash"></i></button>
-                
-                <div style="flex:1;"></div>
-                
-                <button class="wb-btn wb-btn-primary" id="wbAttachBtn"><i class="fas fa-paperclip"></i> Attach to Chat</button>
+                <button class="vscode-btn vscode-btn-run" id="vsRunBtn"><i class="fas fa-play"></i> Run Code</button>
+                <button class="vscode-btn vscode-btn-attach" id="vsAttachBtn"><i class="fas fa-paperclip"></i> Attach to Chat</button>
             </div>
             
-            <canvas id="drawingCanvas"></canvas>
+            <div class="vscode-body">
+                <div id="vsAceEditor"></div>
+                <div class="vscode-terminal">
+                    <div class="vscode-term-tabs"><div class="vscode-term-tab">Terminal</div></div>
+                    <pre id="vscodeOutput">Welcome to the integrated Docker terminal.&#10;Write your code above and click 'Run Code' to execute.&#10;Output will be displayed here...</pre>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -937,16 +955,6 @@
             attachMenuBtn.style.color = 'var(--text-muted)';
         });
 
-        // Convert base64 DataURL from Canvas to a File object for the form
-        function dataURLtoFile(dataurl, filename) {
-            var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-                bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-            while(n--){
-                u8arr[n] = bstr.charCodeAt(n);
-            }
-            return new File([u8arr], filename, {type:mime});
-        }
-
         function fetchAndInjectChat(scrollToBottom = false, forceUpdate = false) {
             fetch(window.location.href)
             .then(res => res.text())
@@ -1015,12 +1023,7 @@
             document.getElementById('replyInputId').value = '';
             document.getElementById('replyBar').style.display = 'none';
             
-            // Reset File Inputs
             fileInput.value = '';
-            // If using DataTransfer (like from whiteboard), reset it
-            const dt = new DataTransfer();
-            fileInput.files = dt.files;
-            
             fileBadge.style.display = 'none';
             attachMenuBtn.style.color = 'var(--text-muted)';
 
@@ -1208,122 +1211,6 @@
         bindPinnedBarEvent();
 
         // =========================================
-        // 🎨 WHITEBOARD LOGIC 🎨
-        // =========================================
-        const wbModal = document.getElementById('whiteboardModal');
-        const openWbBtn = document.getElementById('openWhiteboardBtn');
-        const closeWbBtn = document.getElementById('closeWbBtn');
-        const canvas = document.getElementById('drawingCanvas');
-        const ctx = canvas.getContext('2d');
-        const wbAttachBtn = document.getElementById('wbAttachBtn');
-        const wbClearBtn = document.getElementById('wbClear');
-        const wbEraserBtn = document.getElementById('wbEraser');
-        const colorPickers = document.querySelectorAll('.color-picker');
-
-        let isDrawing = false;
-        let currentColor = '#000000';
-        let currentLineWidth = 2;
-        let isEraser = false;
-
-        // Resize Canvas to fit container
-        function resizeCanvas() {
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight - 50; // minus toolbar header height roughly
-            // Fill background white
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        openWbBtn.addEventListener('click', () => {
-            wbModal.classList.add('show');
-            setTimeout(resizeCanvas, 300); // Wait for transition
-        });
-
-        closeWbBtn.addEventListener('click', () => wbModal.classList.remove('show'));
-
-        // Drawing events
-        function getMousePos(evt) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: (evt.clientX || evt.touches[0].clientX) - rect.left,
-                y: (evt.clientY || evt.touches[0].clientY) - rect.top
-            };
-        }
-
-        function startPosition(e) {
-            isDrawing = true;
-            draw(e);
-        }
-
-        function endPosition() {
-            isDrawing = false;
-            ctx.beginPath(); // Reset path
-        }
-
-        function draw(e) {
-            if (!isDrawing) return;
-            e.preventDefault();
-            const pos = getMousePos(e);
-            
-            ctx.lineWidth = isEraser ? 20 : currentLineWidth;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = isEraser ? '#ffffff' : currentColor;
-
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
-
-        canvas.addEventListener('mousedown', startPosition);
-        canvas.addEventListener('mouseup', endPosition);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('touchstart', startPosition, {passive: false});
-        canvas.addEventListener('touchend', endPosition);
-        canvas.addEventListener('touchmove', draw, {passive: false});
-
-        // Tools
-        colorPickers.forEach(picker => {
-            picker.addEventListener('click', function() {
-                isEraser = false;
-                currentColor = this.getAttribute('data-color');
-                colorPickers.forEach(p => p.classList.remove('active'));
-                this.classList.add('active');
-                wbEraserBtn.style.color = '#fff';
-            });
-        });
-
-        wbEraserBtn.addEventListener('click', () => {
-            isEraser = true;
-            colorPickers.forEach(p => p.classList.remove('active'));
-            wbEraserBtn.style.color = 'var(--neon-cyan)';
-        });
-
-        wbClearBtn.addEventListener('click', () => {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        });
-
-        // Attach to chat
-        wbAttachBtn.addEventListener('click', () => {
-            const dataUrl = canvas.toDataURL("image/png");
-            const file = dataURLtoFile(dataUrl, 'whiteboard_sketch.png');
-            
-            // Programmatically set the file input using DataTransfer
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInput.files = dataTransfer.files;
-            
-            // Update UI to show file is attached
-            fileNameDisplay.innerText = "Whiteboard Sketch";
-            fileBadge.style.display = 'flex';
-            attachMenuBtn.style.color = '#00f3ff';
-            
-            wbModal.classList.remove('show');
-        });
-
-        // =========================================
         // 🎧 FOCUS MODE LOGIC 🎧
         // =========================================
         const enterFocusBtn = document.getElementById('enterFocusModeBtn');
@@ -1346,13 +1233,16 @@
 
         enterFocusBtn.addEventListener('click', () => {
             document.body.classList.add('focus-mode-active');
-            focusOverlay.classList.add('show');
+            focusOverlay.style.display = 'flex'; 
+            setTimeout(() => focusOverlay.classList.add('show'), 10);
             updateTimerDisplay();
         });
 
         exitFocusBtn.addEventListener('click', () => {
             document.body.classList.remove('focus-mode-active');
             focusOverlay.classList.remove('show');
+            setTimeout(() => focusOverlay.style.display = 'none', 500); 
+            
             clearInterval(focusTimer);
             isTimerRunning = false;
             focusPlayPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -1375,7 +1265,6 @@
                         updateTimerDisplay();
                     } else {
                         clearInterval(focusTimer);
-                        // Play a sound when done
                         let ping = new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_0625c1539c.mp3');
                         ping.play();
                     }
@@ -1399,6 +1288,141 @@
             }
         });
 
+        // =========================================
+        // 💻 VS CODE IDE LOGIC 💻
+        // =========================================
+        let vsEditor;
+        const vsModal = document.getElementById('vsCodeModal');
+        const vsOpenBtn = document.getElementById('openCodeEditorBtn');
+        const vsCloseBtn = document.getElementById('vsCloseBtn');
+        const vsRunBtn = document.getElementById('vsRunBtn');
+        const vsAttachBtn = document.getElementById('vsAttachBtn');
+        const vsLanguage = document.getElementById('vsLanguage');
+        const vsOutput = document.getElementById('vscodeOutput');
+        const vsMaximizeBtn = document.getElementById('vsMaximizeBtn');
+        const vsContainer = document.querySelector('.vscode-container');
+
+        const boilerplates = {
+            'python': `def main():\n    print("Hello, World!")\n\nif __name__ == "__main__":\n    main()`,
+            'javascript': `function main() {\n    console.log("Hello, World!");\n}\n\nmain();`,
+            'java': `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}`,
+            'cpp': `#include <iostream>\n\nint main() {\n    std::cout << "Hello, World!\\n";\n    return 0;\n}`
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(() => {
+                if (typeof ace !== 'undefined') {
+                    ace.require("ace/ext/language_tools");
+                    vsEditor = ace.edit("vsAceEditor");
+                    vsEditor.setTheme("ace/theme/tomorrow_night_eighties"); 
+                    vsEditor.session.setMode("ace/mode/python");
+                    
+                    vsEditor.setOptions({
+                        fontSize: "16px", showPrintMargin: false, showGutter: true,
+                        highlightActiveLine: true, enableBasicAutocompletion: true,
+                        enableLiveAutocompletion: true, enableSnippets: true,
+                        tabSize: 4, useSoftTabs: true, wrap: true
+                    });
+
+                    vsEditor.setValue(boilerplates['python'], 1); 
+
+                    vsLanguage.addEventListener('change', function(e) {
+                        let lang = e.target.value;
+                        let mode = lang === 'cpp' ? 'c_cpp' : lang;
+                        vsEditor.session.setMode("ace/mode/" + mode);
+                        vsEditor.setValue(boilerplates[lang], 1);
+                        
+                        let titleSpan = document.getElementById('vsTitleText');
+                        if(lang === 'python') titleSpan.innerText = 'app.py - Local Engine (Docker)';
+                        if(lang === 'javascript') titleSpan.innerText = 'app.js - Local Engine (Docker)';
+                        if(lang === 'java') titleSpan.innerText = 'Main.java - Local Engine (Docker)';
+                        if(lang === 'cpp') titleSpan.innerText = 'main.cpp - Local Engine (Docker)';
+                    });
+                }
+            }, 500);
+        });
+
+        if (vsOpenBtn) {
+            vsOpenBtn.addEventListener('click', () => {
+                vsModal.classList.add('show');
+                if (vsEditor) setTimeout(() => vsEditor.resize(), 100); 
+            });
+        }
+        vsCloseBtn.addEventListener('click', () => vsModal.classList.remove('show'));
+
+        let isMaximized = false;
+        vsMaximizeBtn.addEventListener('click', () => {
+            if (!isMaximized) {
+                vsContainer.style.width = '100vw'; vsContainer.style.height = '100vh'; vsContainer.style.borderRadius = '0';
+                vsMaximizeBtn.classList.replace('fa-expand', 'fa-compress');
+            } else {
+                vsContainer.style.width = '95vw'; vsContainer.style.height = '90vh'; vsContainer.style.borderRadius = '12px';
+                vsMaximizeBtn.classList.replace('fa-compress', 'fa-expand');
+            }
+            isMaximized = !isMaximized;
+            if (vsEditor) setTimeout(() => vsEditor.resize(), 100);
+        });
+
+        vsRunBtn.addEventListener('click', async function() {
+            if (!vsEditor) return;
+            const code = vsEditor.getValue();
+            const lang = vsLanguage.value;
+
+            vsOutput.innerHTML = `<span style="color:#007acc;"><i class="fas fa-circle-notch fa-spin"></i> Running inside isolated Docker container...</span>`;
+
+            try {
+                // 🟢 FIXED: Hardcoded exact URL matching the working views.py
+                const response = await fetch("/api/chat/execute-code/", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftokenValue
+                    },
+                    body: JSON.stringify({
+                        language: lang,
+                        code: code
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    vsOutput.innerText = data.output || "Program finished successfully with no output.";
+                    vsOutput.style.color = "#cccccc"; 
+                } else {
+                    vsOutput.innerText = "[ERROR]\n" + (data.output || data.message);
+                    vsOutput.style.color = "#f44336"; 
+                }
+
+            } catch (err) {
+                vsOutput.innerText = "[NETWORK ERROR]\nFailed to connect to the backend server.";
+                vsOutput.style.color = "#f44336";
+            }
+        });
+
+        vsAttachBtn.addEventListener('click', function() {
+            if (!vsEditor) return;
+            const code = vsEditor.getValue();
+            const lang = vsLanguage.value;
+            const output = vsOutput.innerText;
+            
+            let chatMsg = `**Live Code Snippet (${lang.toUpperCase()})**\n`;
+            chatMsg += "```" + lang + "\n" + code + "\n```\n";
+            
+            if (output && !output.includes("Running inside isolated") && !output.includes("Welcome to the integrated")) {
+                chatMsg += "**Terminal Output:**\n```text\n" + output + "\n```";
+            }
+            
+            const chatInput = document.getElementById('mainChatInput');
+            if (chatInput) {
+                chatInput.value = chatMsg;
+                chatInput.style.height = 'auto';
+                chatInput.style.height = (chatInput.scrollHeight) + 'px';
+                chatInput.focus();
+            }
+            
+            vsModal.classList.remove('show');
+        });
     </script>
 </body>
 </html>

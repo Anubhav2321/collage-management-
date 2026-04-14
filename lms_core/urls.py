@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include  # NEW: 'include'    
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -35,6 +35,7 @@ from students.views import (
     save_quiz_view, 
     submit_quiz_view,   
     ai_chat,
+    execute_code_api,   # 👉 🚀 NEW: Imported the Docker Code Execution API
 
     # 6. Admin Panel (Dashboard)
     admin_dashboard, 
@@ -133,6 +134,9 @@ urlpatterns = [
     
     # --- NEW: Bounty System API ---
     path('api/chat/accept-bounty/<int:reply_id>/', accept_bounty, name='accept_bounty'), 
+    
+    # 👉 🚀 NEW: Local Docker Code Execution API (THE MISSING LINK IS NOW HERE!)
+    path('api/chat/execute-code/', execute_code_api, name='execute_code_api'),
     
     # 5. Quiz & AI System
     

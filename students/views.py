@@ -1,7 +1,11 @@
+import os
+import uuid
+import subprocess
 import json
 import datetime
 import time
 import re  # Regex Module for YouTube Link Parsing
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
@@ -294,7 +298,7 @@ def process_payment(request, course_id):
     return redirect('all_courses')
 
 
-# --- 🪙 BUY COURSE WITH COINS LOGIC 🪙 ---
+# --- BUY COURSE WITH COINS LOGIC ---
 @login_required
 def purchase_with_coins(request, course_id):
     if request.method == "POST":
@@ -311,10 +315,10 @@ def purchase_with_coins(request, course_id):
             Enrollment.objects.get_or_create(student=request.user, course=course)
             
             # Success Message with 'Coin' keyword to trigger the Golden Popup
-            messages.success(request, f"🎉 <b>Course Unlocked!</b> You purchased '{course.title}' using {required_coins} LMS Coins.")
+            messages.success(request, f"Course Unlocked! You purchased '{course.title}' using {required_coins} LMS Coins.")
             return redirect('dashboard')
         else:
-            messages.error(request, "❌ Insufficient coins! Keep learning to earn more.")
+            messages.error(request, "Insufficient coins! Keep learning to earn more.")
             return redirect('payment_page', course_id=course.id)
             
     return redirect('all_courses')
@@ -367,15 +371,14 @@ def course_watch(request, course_id, lesson_id=None):
             # Only update if the user has progressed FURTHER than before
             if new_progress > enrollment.progress:
                 
-                # ==================================================
-                # --- 🪙 LMS COIN REWARD SYSTEM (VIDEO WATCH) 🪙 ---
-                # ==================================================
+                # --- LMS COIN REWARD SYSTEM (VIDEO WATCH) ---
+
                 request.user.lms_coins += 20
-                messages.success(request, "🎉 +20 LMS Coins for completing a lesson!")
+                messages.success(request, "+20 LMS Coins for completing a lesson!")
                 
                 if new_progress >= 100.0 and enrollment.progress < 100.0:
                     request.user.lms_coins += 500
-                    messages.success(request, "🏆 Course Completed! +500 Bonus LMS Coins!")
+                    messages.success(request, "Course Completed! +500 Bonus LMS Coins!")
                     
                 request.user.save(update_fields=['lms_coins'])
                 # ==================================================
@@ -471,7 +474,7 @@ def library_view(request):
     return render(request, 'student_library.html', {'documents': documents})
 
 # ==================================================
-# 5. QUIZ & EXAMS
+# 5. QUIZ, EXAMS & AI CHAT
 # ==================================================
 
 @login_required
@@ -658,9 +661,8 @@ def submit_quiz_view(request, exam_id):
         
         percentage = int((score / total_questions) * 100) if total_questions > 0 else 0
         
-        # ==================================================
-        # --- 🪙 LMS COIN REWARD SYSTEM (QUIZ SCORE) 🪙 ---
-        # ==================================================
+        # --- LMS COIN REWARD SYSTEM (QUIZ SCORE) ---
+
         if percentage >= 80:
             # Check if they have previously scored 80%+ on this specific exam
             past_success_count = QuizResult.objects.filter(
@@ -672,7 +674,7 @@ def submit_quiz_view(request, exam_id):
             if past_success_count == 1:
                 request.user.lms_coins += 100
                 request.user.save(update_fields=['lms_coins'])
-                messages.success(request, "🎯 Excellent! You scored 80%+ and earned 100 LMS Coins!")
+                messages.success(request, "Excellent! You scored 80%+ and earned 100 LMS Coins!")
         # ==================================================
 
         context = {
@@ -690,18 +692,14 @@ def submit_quiz_view(request, exam_id):
 @csrf_exempt
 def ai_chat(request):
     """
-    AI Chatbot Logic (Powered by Llama 3 70B via Groq Service).
-    This function now uses the external ai_service for high intelligence.
+    AI Chatbot Logic.
     """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             user_message = data.get('question', '')
-            
-            # --- CRITICAL FIX: Receive History from Frontend ---
             history = data.get('history', [])
 
-            # --- UPDATE: Pass history to the service ---
             ai_reply = generate_learning_assistant_response(user_message, history)
 
             return JsonResponse({'answer': ai_reply})
@@ -713,7 +711,99 @@ def ai_chat(request):
 
 
 # ==================================================
-# 6. ADMIN PANEL SYSTEM (FULL CREATE/DELETE LOGIC)
+# 🚀 6. NEW DOCKER EXECUTION ENGINE (Integrated Here)
+# ==================================================
+
+@csrf_exempt
+def execute_code_api(request):
+    """
+    Local Docker Code Execution Engine.
+    Requires Docker to be installed and 'local-compiler' image to be built.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid Request'})
+        
+    try:
+        data = json.loads(request.body)
+        language = data.get('language', 'python')
+        code = data.get('code', '')
+        
+        if not code.strip():
+            return JsonResponse({'status': 'error', 'message': 'Code cannot be empty.'})
+
+        # 1. Create a unique folder and file for the student's code
+        unique_id = str(uuid.uuid4())
+        TEMP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp_codes')
+        os.makedirs(TEMP_DIR, exist_ok=True)
+        
+        # 2. Determine execution command based on selected language
+        if language == 'python':
+            file_ext = '.py'
+            run_cmd = ['python3', f'/app/{unique_id}{file_ext}']
+        elif language == 'javascript':
+            file_ext = '.js'
+            run_cmd = ['node', f'/app/{unique_id}{file_ext}']
+        elif language == 'cpp':
+            file_ext = '.cpp'
+            # C++ requires compilation first, then execution
+            run_cmd = ['sh', '-c', f'g++ /app/{unique_id}{file_ext} -o /app/{unique_id} && /app/{unique_id}']
+        elif language == 'java':
+            file_ext = '.java'
+            # Assuming the main class is named 'Main'
+            run_cmd = ['sh', '-c', f'javac /app/{unique_id}{file_ext} && cd /app && java Main']
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Unsupported language.'})
+
+        file_name = f"{unique_id}{file_ext}"
+        file_path = os.path.join(TEMP_DIR, file_name)
+
+        # 3. Write code to the temporary file
+        with open(file_path, 'w') as f:
+            f.write(code)
+
+        # 4. Prepare Docker run command
+        # Binds the TEMP_DIR to /app inside container, limits memory and CPU
+        docker_cmd = [
+            'docker', 'run', '--rm', 
+            '-v', f"{TEMP_DIR}:/app", 
+            '--network', 'none',      
+            '--memory', '256m',       
+            '--cpus', '0.5',          
+            'local-compiler'          
+        ] + run_cmd
+
+        # 5. Run the code safely with a timeout of 5 seconds
+        try:
+            process = subprocess.run(
+                docker_cmd, capture_output=True, text=True, timeout=15
+            )
+            output = process.stdout
+            error = process.stderr
+            
+            if process.returncode == 0:
+                result_status = 'success'
+                final_output = output if output else "Execution completed (No output)"
+            else:
+                result_status = 'error'
+                final_output = error if error else output
+
+        except subprocess.TimeoutExpired:
+            result_status = 'error'
+            final_output = "Timeout Error: Your code took too long to execute (Possible Infinite Loop)."
+            
+        finally:
+            # 6. Cleanup: Remove the temporary file after execution to save space
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+        return JsonResponse({'status': result_status, 'output': final_output})
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+# ==================================================
+# 7. ADMIN PANEL SYSTEM (FULL CREATE/DELETE LOGIC)
 # ==================================================
 
 @staff_member_required
@@ -861,9 +951,6 @@ def admin_student_detail(request, user_id):
 
 @staff_member_required
 def admin_update_student_info(request, user_id):
-    """
-    CRITICAL UPDATE: Now handles both Profile Updates AND Coin Updates securely.
-    """
     student = get_object_or_404(User, id=user_id)
     if request.method == "POST":
         update_type = request.POST.get('update_type')
@@ -877,7 +964,6 @@ def admin_update_student_info(request, user_id):
                 messages.success(request, f"Coin balance updated to {new_coins} for {student.username}.")
         else:
             # --- NORMAL PROFILE UPDATE ---
-            # Added fallback to student's current name to prevent NOT NULL constraints
             student.first_name = request.POST.get('first_name', student.first_name)
             student.last_name = request.POST.get('last_name', student.last_name)
             student.email = request.POST.get('email', student.email)

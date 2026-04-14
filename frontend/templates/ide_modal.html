@@ -1,0 +1,320 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ext-language_tools.min.js"></script>
+
+<style>
+    /* =========================================
+       💻 VS CODE STYLE IDE MODAL 💻
+       ========================================= */
+    .ide-modal-overlay {
+        display: none; 
+        position: fixed; inset: 0; 
+        background: rgba(0, 0, 0, 0.85); 
+        z-index: 999999; /* Stay on top of everything */
+        justify-content: center; align-items: center; 
+        backdrop-filter: blur(8px); 
+        opacity: 0; transition: opacity 0.3s ease;
+    }
+    .ide-modal-overlay.show { display: flex; opacity: 1; }
+
+    /* VS Code Main Window container */
+    .vscode-container {
+        background: #1e1e1e; /* Standard VS Code Dark Background */
+        width: 95vw; height: 90vh; /* Make it large like a real IDE */
+        border-radius: 12px; 
+        display: flex; flex-direction: column; overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        border: 1px solid #3c3c3c;
+        transform: scale(0.95); transition: transform 0.3s ease;
+    }
+    .ide-modal-overlay.show .vscode-container { transform: scale(1); }
+
+    /* IDE Header (Title bar) */
+    .vscode-header { 
+        background: #323233; 
+        padding: 8px 20px; 
+        display: flex; justify-content: space-between; align-items: center; 
+        border-bottom: 1px solid #1e1e1e;
+        user-select: none;
+    }
+    .vscode-title { 
+        color: #cccccc; 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        font-size: 0.95rem; 
+        display: flex; align-items: center; gap: 8px; 
+    }
+    .vscode-controls i { 
+        color: #cccccc; cursor: pointer; font-size: 1.1rem; margin-left: 15px; transition: 0.2s;
+    }
+    .vscode-controls i:hover { color: #ffffff; }
+    .vscode-controls .fa-times:hover { color: #f44336; } /* Close button red on hover */
+
+    /* Toolbar (Action buttons & Language Selector) */
+    .vscode-toolbar { 
+        background: #252526; 
+        padding: 10px 20px; 
+        display: flex; gap: 15px; align-items: center; 
+        border-bottom: 1px solid #3c3c3c;
+    }
+    
+    .vscode-select { 
+        background: #3c3c3c; color: #cccccc; 
+        border: 1px solid #3c3c3c; padding: 6px 12px; 
+        border-radius: 4px; outline: none; 
+        font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 0.9rem; cursor: pointer; 
+    }
+    .vscode-select:focus { border-color: #007acc; }
+
+    .vscode-btn { 
+        border: none; padding: 7px 16px; border-radius: 4px; 
+        cursor: pointer; font-family: 'Segoe UI', Tahoma, sans-serif; 
+        font-weight: 600; font-size: 0.85rem; transition: 0.2s; 
+        display: flex; align-items: center; gap: 6px;
+    }
+    .vscode-btn-run { 
+        background: #4CAF50; color: #ffffff; 
+    }
+    .vscode-btn-run:hover { background: #45a049; box-shadow: 0 0 10px rgba(76, 175, 80, 0.4); }
+    
+    .vscode-btn-attach { 
+        background: #007acc; color: #ffffff; margin-left: auto;
+    }
+    .vscode-btn-attach:hover { background: #005f9e; box-shadow: 0 0 10px rgba(0, 122, 204, 0.4);}
+
+    /* Main Body Area (Split Editor & Terminal) */
+    .vscode-body { 
+        flex: 1; display: flex; flex-direction: column; overflow: hidden; 
+    }
+    
+    /* Code Editor Div */
+    #vsAceEditor { 
+        flex: 6.5; width: 100%; 
+        font-size: 16px; font-family: 'Consolas', 'Courier New', monospace;
+        border-bottom: 1px solid #3c3c3c; 
+    }
+
+    /* Terminal Output Area */
+    .vscode-terminal { 
+        flex: 3.5; background: #1e1e1e; display: flex; flex-direction: column; 
+    }
+    .vscode-term-tabs { 
+        display: flex; background: #252526; border-bottom: 1px solid #3c3c3c;
+    }
+    .vscode-term-tab {
+        padding: 8px 20px; color: #e7e7e7; font-family: 'Segoe UI', Tahoma, sans-serif;
+        font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; 
+        border-bottom: 1px solid #007acc; /* Active tab indicator */
+        cursor: default;
+    }
+    #vscodeOutput { 
+        flex: 1; padding: 15px 20px; color: #cccccc; 
+        font-family: 'Consolas', 'Courier New', monospace; font-size: 0.95rem; 
+        overflow-y: auto; margin: 0; white-space: pre-wrap; line-height: 1.5;
+    }
+    
+    /* Custom Scrollbar for Terminal */
+    #vscodeOutput::-webkit-scrollbar { width: 10px; }
+    #vscodeOutput::-webkit-scrollbar-thumb { background: #424242; border-radius: 5px; }
+    #vscodeOutput::-webkit-scrollbar-thumb:hover { background: #4f4f4f; }
+</style>
+
+<div class="ide-modal-overlay" id="vsCodeModal">
+    <div class="vscode-container">
+        <div class="vscode-header">
+            <div class="vscode-title">
+                <i class="fas fa-code" style="color: #007acc;"></i> 
+                <span id="vsTitleText">app.py - Local Execution Engine (Docker)</span>
+            </div>
+            <div class="vscode-controls">
+                <i class="fas fa-expand" id="vsMaximizeBtn" title="Toggle Fullscreen"></i>
+                <i class="fas fa-times" id="vsCloseBtn" title="Close"></i>
+            </div>
+        </div>
+        
+        <div class="vscode-toolbar">
+            <select id="vsLanguage" class="vscode-select">
+                <option value="python">Python</option>
+                <option value="javascript">JavaScript</option>
+                <option value="java">Java</option>
+                <option value="cpp">C++</option>
+            </select>
+            
+            <button class="vscode-btn vscode-btn-run" id="vsRunBtn">
+                <i class="fas fa-play"></i> Run Code
+            </button>
+            <button class="vscode-btn vscode-btn-attach" id="vsAttachBtn">
+                <i class="fas fa-paperclip"></i> Attach to Chat
+            </button>
+        </div>
+        
+        <div class="vscode-body">
+            <div id="vsAceEditor"></div>
+            <div class="vscode-terminal">
+                <div class="vscode-term-tabs">
+                    <div class="vscode-term-tab">Terminal</div>
+                </div>
+                <pre id="vscodeOutput">Welcome to the integrated Docker terminal.&#10;Write your code above and click 'Run Code' to execute.&#10;Output will be displayed here...</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let vsEditor;
+    const vsModal = document.getElementById('vsCodeModal');
+    const vsOpenBtn = document.getElementById('openCodeEditorBtn'); // Trigger from community_chat.html
+    const vsCloseBtn = document.getElementById('vsCloseBtn');
+    const vsRunBtn = document.getElementById('vsRunBtn');
+    const vsAttachBtn = document.getElementById('vsAttachBtn');
+    const vsLanguage = document.getElementById('vsLanguage');
+    const vsOutput = document.getElementById('vscodeOutput');
+    const vsMaximizeBtn = document.getElementById('vsMaximizeBtn');
+    const vsContainer = document.querySelector('.vscode-container');
+
+    // Boilerplate codes
+    const boilerplates = {
+        'python': `def main():\n    print("Hello, World!")\n\nif __name__ == "__main__":\n    main()`,
+        'javascript': `function main() {\n    console.log("Hello, World!");\n}\n\nmain();`,
+        'java': `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}`,
+        'cpp': `#include <iostream>\n\nint main() {\n    std::cout << "Hello, World!\\n";\n    return 0;\n}`
+    };
+
+    // Initialize Ace Editor
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(() => {
+            if (typeof ace !== 'undefined') {
+                ace.require("ace/ext/language_tools");
+                
+                vsEditor = ace.edit("vsAceEditor");
+                vsEditor.setTheme("ace/theme/tomorrow_night_eighties"); 
+                vsEditor.session.setMode("ace/mode/python");
+                
+                vsEditor.setOptions({
+                    fontSize: "16px",
+                    showPrintMargin: false,
+                    showGutter: true,
+                    highlightActiveLine: true,
+                    enableBasicAutocompletion: true,
+                    enableLiveAutocompletion: true, 
+                    enableSnippets: true,
+                    tabSize: 4,
+                    useSoftTabs: true,
+                    wrap: true
+                });
+
+                vsEditor.setValue(boilerplates['python'], 1); 
+
+                // Change Language Logic
+                vsLanguage.addEventListener('change', function(e) {
+                    let lang = e.target.value;
+                    let mode = lang === 'cpp' ? 'c_cpp' : lang;
+                    vsEditor.session.setMode("ace/mode/" + mode);
+                    vsEditor.setValue(boilerplates[lang], 1);
+                    
+                    // Update Title Bar dynamically
+                    let titleSpan = document.getElementById('vsTitleText');
+                    if(lang === 'python') titleSpan.innerText = 'app.py - Local Engine (Docker)';
+                    if(lang === 'javascript') titleSpan.innerText = 'app.js - Local Engine (Docker)';
+                    if(lang === 'java') titleSpan.innerText = 'Main.java - Local Engine (Docker)';
+                    if(lang === 'cpp') titleSpan.innerText = 'main.cpp - Local Engine (Docker)';
+                });
+            }
+        }, 800); // 800ms delay ensures Ace is fully downloaded before init
+    });
+
+    // Toggle Modal
+    if (vsOpenBtn) {
+        vsOpenBtn.addEventListener('click', () => {
+            vsModal.classList.add('show');
+            if (vsEditor) setTimeout(() => vsEditor.resize(), 100); 
+        });
+    }
+    vsCloseBtn.addEventListener('click', () => vsModal.classList.remove('show'));
+
+    // Toggle Fullscreen (Maximize)
+    let isMaximized = false;
+    vsMaximizeBtn.addEventListener('click', () => {
+        if (!isMaximized) {
+            vsContainer.style.width = '100vw';
+            vsContainer.style.height = '100vh';
+            vsContainer.style.borderRadius = '0';
+            vsMaximizeBtn.classList.replace('fa-expand', 'fa-compress');
+        } else {
+            vsContainer.style.width = '95vw';
+            vsContainer.style.height = '90vh';
+            vsContainer.style.borderRadius = '12px';
+            vsMaximizeBtn.classList.replace('fa-compress', 'fa-expand');
+        }
+        isMaximized = !isMaximized;
+        if (vsEditor) setTimeout(() => vsEditor.resize(), 100);
+    });
+
+    // Run Code against Django Docker Backend
+    vsRunBtn.addEventListener('click', async function() {
+        if (!vsEditor) return;
+        const code = vsEditor.getValue();
+        const lang = vsLanguage.value;
+
+        vsOutput.innerHTML = `<span style="color:#007acc;"><i class="fas fa-circle-notch fa-spin"></i> Running inside isolated Docker container...</span>`;
+
+        try {
+            // Fetch CSRF Token from parent page meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            // 🔴 100% FIXED URL: Direct Absolute Path
+            const response = await fetch("/api/chat/execute-local-code/", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    language: lang,
+                    code: code
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("HTTP Status " + response.status);
+            }
+
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                vsOutput.innerText = data.output || "Program finished successfully with no output.";
+                vsOutput.style.color = "#cccccc"; 
+            } else {
+                vsOutput.innerText = "[ERROR]\n" + (data.output || data.message);
+                vsOutput.style.color = "#f44336"; 
+            }
+
+        } catch (err) {
+            vsOutput.innerText = "[NETWORK ERROR]\nFailed to connect to the backend server. Please make sure Django is running and urls.py is saved.\nDetails: " + err.message;
+            vsOutput.style.color = "#f44336";
+        }
+    });
+
+    // Attach Output to the Chat Box
+    vsAttachBtn.addEventListener('click', function() {
+        if (!vsEditor) return;
+        const code = vsEditor.getValue();
+        const lang = vsLanguage.value;
+        const output = vsOutput.innerText;
+        
+        let chatMsg = `**Live Code Snippet (${lang.toUpperCase()})**\n`;
+        chatMsg += "```" + lang + "\n" + code + "\n```\n";
+        
+        if (output && !output.includes("Running inside isolated") && !output.includes("Welcome to the integrated")) {
+            chatMsg += "**Terminal Output:**\n```text\n" + output + "\n```";
+        }
+        
+        const chatInput = document.getElementById('mainChatInput'); 
+        if (chatInput) {
+            chatInput.value = chatMsg;
+            chatInput.style.height = 'auto';
+            chatInput.style.height = (chatInput.scrollHeight) + 'px';
+            chatInput.focus();
+        }
+        
+        vsModal.classList.remove('show');
+    });
+</script>

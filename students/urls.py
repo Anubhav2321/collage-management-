@@ -1,6 +1,7 @@
 from django.urls import path
 from students import community_views
 from . import views
+from . import compiler_service  # 👉 NEW: Import the compiler service for Docker Execution
 
 urlpatterns = [
 
@@ -43,7 +44,10 @@ urlpatterns = [
     path('api/chat/react/<int:message_id>/', community_views.add_message_reaction, name='add_message_reaction'),
     path('api/chat/user-info/<int:user_id>/', community_views.get_student_info, name='get_student_info'),
     
-    # Delete & Edit Messages API (FIXED: Updated to community_views)
+    # Delete & Edit Messages API
     path('api/chat/delete/<int:message_id>/', community_views.delete_message, name='delete_message'),
     path('api/chat/edit/<int:message_id>/', community_views.edit_message, name='edit_message'),
+    
+    # 👉 🚀 NEW: Local Docker Code Execution API
+    path('api/chat/execute-local-code/', compiler_service.run_code_in_docker, name='run_code_in_docker'),
 ]

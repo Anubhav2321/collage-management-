@@ -1,0 +1,20 @@
+# Dockerfile.compiler
+# Base image with Ubuntu
+FROM ubuntu:22.04
+
+# Avoid prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install necessary compilers and runtimes
+RUN apt-get update && apt-get install -y \
+    python3 \
+    nodejs \
+    default-jdk \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory inside container
+WORKDIR /app
+
+# The container will just sit idle until we run a specific command
+CMD ["tail", "-f", "/dev/null"]
