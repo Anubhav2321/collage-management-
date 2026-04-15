@@ -10,7 +10,7 @@ from .models import (
     LibraryDocument, 
     Profile,
     Lesson,
-    LessonComment # <--- UPDATE: Imported LessonComment Model
+    LessonComment # UPDATE: Imported LessonComment Model
 )
 
 User = get_user_model()

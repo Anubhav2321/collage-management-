@@ -26,7 +26,7 @@ from students.views import (
     # 4. Payment System
     payment_page,
     process_payment,
-    purchase_with_coins, # <--- 🪙 NEW: Imported for Coin Payment
+    purchase_with_coins, # 🪙 NEW: Imported for Coin Payment
 
     # 5. Quiz & AI
     student_exam_list,  # Exam List View
@@ -68,7 +68,7 @@ from students.views import (
     admin_add_lesson # Lesson View
 )
 
-# --- NEW: Importing views from the new community_views.py file ---
+#  9. ADVANCED COMMUNITY CHAT URLs 
 from students.community_views import (
     course_community_chat,
     toggle_pin_message,
@@ -76,7 +76,7 @@ from students.community_views import (
     get_student_info,
     delete_message,   # ADDED for Delete API
     edit_message,     # ADDED for Edit API
-    accept_bounty     # <--- NEW: ADDED for Bounty System API
+    accept_bounty     #  NEW: ADDED for Bounty System API
 )
 
 urlpatterns = [
@@ -84,7 +84,7 @@ urlpatterns = [
     # 1. Django Default Admin
     path('admin/', admin.site.urls),
 
-    # --- NEW: Allauth URLs for Google Login ---
+    #  NEW: Allauth URLs for Google Login 
     path('accounts/', include('allauth.urls')), 
 
     # 2. Public Pages
@@ -108,7 +108,7 @@ urlpatterns = [
     path('courses/payment/<int:course_id>/', payment_page, name='payment_page'),
     path('courses/payment/<int:course_id>/process/', process_payment, name='process_payment'),
     
-    # --- 🪙 NEW: BUY COURSE WITH COINS URL ---
+    #  NEW: BUY COURSE WITH COINS URL 
     path('courses/payment/<int:course_id>/coin-purchase/', purchase_with_coins, name='purchase_with_coins'),
 
     # Watch Course
@@ -119,7 +119,7 @@ urlpatterns = [
     path('live-classes/', live_classes, name='live_classes'),
     path('library/', library_view, name='library'),
     
-    # --- 9. ADVANCED COMMUNITY CHAT URLs ---
+    #  9. ADVANCED COMMUNITY CHAT URLs 
 
     path('community/<slug:slug>/', course_community_chat, name='course_community_chat'),
     
@@ -128,14 +128,14 @@ urlpatterns = [
     path('api/chat/react/<int:message_id>/', add_message_reaction, name='add_message_reaction'),
     path('api/chat/user-info/<int:user_id>/', get_student_info, name='get_student_info'),
     
-    # --- NEW: Delete & Edit Messages API ---
+    #  NEW: Delete & Edit Messages API 
     path('api/chat/delete/<int:message_id>/', delete_message, name='delete_message'),
     path('api/chat/edit/<int:message_id>/', edit_message, name='edit_message'),
     
-    # --- NEW: Bounty System API ---
+    #  NEW: Bounty System API ---
     path('api/chat/accept-bounty/<int:reply_id>/', accept_bounty, name='accept_bounty'), 
     
-    # 👉 🚀 NEW: Local Docker Code Execution API (THE MISSING LINK IS NOW HERE!)
+    #  NEW: Local Docker Code Execution API (THE MISSING LINK IS NOW HERE!)
     path('api/chat/execute-code/', execute_code_api, name='execute_code_api'),
     
     # 5. Quiz & AI System
@@ -156,7 +156,7 @@ urlpatterns = [
    
     path('admin-panel/', admin_dashboard, name='admin_dashboard'),
     
-    # --- A. Student Management ---
+    #  A. Student Management 
     path('admin-panel/students/', admin_student_list, name='admin_student_list'),
     path('admin-panel/students/<int:user_id>/', admin_student_detail, name='admin_student_detail'),
     path('admin-panel/students/<int:user_id>/update/', admin_update_student_info, name='admin_update_student_info'),
@@ -164,28 +164,28 @@ urlpatterns = [
     path('admin-panel/students/<int:user_id>/delete/', admin_delete_student, name='admin_delete_student'),
     path('admin-panel/students/<int:user_id>/reset-pass/', admin_reset_password, name='admin_reset_password'),
 
-    # --- B. Course Management (List & Edit) ---
+    #  B. Course Management (List & Edit) 
     path('admin-panel/courses/', admin_course_list, name='admin_course_list'),
     path('admin-panel/courses/edit/<int:course_id>/', admin_edit_course, name='admin_edit_course'),
     path('admin-panel/course/delete/<int:course_id>/', admin_delete_course, name='admin_delete_course'),
 
-    # --- C. Library Management (List & Edit) ---
+    #  C. Library Management (List & Edit) 
     path('admin-panel/documents/', admin_document_list, name='admin_document_list'),
     path('admin-panel/documents/edit/<int:doc_id>/', admin_edit_document, name='admin_edit_document'),
     path('admin-panel/documents/delete/<int:doc_id>/', admin_delete_document, name='admin_delete_document'),
 
-    # --- D. Enrollment Management ---
+    #  D. Enrollment Management 
     path('admin-panel/enrollments/', admin_enrollment_list, name='admin_enrollment_list'),
     path('admin-panel/enrollments/delete/<int:enroll_id>/', admin_delete_enrollment, name='admin_delete_enrollment'),
 
-    # --- E. Content Creation (Forms) ---
+    #  E. Content Creation (Forms) 
     path('admin-panel/create-course/', admin_create_course, name='admin_create_course'),
     path('admin-panel/create-notice/', admin_create_notice, name='admin_create_notice'),
     path('admin-panel/create-class/', admin_create_live_class, name='admin_create_live_class'),
     path('admin-panel/create-exam/', admin_create_exam, name='admin_create_exam'),
     path('admin-panel/library/add/', add_library_view, name='add_library'),
     
-    # --- F. Lesson Management ---
+    #  F. Lesson Management 
     path('admin-panel/course/<int:course_id>/add-lesson/', admin_add_lesson, name='admin_add_lesson'),
 ]
 

@@ -32,7 +32,7 @@ def get_groq_response(system_instruction, user_message):
                     "content": user_message,
                 }
             ],
-            # --- UPDATE: Changed deprecated model to the latest one ---
+            #  UPDATE: Changed deprecated model to the latest one 
             model="llama-3.3-70b-versatile", 
             temperature=0.5,
             max_tokens=1024,

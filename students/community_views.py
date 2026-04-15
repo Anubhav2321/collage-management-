@@ -19,7 +19,7 @@ try:
 except ImportError:
     pass
 
-# --- AI BOT BACKGROUND WORKERS (VISION ENABLED) ---
+#  AI BOT BACKGROUND WORKERS (VISION ENABLED) 
 
 def generate_ai_reply(course_id, prompt, reply_to_id=None, image_path=None):
     """
@@ -177,10 +177,10 @@ def course_community_chat(request, slug):
                 text=message_text,
                 attachment=attachment,
                 reply_to=reply_msg,
-                bounty_amount=bounty_amount # <--- Added here
+                bounty_amount=bounty_amount #  Added here
             )
 
-            # --- AI BOT TRIGGERS (VISION ENABLED) ---
+            #  AI BOT TRIGGERS (VISION ENABLED) 
             text_lower = message_text.strip().lower()
             
             # Check if it's an AI Command
@@ -223,7 +223,7 @@ def course_community_chat(request, slug):
     
     return render(request, 'community_chat.html', context)
 
-# --- 2. PIN MESSAGE API (AJAX) ---
+#  2. PIN MESSAGE API (AJAX) 
 
 @login_required
 def toggle_pin_message(request, message_id):
@@ -234,7 +234,7 @@ def toggle_pin_message(request, message_id):
         return JsonResponse({'status': 'success', 'is_pinned': msg.is_pinned})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
-# --- 3. EMOJI REACTION API (AJAX) ---
+#  3. EMOJI REACTION API (AJAX) 
 
 @login_required
 def add_message_reaction(request, message_id):
@@ -263,7 +263,7 @@ def add_message_reaction(request, message_id):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
-# --- 4. STUDENT PROFILE API (AJAX) ---
+#  4. STUDENT PROFILE API (AJAX) 
 
 @login_required
 def get_student_info(request, user_id):
@@ -288,7 +288,7 @@ def get_student_info(request, user_id):
     
     return JsonResponse({'status': 'success', 'data': data})
 
-# --- 5. DELETE MESSAGE API (AJAX) ---
+#  5. DELETE MESSAGE API (AJAX) 
 
 @login_required
 def delete_message(request, message_id):
@@ -302,7 +302,7 @@ def delete_message(request, message_id):
             
     return JsonResponse({'status': 'error', 'message': 'Permission denied'}, status=403)
 
-# --- 6. EDIT MESSAGE API (AJAX) ---
+#  6. EDIT MESSAGE API (AJAX) 
 
 @login_required
 def edit_message(request, message_id):
@@ -324,7 +324,7 @@ def edit_message(request, message_id):
             
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
-# --- 7. ACCEPT BOUNTY API (AJAX) ---
+#  7. ACCEPT BOUNTY API (AJAX) 
 
 @login_required
 def accept_bounty(request, reply_id):

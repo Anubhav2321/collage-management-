@@ -53,9 +53,7 @@ from .models import (
 
 User = get_user_model()
 
-# ==================================================
 # 1. PUBLIC VIEWS (LANDING, CONTACT)
-# ==================================================
 
 def home_view(request):
     """
@@ -88,9 +86,7 @@ def contact_developers_view(request):
         
     return render(request, 'contact.html')
 
-# ==================================================
 # 2. AUTHENTICATION (REGISTER, LOGIN, LOGOUT)
-# ==================================================
 
 def register_view(request):
     """
@@ -160,9 +156,7 @@ def logout_view(request):
     messages.error(request, "You have been logged out successfully.")
     return redirect('login')
 
-# ==================================================
 # 3. STUDENT DASHBOARD & PROFILE FEATURES
-# ==================================================
 
 @login_required
 def student_dashboard(request):
@@ -224,9 +218,7 @@ def profile_view(request):
     }
     return render(request, 'student_profile.html', context)
 
-# ==================================================
 # 4. COURSE & LEARNING LOGIC
-# ==================================================
 
 @login_required
 def all_courses(request):
@@ -381,7 +373,6 @@ def course_watch(request, course_id, lesson_id=None):
                     messages.success(request, "Course Completed! +500 Bonus LMS Coins!")
                     
                 request.user.save(update_fields=['lms_coins'])
-                # ==================================================
 
                 if hasattr(enrollment, 'update_progress'):
                     enrollment.update_progress(new_progress)
@@ -473,9 +464,7 @@ def library_view(request):
 
     return render(request, 'student_library.html', {'documents': documents})
 
-# ==================================================
 # 5. QUIZ, EXAMS & AI CHAT
-# ==================================================
 
 @login_required
 def student_exam_list(request):
@@ -675,7 +664,6 @@ def submit_quiz_view(request, exam_id):
                 request.user.lms_coins += 100
                 request.user.save(update_fields=['lms_coins'])
                 messages.success(request, "Excellent! You scored 80%+ and earned 100 LMS Coins!")
-        # ==================================================
 
         context = {
             'exam': exam,
@@ -710,9 +698,7 @@ def ai_chat(request):
     return JsonResponse({'error': "Invalid request"}, status=400)
 
 
-# ==================================================
-# 🚀 6. NEW DOCKER EXECUTION ENGINE (Integrated Here)
-# ==================================================
+#  6. NEW DOCKER EXECUTION ENGINE (Integrated Here)
 
 @csrf_exempt
 def execute_code_api(request):
@@ -802,9 +788,7 @@ def execute_code_api(request):
         return JsonResponse({'status': 'error', 'message': str(e)})
 
 
-# ==================================================
 # 7. ADMIN PANEL SYSTEM (FULL CREATE/DELETE LOGIC)
-# ==================================================
 
 @staff_member_required
 def admin_dashboard(request):

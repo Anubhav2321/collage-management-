@@ -1,7 +1,7 @@
 from django.urls import path
 from students import community_views
 from . import views
-from . import compiler_service  # 👉 NEW: Import the compiler service for Docker Execution
+from . import compiler_service  # NEW: Import the compiler service for Docker Execution
 
 urlpatterns = [
 
@@ -37,7 +37,7 @@ urlpatterns = [
     path('admin-panel/students/<int:user_id>/delete/', views.admin_delete_student, name='admin_delete_student'),
     path('admin-panel/students/<int:user_id>/reset-pass/', views.admin_reset_password, name='admin_reset_password'),
 
-    # --- COMMUNITY CHAT & API URLS ---
+    #  COMMUNITY CHAT & API URLS 
 
     path('community/<slug:slug>/', community_views.course_community_chat, name='course_community_chat'),
     path('api/chat/pin/<int:message_id>/', community_views.toggle_pin_message, name='toggle_pin_message'),

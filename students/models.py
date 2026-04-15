@@ -25,7 +25,7 @@ class User(AbstractUser):
     )
     stream = models.CharField(max_length=100, blank=True, null=True, help_text="e.g., Science, Arts, Engineering")
     
-    # --- NEW: LMS COIN ECONOMY ---
+    #  NEW: LMS COIN ECONOMY 
 
     lms_coins = models.PositiveIntegerField(default=100, help_text="Virtual coins for LMS Economy")
     
@@ -69,7 +69,7 @@ class Course(models.Model):
     slug = models.SlugField(max_length=250, unique=True, blank=True, help_text="Auto-generated from title")
     description = models.TextField()
     
-    # --- Faculty Name ---
+    #  Faculty Name 
     faculty_name = models.CharField(max_length=100, default="Expert Faculty") 
     
     thumbnail = models.ImageField(upload_to='course_thumbnails/', blank=True, null=True)
@@ -77,7 +77,7 @@ class Course(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     is_published = models.BooleanField(default=True)
     
-    # --- NEW: Coin Purchase Logic ---
+    #  NEW: Coin Purchase Logic 
 
     is_coin_purchasable = models.BooleanField(default=False, help_text="Check this to allow purchasing with coins")
     coin_price = models.PositiveIntegerField(default=0, help_text="Price in LMS Coins (if purchasable)")

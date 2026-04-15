@@ -4,7 +4,7 @@ from .models import (
     User, Profile, Course, Lesson, Enrollment, 
     Notification, LiveClass, LibraryDocument, 
     Exam, Question, QuizResult, Quiz,
-    CourseGroupMessage  # <--- NEW: Import added here
+    CourseGroupMessage  #  NEW: Import added here
 )
 
 # 1. Custom User Admin (Student/Teacher Info)
@@ -77,7 +77,7 @@ admin.site.register(LibraryDocument)
 admin.site.register(QuizResult)
 admin.site.register(Quiz) # Dummy Quiz model registered if needed   
 
-# --- 5. COMMUNITY CHAT ADMIN ---
+#  5. COMMUNITY CHAT ADMIN 
 
 @admin.register(CourseGroupMessage)
 class CourseGroupMessageAdmin(admin.ModelAdmin):
