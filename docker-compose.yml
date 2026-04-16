@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: advanced_lms_web
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+      # 🚀 Special part: Linking your computer's Docker with the container
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=1
