@@ -8,12 +8,12 @@
     <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}">
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
 
     <style>
         /* --- THEME CONFIGURATION --- */
@@ -23,7 +23,6 @@
             --neon-purple: #bc13fe;
             --neon-pink: #ff0055;
             
-            /* Mixed Neon Colors for Stats */
             --neon-green: #00ff99;
             --neon-yellow: #ffdd00;
             --neon-orange: #ff5e00;
@@ -44,6 +43,7 @@
                 linear-gradient(90deg, rgba(188, 19, 254, 0.03) 1px, transparent 1px);
             background-size: 40px 40px;
             position: relative;
+            scroll-behavior: smooth;
         }
 
         /* --- LIGHTER CURSOR GLOW --- */
@@ -61,6 +61,7 @@
             padding: 20px 5%; position: fixed; top: 0; width: 100%; z-index: 1000;
             background: rgba(3, 0, 5, 0.85); backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
+            transition: all 0.4s ease; 
         }
         .logo { font-family: 'Rajdhani', sans-serif; font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
         .logo i { color: var(--neon-cyan); }
@@ -87,9 +88,9 @@
             margin-bottom: 25px; box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
         }
         
-        .hero-title { font-size: 70px; line-height: 1.1; font-weight: 900; margin-bottom: 25px; }
+        .hero-title { font-size: 70px; line-height: 1.1; font-weight: 900; margin-bottom: 25px; min-height: 160px; } 
         
-        .hero-title span {
+        .typed-text-grad {
             background: linear-gradient(to right, #fff, var(--neon-cyan), var(--neon-purple));
             background-clip: text;
             -webkit-background-clip: text;
@@ -99,16 +100,29 @@
 
         .hero-subtitle { font-size: 20px; color: var(--text-grey); margin-bottom: 40px; max-width: 600px; }
         .hero-btns { display: flex; gap: 20px; }
+        
         .btn-fill {
             padding: 15px 40px; border-radius: 50px; font-weight: 700; text-decoration: none;
             background: white; color: black; box-shadow: 0 0 20px rgba(255,255,255,0.3); transition: 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .btn-fill:hover {
+            box-shadow: 0 0 25px var(--neon-cyan), inset 0 0 10px var(--neon-purple);
+            transform: translateY(-3px) scale(1.05);
+            background: #e6e6e6;
         }
         .btn-glass {
             padding: 15px 40px; border-radius: 50px; font-weight: 700; text-decoration: none;
             border: 2px solid var(--glass-border); color: white; transition: 0.3s;
+            backdrop-filter: blur(5px);
+        }
+        .btn-glass:hover {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+            background: rgba(0, 243, 255, 0.05);
         }
         
-        .hero-icon-box { display: flex; justify-content: center; align-items: center; position: relative; }
+        .hero-icon-box { display: flex; justify-content: center; align-items: center; position: relative; cursor: pointer; }
         .big-hat-icon {
             font-size: 350px; 
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
@@ -201,100 +215,46 @@
         .feature-content h3 { font-size: 32px; margin-bottom: 20px; font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
         .feature-list li { list-style: none; margin-bottom: 12px; font-size: 18px; color: var(--text-grey); display: flex; align-items: center; gap: 15px; }
         .feature-list li i { color: var(--neon-pink); }
+        
         .style-purple { border-left-color: var(--neon-purple); } .style-purple .f-icon-box { color: var(--neon-purple); }
         .style-pink { border-left-color: var(--neon-pink); } .style-pink .f-icon-box { color: var(--neon-pink); }
+        .style-yellow { border-left-color: var(--neon-yellow); } .style-yellow .f-icon-box { color: var(--neon-yellow); }
+        .style-orange { border-left-color: var(--neon-orange); } .style-orange .f-icon-box { color: var(--neon-orange); }
 
 
         /* =========================================
            2. STATS SECTION (Multi-Color Icons)
            ========================================= */
-        .stats-wrapper {
-            padding: 50px 8%;
-            margin-bottom: 50px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-
+        .stats-wrapper { padding: 50px 8%; margin-bottom: 50px; position: relative; z-index: 2; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; max-width: 1300px; margin: 0 auto; }
+        
         .stat-box {
-            background: var(--card-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 35px 30px;
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
+            background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: 16px;
+            padding: 35px 30px; display: flex; align-items: center; gap: 25px; transition: all 0.4s ease;
+            position: relative; overflow: hidden; transform-style: preserve-3d; cursor: pointer;
         }
-
         .stat-box:hover {
-            transform: translateY(-8px);
-            border-color: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-            background: #16161d;
+            border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); background: #16161d;
         }
-
         .stat-icon {
-            width: 60px;
-            font-size: 45px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-shrink: 0;
-            transition: 0.3s;
+            width: 60px; font-size: 45px; display: flex; justify-content: center; align-items: center;
+            flex-shrink: 0; transition: 0.3s; transform: translateZ(40px); 
         }
 
-        /* --- MULTI-COLOR LOGIC --- */
-        /* 1. University - Cyan */
         .stat-box:nth-child(1) .stat-icon { color: var(--neon-cyan); filter: drop-shadow(0 0 8px var(--neon-cyan)); }
-        /* 2. Users - Purple */
         .stat-box:nth-child(2) .stat-icon { color: var(--neon-purple); filter: drop-shadow(0 0 8px var(--neon-purple)); }
-        /* 3. Rupee - Green */
         .stat-box:nth-child(3) .stat-icon { color: var(--neon-green); filter: drop-shadow(0 0 8px var(--neon-green)); }
-        /* 4. Teaching - Pink */
         .stat-box:nth-child(4) .stat-icon { color: var(--neon-pink); filter: drop-shadow(0 0 8px var(--neon-pink)); }
-        /* 5. Handshake - Yellow */
         .stat-box:nth-child(5) .stat-icon { color: var(--neon-yellow); filter: drop-shadow(0 0 8px var(--neon-yellow)); }
-        /* 6. Chart - Orange */
         .stat-box:nth-child(6) .stat-icon { color: var(--neon-orange); filter: drop-shadow(0 0 8px var(--neon-orange)); }
 
-
-        .stat-content {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-num-wrapper {
-            display: flex;
-            align-items: baseline;
-            gap: 2px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 32px;
-            font-weight: 700;
-            color: #fff;
-            margin-bottom: 5px;
-        }
-
-        .stat-desc {
-            font-family: 'Outfit', sans-serif;
-            font-size: 15px;
-            font-weight: 400;
-            color: #b0b0b0;
-            line-height: 1.4;
-        }
+        .stat-content { display: flex; flex-direction: column; transform: translateZ(20px); }
+        .stat-num-wrapper { display: flex; align-items: baseline; gap: 2px; font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .stat-desc { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 400; color: #b0b0b0; line-height: 1.4; }
 
 
         /* =========================================
-           DEVELOPERS SECTION
+           DEVELOPERS SECTION (No 3D effect)
            ========================================= */
         .dev-section { padding: 50px 5% 100px; position: relative; z-index: 1; }
         .dev-carousel { overflow: hidden; max-width: 1200px; margin: 0 auto; position: relative; }
@@ -303,27 +263,24 @@
         
         .dev-card {
             display: flex; align-items: center; gap: 30px; padding: 30px; 
-            border-radius: 20px; background: transparent; 
+            border-radius: 20px; background: rgba(255,255,255,0.02); 
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
         }
+        .dev-card:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
 
         .dev-avatar-container {
-            position: relative; width: 180px; height: 180px;
-            display: flex; justify-content: center; align-items: center;
+            position: relative; width: 180px; height: 180px; display: flex; justify-content: center; align-items: center;
         }
-
         .static-ring {
-            position: absolute; width: 100%; height: 100%; border-radius: 50%;
-            border: 4px solid transparent; z-index: 1;
+            position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid transparent; z-index: 1;
         }
-
         .ring-cyan { border-color: var(--neon-cyan); box-shadow: 0 0 25px var(--neon-cyan), inset 0 0 15px var(--neon-cyan); }
         .ring-purple { border-color: var(--neon-purple); box-shadow: 0 0 25px var(--neon-purple), inset 0 0 15px var(--neon-purple); }
 
         .dev-img {
             width: 160px; height: 160px; border-radius: 50%; object-fit: cover; 
-            z-index: 2; border: 3px solid #000;
-            image-rendering: -webkit-optimize-contrast; image-rendering: high-quality;
-            transform: translateZ(0); backface-visibility: hidden;
+            z-index: 2; border: 3px solid #000; image-rendering: -webkit-optimize-contrast; image-rendering: high-quality;
             filter: contrast(1.05) brightness(1.02);
         }
 
@@ -338,30 +295,106 @@
             border-radius: 50%; display: inline-flex; justify-content: center; align-items: center;
             margin-right: 10px; transition: 0.3s; text-decoration: none;
         }
-        .socials a:hover { background: white; color: black; transform: translateY(-3px); }
+        .socials a:hover { background: white; color: black; transform: translateY(-3px) scale(1.1); box-shadow: 0 5px 15px rgba(255,255,255,0.3); }
 
         .dots { display: flex; justify-content: center; gap: 10px; margin-top: 40px; }
-        .dot { width: 12px; height: 12px; background: #333; border-radius: 50%; cursor: pointer; }
-        .dot.active { background: var(--neon-cyan); }
+        .dot { width: 12px; height: 12px; background: #333; border-radius: 50%; cursor: pointer; transition: 0.3s; }
+        .dot.active { background: var(--neon-cyan); transform: scale(1.3); box-shadow: 0 0 10px var(--neon-cyan); }
 
+
+        /* =========================================
+           🚀 NEW: HELP CENTER & CONTACT FORM (Hidden by default)
+           ========================================= */
+        #help-center { 
+            padding: 80px 5% 20px; position: relative; z-index: 1;
+            display: none; /* Hidden initially */
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+        #help-center.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .contact-container {
+            display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 50px;
+            background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border);
+            border-radius: 20px; padding: 50px; backdrop-filter: blur(10px);
+            max-width: 1200px; margin: 0 auto; transition: all 0.3s ease;
+        }
+        .contact-container:hover { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); border-color: rgba(0, 243, 255, 0.2); }
+
+        .contact-form input, .contact-form textarea {
+            width: 100%; padding: 15px; margin-bottom: 20px; background: rgba(0,0,0,0.5); 
+            border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 10px; font-size: 16px;
+            transition: 0.3s;
+        }
+        .contact-form input:focus, .contact-form textarea:focus {
+            border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); background: rgba(0,0,0,0.8);
+        }
+        
+        .contact-info { padding: 20px; border-left: 1px solid var(--glass-border); padding-left: 50px;}
+        .info-item { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; font-size: 18px; color: #ccc;}
+        .info-item i { color: var(--neon-purple); font-size: 24px; width: 30px; text-align: center;}
+        
+        .social-links-lg { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap;}
+        .social-links-lg a {
+            display: inline-flex; width: 50px; height: 50px; background: rgba(255,255,255,0.05); 
+            border-radius: 50%; justify-content: center; align-items: center; color: white;
+            font-size: 22px; transition: 0.3s; text-decoration: none; border: 1px solid var(--glass-border);
+        }
+        .social-links-lg a:hover {
+            background: var(--neon-cyan); color: black; border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan); transform: translateY(-5px);
+        }
+
+        /* =========================================
+           🚀 ADVANCED: TERMS OF USE MODAL 
+           ========================================= */
+        .ide-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.80); 
+            z-index: 999999; justify-content: center; align-items: center; 
+            backdrop-filter: blur(10px); opacity: 0; transition: opacity 0.4s ease;
+        }
+        .ide-modal-overlay.show { display: flex; opacity: 1; }
+        
+        .terms-container {
+            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(20px);
+            width: 700px; max-width: 90%; max-height: 80vh;
+            border-radius: 20px; border: 1px solid rgba(0, 243, 255, 0.3);
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 243, 255, 0.15);
+            transform: translateY(50px) scale(0.95); opacity: 0;
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .ide-modal-overlay.show .terms-container { transform: translateY(0) scale(1); opacity: 1; }
+        
+        .terms-header { 
+            background: linear-gradient(90deg, rgba(0, 243, 255, 0.1), rgba(188, 19, 254, 0.1));
+            padding: 20px 30px; display: flex; justify-content: space-between; 
+            align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .terms-title { color: #fff; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; font-weight: bold; font-family: 'Rajdhani', sans-serif; letter-spacing: 1px;}
+        
+        .terms-body { padding: 30px; overflow-y: auto; color: #d1d5db; line-height: 1.8; font-size: 16px; }
+        .terms-body::-webkit-scrollbar { width: 8px; }
+        .terms-body::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        .terms-body::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 4px; }
+        
+        .terms-body h4 { margin-top: 25px; margin-bottom: 10px; font-size: 20px; font-family: 'Rajdhani', sans-serif; letter-spacing: 1px;}
+        .terms-body h4:nth-of-type(1) { color: var(--neon-cyan); }
+        .terms-body h4:nth-of-type(2) { color: var(--neon-purple); }
+        .terms-body h4:nth-of-type(3) { color: var(--neon-pink); }
 
         /* =========================================
            FOOTER
            ========================================= */
         footer {
-            background-color: black;
-            padding: 80px 5% 30px;
-            margin-top: 50px;
-            border-top: 1px solid #1a1a1a;
-            position: relative; z-index: 1;
+            background-color: black; padding: 80px 5% 30px; margin-top: 50px;
+            border-top: 1px solid #1a1a1a; position: relative; z-index: 1;
         }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 60px;
-            margin-bottom: 60px;
-        }
+        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 60px; margin-bottom: 60px; }
 
         .footer-brand .logo { font-size: 24px; margin-bottom: 20px; }
         .footer-brand p { color: #888; line-height: 1.6; font-size: 15px; max-width: 350px; }
@@ -369,13 +402,10 @@
         .footer-col h4 { color: white; font-size: 18px; font-weight: 700; margin-bottom: 25px; }
         .footer-col ul { list-style: none; padding: 0; }
         .footer-col ul li { margin-bottom: 15px; }
-        .footer-col ul li a { color: #999; text-decoration: none; font-size: 15px; transition: 0.3s; }
+        .footer-col ul li a { color: #999; text-decoration: none; font-size: 15px; transition: 0.3s; cursor: pointer;}
         .footer-col ul li a:hover { color: var(--neon-cyan); padding-left: 5px; }
 
-        .footer-bottom {
-            border-top: 1px solid #1a1a1a;
-            padding-top: 30px; text-align: center; color: #555; font-size: 14px;
-        }
+        .footer-bottom { border-top: 1px solid #1a1a1a; padding-top: 30px; text-align: center; color: #555; font-size: 14px; }
         .footer-bottom i { color: var(--neon-pink); }
 
         /* Responsive */
@@ -387,6 +417,8 @@
             .feature-row { flex-direction: column; text-align: center; border-left: none; border-top: 5px solid var(--neon-cyan); }
             .dev-slide { grid-template-columns: 1fr; }
             .dev-card { flex-direction: column; text-align: center; }
+            .contact-container { grid-template-columns: 1fr; }
+            .contact-info { border-left: none; border-top: 1px solid var(--glass-border); padding-left: 0; padding-top: 30px;}
             .footer-grid { grid-template-columns: 1fr; gap: 40px; }
         }
     </style>
@@ -406,7 +438,7 @@
                 <div class="hero-badge">🚀 Empowering Students</div>
                 <h1 class="hero-title">
                     Unlock Your Potential with <br> 
-                    <span>Advanced Education</span>
+                    <span class="typed-text-grad">Advanced Education</span>
                 </h1>
                 <p class="hero-subtitle">Join thousands of students learning AI, Coding, and Design. Access live classes, AI-proctored exams, and a vast library.</p>
                 <div class="hero-btns">
@@ -479,12 +511,37 @@
                 </ul>
             </div>
         </div>
+
+        <div class="feature-row style-yellow" data-aos="fade-right" data-aos-delay="300">
+            <div class="f-icon-box"><i class="fas fa-coins"></i></div>
+            <div class="feature-content">
+                <h3>Reward System (LMS Coins)</h3>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check-circle"></i> Earn Coins by completing lessons</li>
+                    <li><i class="fas fa-check-circle"></i> Unlock premium courses with coins</li>
+                    <li><i class="fas fa-check-circle"></i> Win coding bounties from peers</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="feature-row style-orange" data-aos="fade-right" data-aos-delay="400">
+            <div class="f-icon-box"><i class="fas fa-satellite-dish"></i></div>
+            <div class="feature-content">
+                <h3>Community Commlink</h3>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check-circle"></i> Real-time secure group chats</li>
+                    <li><i class="fas fa-check-circle"></i> Live IDE and code sharing</li>
+                    <li><i class="fas fa-check-circle"></i> Direct AI Commander access</li>
+                </ul>
+            </div>
+        </div>
+
     </section>
 
     <section class="stats-wrapper" data-aos="fade-up">
         <div class="stats-grid">
             
-            <div class="stat-box">
+            <div class="stat-box js-tilt">
                 <div class="stat-icon"><i class="fas fa-university"></i></div>
                 <div class="stat-content">
                     <div class="stat-num-wrapper">
@@ -494,7 +551,7 @@
                 </div>
             </div>
 
-            <div class="stat-box">
+            <div class="stat-box js-tilt">
                 <div class="stat-icon"><i class="fas fa-users"></i></div>
                 <div class="stat-content">
                     <div class="stat-num-wrapper">
@@ -504,7 +561,7 @@
                 </div>
             </div>
 
-            <div class="stat-box">
+            <div class="stat-box js-tilt">
                 <div class="stat-icon"><i class="bi bi-currency-rupee"></i></div>
                 <div class="stat-content">
                     <div class="stat-num-wrapper">
@@ -514,7 +571,7 @@
                 </div>
             </div>
 
-            <div class="stat-box">
+            <div class="stat-box js-tilt">
                 <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
                 <div class="stat-content">
                     <div class="stat-num-wrapper">
@@ -524,7 +581,7 @@
                 </div>
             </div>
 
-            <div class="stat-box">
+            <div class="stat-box js-tilt">
                 <div class="stat-icon"><i class="fas fa-handshake"></i></div>
                 <div class="stat-content">
                     <div class="stat-num-wrapper">
@@ -534,7 +591,7 @@
                 </div>
             </div>
 
-            <div class="stat-box">
+            <div class="stat-box js-tilt">
                 <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
                 <div class="stat-content">
                     <div class="stat-num-wrapper">
@@ -570,7 +627,7 @@
                                 <a href="https://github.com/Soham2319"><i class="fab fa-github"></i></a>
                                 <a href="#"><i class="fab fa-linkedin-in"></i></a>
                                 <a href="#"><i class="fas fa-envelope"></i></a>
-                                <a href="https://www.instagram.com/rik___009?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="><i class="fab fa-instagram"></i></a>
+                                <a href="https://www.instagram.com/rik___009"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -608,7 +665,7 @@
                                 <a href="https://github.com/avikkulavi1-max"><i class="fab fa-github"></i></a>
                                 <a href="#"><i class="fab fa-linkedin-in"></i></a>
                                 <a href="#"><i class="fas fa-envelope"></i></a>
-                                <a href="https://www.instagram.com/avikkulavi?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="><i class="fab fa-instagram"></i></a>
+                                <a href="https://www.instagram.com/avikkulavi"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -626,7 +683,7 @@
                                 <a href="https://github.com/Abhishek2187"><i class="fab fa-github"></i></a>
                                 <a href="#"><i class="fab fa-linkedin-in"></i></a>
                                 <a href="#"><i class="fas fa-envelope"></i></a>
-                                <a href="https://www.instagram.com/its__mr___abhishek?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="><i class="fab fa-instagram"></i></a>
+                                <a href="https://www.instagram.com/its__mr___abhishek"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -637,6 +694,45 @@
             <div class="dots">
                 <div class="dot active" onclick="moveSlide(0)"></div>
                 <div class="dot" onclick="moveSlide(1)"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="help-center">
+        <div class="section-header">
+            <h2>Help Center & <span>Contact Us</span></h2>
+            <p style="color: #999; font-size: 18px;">Get in touch with our team for any support or inquiries.</p>
+        </div>
+        
+        <div class="contact-container">
+            <div class="contact-form">
+                <h3 style="font-size: 32px; margin-bottom: 25px; color: var(--neon-cyan); font-family: 'Rajdhani', sans-serif;">Send a Message</h3>
+                <form action="{% url 'contact_developers' %}" method="POST">
+                    {% csrf_token %}
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <input type="text" name="first_name" placeholder="First Name" required>
+                        <input type="text" name="last_name" placeholder="Last Name" required>
+                    </div>
+                    <input type="email" name="email" placeholder="Email Address" required>
+                    <textarea name="message" rows="5" placeholder="How can we help you?" required></textarea>
+                    <button type="submit" class="btn-fill" style="width: 100%; border: none; cursor: pointer; font-size: 18px; padding: 15px;">Submit Request</button>
+                </form>
+            </div>
+            
+            <div class="contact-info">
+                <h3 style="font-size: 32px; margin-bottom: 25px; color: var(--neon-purple); font-family: 'Rajdhani', sans-serif;">Contact Information</h3>
+                <div class="info-item"><i class="fas fa-map-marker-alt"></i> <span>Tech Park, Sector 5, Cyber City</span></div>
+                <div class="info-item"><i class="fas fa-envelope"></i> <span>support@learning365.com</span></div>
+                <div class="info-item"><i class="fas fa-phone"></i> <span>+91 98765 43210</span></div>
+                
+                <h4 style="margin: 40px 0 15px; color: white; font-size: 20px;">Connect With Us</h4>
+                <div class="social-links-lg">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-discord"></i></a>
+                </div>
             </div>
         </div>
     </section>
@@ -653,27 +749,18 @@
             <div class="footer-col">
                 <h4>Platform</h4>
                 <ul>
-                    <li><a href="#">Browse Courses</a></li>
-                    <li><a href="#">Live Classes</a></li>
-                    <li><a href="#">AI Exams</a></li>
+                    <li><a href="{% url 'all_courses' %}">Browse Courses</a></li>
+                    <li><a href="{% url 'live_classes' %}">Live Classes</a></li>
+                    <li><a href="{% url 'student_exam_list' %}">AI Exams</a></li>
                 </ul>
             </div>
 
             <div class="footer-col">
                 <h4>Support</h4>
                 <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Terms of Use</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h4>Legal</h4>
-                <ul>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Cookie Policy</a></li>
-                    <li><a href="#">Security</a></li>
+                    <li><a href="#" class="open-contact-btn">Help Center</a></li>
+                    <li><a href="#" class="open-contact-btn">Contact Us</a></li>
+                    <li><a href="#" id="openTermsModal">Terms of Use</a></li>
                 </ul>
             </div>
         </div>
@@ -683,9 +770,100 @@
         </div>
     </footer>
 
+    <div class="ide-modal-overlay" id="termsModal">
+        <div class="terms-container">
+            <div class="terms-header">
+                <div class="terms-title">
+                    <i class="fas fa-shield-alt" style="color: var(--neon-cyan); font-size: 1.5rem;"></i> <span>Terms & Conditions</span>
+                </div>
+                <i class="fas fa-times" id="closeTermsBtn" title="Close" style="color: rgba(255,255,255,0.5); font-size: 1.5rem; cursor: pointer; transition: 0.3s;"></i>
+            </div>
+            <div class="terms-body">
+                <h3 style="color: white; margin-bottom: 10px; font-size: 24px;">Welcome to Learning-365</h3>
+                <p>By accessing this platform, you agree to be bound by these terms of use. Our platform is dedicated to providing high-quality tech education.</p>
+                
+                <h4>1. User Conduct & Ethics</h4>
+                <p>Users must not engage in any activity that disrupts the platform or other students' learning experience. Mutual respect in the Community Commlink is strictly enforced by AI moderation.</p>
+                
+                <h4>2. LMS Coins & Bounties</h4>
+                <p>LMS coins hold no real-world monetary value. They are strictly digital tokens used within the platform for unlocking premium content, participating in leaderboards, and rewarding peers via coding bounties.</p>
+                
+                <h4>3. Privacy & Data Security</h4>
+                <p>We respect your privacy. All your code executions in our IDE are handled securely inside isolated Docker containers. Your personal data is encrypted and never shared with third parties.</p>
+                
+                <br><br>
+                <button class="btn-fill" id="acceptTermsBtn" style="width: 100%; border: none; cursor: pointer; font-size: 18px; padding: 15px;">I Accept & Continue</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         AOS.init({ duration: 800, once: true });
+
+        // Initialize VanillaTilt ONLY for Stats Box
+        VanillaTilt.init(document.querySelectorAll(".stat-box.js-tilt"), {
+            max: 12,
+            speed: 400,
+            glare: true,
+            "max-glare": 0.15,
+            scale: 1.02
+        });
+
+        // 🚀 NEW: Contact Section Reveal Logic
+        document.querySelectorAll('.open-contact-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const helpSection = document.getElementById('help-center');
+                // Show the block first, then trigger opacity transition
+                helpSection.style.display = 'block';
+                setTimeout(() => {
+                    helpSection.classList.add('visible');
+                    // Smooth scroll to the form
+                    helpSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 50);
+            });
+        });
+
+        // 🚀 NEW: Advanced Terms of Use Modal Logic
+        const termsModal = document.getElementById('termsModal');
+        const openTermsModal = document.getElementById('openTermsModal');
+        const closeTermsBtn = document.getElementById('closeTermsBtn');
+        const acceptTermsBtn = document.getElementById('acceptTermsBtn');
+
+        if(openTermsModal) {
+            openTermsModal.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                termsModal.classList.add('show');
+            });
+        }
+        
+        const closeTerms = () => {
+            termsModal.classList.remove('show');
+        };
+        
+        if(closeTermsBtn) closeTermsBtn.addEventListener('click', closeTerms);
+        if(acceptTermsBtn) acceptTermsBtn.addEventListener('click', closeTerms);
+        
+        // Hover effect for close button
+        if(closeTermsBtn) {
+            closeTermsBtn.addEventListener('mouseover', () => closeTermsBtn.style.color = '#ff0055');
+            closeTermsBtn.addEventListener('mouseout', () => closeTermsBtn.style.color = 'rgba(255,255,255,0.5)');
+        }
+
+        // Sticky Navbar Effect on Scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('.navbar');
+            if(window.scrollY > 60) {
+                nav.style.padding = '10px 5%';
+                nav.style.background = 'rgba(3, 0, 5, 0.95)';
+                nav.style.boxShadow = '0 5px 20px rgba(0, 243, 255, 0.1)';
+            } else {
+                nav.style.padding = '20px 5%';
+                nav.style.background = 'rgba(3, 0, 5, 0.85)';
+                nav.style.boxShadow = 'none';
+            }
+        });
 
         // --- ANIMATION CONTROLLER ---
         const stage = document.getElementById('animStage');
@@ -720,21 +898,19 @@
             moveSlide(currentSlide);
         }, 5000);
 
-        // --- UPDATED STATS COUNTER LOGIC ---
+        // --- STATS COUNTER LOGIC ---
         const counters = document.querySelectorAll('.counter');
-        const speed = 100; // The lower the slower
+        const speed = 100;
 
         const animateCounters = () => {
             counters.forEach(counter => {
                 const updateCount = () => {
                     const target = +counter.getAttribute('data-target');
-                    const count = +counter.innerText.replace(/,/g, ''); // Remove commas for calculation
+                    const count = +counter.innerText.replace(/,/g, ''); 
                     
-                    // Lower increment for smoother animation on large numbers
                     const inc = target / speed;
 
                     if (count < target) {
-                        // Format numbers with commas
                         counter.innerText = Math.ceil(count + inc).toLocaleString();
                         setTimeout(updateCount, 25);
                     } else {
