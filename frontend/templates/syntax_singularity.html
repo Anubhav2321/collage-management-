@@ -1,0 +1,534 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* =========================================
+       🚀 SYNTAX SINGULARITY: DEEP DARK UI
+       ========================================= */
+    :root {
+        --dark-base: #050507;    /* Main Background (Matches Sidebar) */
+        --dark-panel: #0a0a0f;   /* Panel Background */
+        --dark-card: #0d0d14;    /* Setup Card Background */
+        --border-color: #1f1f25; /* Subtle Borders */
+        --text-main: #e0e0e0;    /* Main Text */
+        --text-muted: #888888;   /* Muted Text */
+        --accent-cyan: #00d4ff;  /* Brand Accent */
+        --accent-green: #00e676; /* Success / Submit */
+        --accent-red: #ff3366;   /* Error */
+        --accent-yellow: #ffc01e;/* Coins / Medium */
+    }
+
+    .arena-container {
+        height: 100vh;
+        background-color: var(--dark-base);
+        color: var(--text-main);
+        font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* --- 1. SETUP MODAL (DEEP DARK) --- */
+    .setup-card {
+        background: var(--dark-card);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        width: 100%;
+        max-width: 500px;
+        padding: 40px;
+        border-radius: 12px;
+        z-index: 10;
+    }
+
+    .setup-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 30px;
+        text-align: center;
+        color: #fff;
+        letter-spacing: 1px;
+    }
+    .setup-title span { color: var(--accent-cyan); }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .dark-input, .dark-select {
+        width: 100%;
+        background: var(--dark-base);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-family: 'Rajdhani', sans-serif;
+        outline: none;
+        transition: all 0.3s;
+    }
+    .dark-input:focus, .dark-select:focus {
+        border-color: var(--accent-cyan);
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.1);
+    }
+
+    .btn-start {
+        width: 100%;
+        background: rgba(0, 212, 255, 0.1);
+        color: var(--accent-cyan);
+        border: 1px solid var(--accent-cyan);
+        padding: 14px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 700;
+        font-family: 'Orbitron', sans-serif;
+        cursor: pointer;
+        margin-top: 15px;
+        transition: 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .btn-start:hover {
+        background: var(--accent-cyan);
+        color: #000;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+    }
+
+    /* --- 2. WORKSPACE (DEEP DARK SPLIT SCREEN) --- */
+    .workspace {
+        display: none;
+        width: 100%;
+        height: 100vh;
+        flex-direction: column;
+        background: var(--dark-base);
+    }
+
+    .workspace-header {
+        background: var(--dark-panel);
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .btn-back {
+        background: transparent;
+        color: var(--text-muted);
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        display: flex; align-items: center; gap: 6px;
+        transition: 0.2s;
+    }
+    .btn-back:hover { color: var(--accent-red); }
+
+    .header-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 14px;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+    }
+
+    .btn-check {
+        background: rgba(0, 230, 118, 0.1);
+        color: var(--accent-green);
+        border: 1px solid var(--accent-green);
+        padding: 6px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 700;
+        font-family: 'Rajdhani', sans-serif;
+        cursor: pointer;
+        display: flex; align-items: center; gap: 6px;
+        transition: 0.2s;
+    }
+    .btn-check:hover { 
+        background: var(--accent-green);
+        color: #000;
+        box-shadow: 0 0 15px rgba(0, 230, 118, 0.4);
+    }
+
+    .split-layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* Left Panel: Problem */
+    .left-panel {
+        width: 40%;
+        background: var(--dark-panel);
+        border-right: 1px solid var(--border-color);
+        display: flex; 
+        flex-direction: column;
+    }
+
+    .panel-tab {
+        padding: 10px 20px;
+        background: var(--dark-base);
+        color: var(--accent-cyan);
+        font-size: 14px;
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-color);
+        display: flex; align-items: center; gap: 8px;
+        font-family: 'Orbitron', sans-serif;
+    }
+
+    .q-content {
+        padding: 30px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .q-title { font-size: 26px; color: #fff; margin-bottom: 15px; font-weight: 700; }
+    
+    .q-badges { display: flex; gap: 12px; margin-bottom: 30px; align-items: center;}
+    .badge { padding: 4px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; font-family: 'Orbitron', sans-serif; }
+    
+    .badge-easy { background: rgba(0, 184, 163, 0.1); color: #00b8a3; border: 1px solid rgba(0, 184, 163, 0.3); }
+    .badge-medium { background: rgba(255, 192, 30, 0.1); color: #ffc01e; border: 1px solid rgba(255, 192, 30, 0.3); }
+    .badge-hard { background: rgba(255, 51, 102, 0.1); color: var(--accent-red); border: 1px solid rgba(255, 51, 102, 0.3); }
+    
+    .badge-coin { background: rgba(255, 192, 30, 0.05); color: var(--accent-yellow); border: 1px solid rgba(255, 192, 30, 0.2); display: flex; align-items: center; gap: 5px;}
+    
+    .q-desc { font-size: 16px; line-height: 1.7; color: var(--text-main); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+
+    /* Right Panel: Code & Terminal */
+    .right-panel {
+        width: 60%;
+        display: flex;
+        flex-direction: column;
+        background: var(--dark-base);
+    }
+
+    .editor-header {
+        padding: 10px 20px;
+        background: var(--dark-panel);
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-muted);
+        font-size: 13px;
+        font-family: 'Orbitron', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #editor { flex: 1; font-size: 16px; }
+
+    /* AI Feedback Terminal */
+    .terminal-panel {
+        height: 35%;
+        background: var(--dark-panel);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .terminal-header {
+        padding: 8px 20px;
+        background: var(--dark-base);
+        border-bottom: 1px solid var(--border-color);
+        color: var(--accent-cyan);
+        font-size: 12px;
+        font-family: 'Orbitron', sans-serif;
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    .terminal-content {
+        padding: 20px;
+        overflow-y: auto;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 14px;
+        color: var(--text-main);
+        flex: 1;
+        background: var(--dark-panel);
+    }
+
+    /* Terminal text colors */
+    .t-success { color: var(--accent-green); font-weight: bold; }
+    .t-error { color: var(--accent-red); font-weight: bold; }
+    .t-info { color: var(--accent-cyan); }
+    .t-warning { color: var(--accent-yellow); }
+
+    /* Fullscreen Loader */
+    .full-loader {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(5, 5, 7, 0.95);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        z-index: 100;
+    }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--dark-base); }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555; }
+</style>
+
+<div class="arena-container">
+    
+    <div class="setup-card" id="setupCard">
+        <div class="setup-title">&lt;Syntax<span>Singularity</span>/&gt;</div>
+        
+        <div class="form-group">
+            <label>Linked Course</label>
+            <select id="courseSelect" class="dark-select">
+                {% for enrollment in courses %}
+                    <option value="{{ enrollment.course.id }}">{{ enrollment.course.title }}</option>
+                {% empty %}
+                    <option value="">No Enrolled Courses Found</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Programming Language</label>
+            <select id="langSelect" class="dark-select">
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+                <option value="javascript">JavaScript</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Target Topic (e.g., Array, String, Logic)</label>
+            <input type="text" id="topicInput" class="dark-input" placeholder="Type your topic here..." autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label>Difficulty Level</label>
+            <select id="diffSelect" class="dark-select">
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+            </select>
+        </div>
+
+        <button class="btn-start" onclick="startChallenge()">
+            <i class="fas fa-terminal"></i> Initialize System
+        </button>
+    </div>
+
+    <div class="full-loader" id="mainLoader">
+        <i class="fas fa-circle-notch fa-spin" style="font-size: 50px; color: var(--accent-cyan); margin-bottom: 25px;"></i>
+        <h3 style="color: #fff; font-family: 'Orbitron', sans-serif; letter-spacing: 2px;">GENERATING MISSION...</h3>
+        <p style="color: var(--text-muted); margin-top: 10px; font-family: 'Rajdhani', sans-serif; font-size: 18px;">Connecting to ARIS Mainframe</p>
+    </div>
+
+    <div class="workspace" id="workspaceArea">
+        
+        <div class="workspace-header">
+            <button class="btn-back" onclick="goBack()"><i class="fas fa-sign-out-alt"></i> Abort</button>
+            <div class="header-title">
+                &lt;Workspace /&gt;
+            </div>
+            <button class="btn-check" id="checkBtn" onclick="checkCode()">
+                <i class="fas fa-microchip"></i> AI Logic Check
+            </button>
+        </div>
+
+        <div class="split-layout">
+            
+            <div class="left-panel">
+                <div class="panel-tab"><i class="fas fa-file-code"></i> problem_statement.md</div>
+                
+                <div class="q-content">
+                    <div class="q-title" id="qTitle">Problem Title</div>
+                    <div class="q-badges">
+                        <span class="badge" id="qDiff">Difficulty</span>
+                        <span class="badge badge-coin"><i class="fas fa-coins"></i> <span id="qCoins">0</span> Coins</span>
+                    </div>
+                    <div class="q-desc" id="qDesc">Loading...</div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                
+                <div class="editor-header" id="fileTabName">
+                    <i class="fas fa-code" style="color: var(--accent-cyan);"></i> solution.py
+                </div>
+                
+                <div id="editor"># Write your clean code here...</div>
+                
+                <div class="terminal-panel">
+                    <div class="terminal-header">
+                        <i class="fas fa-terminal"></i> SYSTEM_OUTPUT
+                    </div>
+                    
+                    <div class="terminal-content" id="aiFeedback">
+                        <span class="t-info">> ARIS Terminal Initialized.</span><br>
+                        <span style="color: var(--text-muted);">> Write your code above and click 'AI Logic Check' to evaluate.</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+<script>
+    var editor = ace.edit("editor");
+    // 🚀 FIXED: Changed theme from "vscodedark" to a guaranteed Deep Dark theme
+    editor.setTheme("ace/theme/tomorrow_night_eighties"); 
+    editor.session.setMode("ace/mode/python");
+    editor.setOptions({
+        fontSize: "16px",
+        showPrintMargin: false,
+        cursorStyle: "smooth",
+        fontFamily: "Consolas, 'Courier New', monospace"
+    });
+    
+    let currentProblemId = null;
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    function goBack() {
+        document.getElementById('workspaceArea').style.display = 'none';
+        document.getElementById('setupCard').style.display = 'block';
+    }
+
+    async function startChallenge() {
+        const courseId = document.getElementById('courseSelect').value;
+        const lang = document.getElementById('langSelect').value;
+        const topic = document.getElementById('topicInput').value.trim();
+        const diff = document.getElementById('diffSelect').value;
+
+        if(!courseId) { alert("Please select a course!"); return; }
+        if(!topic) { alert("Please type a topic!"); return; }
+
+        document.getElementById('setupCard').style.display = 'none';
+        document.getElementById('mainLoader').style.display = 'flex';
+
+        // Set Editor Mode & File Tab Name
+        let mode = lang === 'cpp' ? 'c_cpp' : lang;
+        editor.session.setMode("ace/mode/" + mode);
+        
+        let ext = ".txt";
+        if(lang === 'python') ext = ".py";
+        if(lang === 'cpp') ext = ".cpp";
+        if(lang === 'java') ext = ".java";
+        if(lang === 'javascript') ext = ".js";
+        
+        document.getElementById('fileTabName').innerHTML = `<i class="fas fa-code" style="color: var(--accent-cyan);"></i> solution${ext}`;
+
+        try {
+            const response = await fetch("{% url 'generate_challenge' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({ course_id: courseId, language: lang, topic: topic, difficulty: diff })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                currentProblemId = data.problem_id; 
+                document.getElementById('qTitle').innerText = data.title;
+                
+                let badge = document.getElementById('qDiff');
+                badge.innerText = data.difficulty;
+                badge.className = 'badge'; // Reset classes
+                if(data.difficulty === 'Easy') badge.classList.add('badge-easy');
+                if(data.difficulty === 'Medium') badge.classList.add('badge-medium');
+                if(data.difficulty === 'Hard') badge.classList.add('badge-hard');
+                
+                document.getElementById('qCoins').innerText = data.base_coins;
+                document.getElementById('qDesc').innerHTML = data.description.replace(/\n/g, '<br><br>');
+                editor.setValue(data.base_code, -1);
+                
+                document.getElementById('mainLoader').style.display = 'none';
+                document.getElementById('workspaceArea').style.display = 'flex';
+                document.getElementById('aiFeedback').innerHTML = '<span class="t-info">> ARIS Terminal Ready. Standing by.</span>';
+            } else {
+                alert("Error: " + data.message);
+                goBack();
+                document.getElementById('mainLoader').style.display = 'none';
+            }
+        } catch (error) {
+            alert("Failed to connect to AI Server.");
+            goBack();
+            document.getElementById('mainLoader').style.display = 'none';
+        }
+    }
+
+    async function checkCode() {
+        if (!currentProblemId) return;
+
+        const code = editor.getValue();
+        const checkBtn = document.getElementById('checkBtn');
+        const feedbackBox = document.getElementById('aiFeedback');
+
+        checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+        checkBtn.disabled = true;
+        feedbackBox.innerHTML = '<span class="t-warning">> Running AI evaluation protocol...</span><br><span style="color:#888">> Analyzing syntax and logic...</span>';
+
+        try {
+            const response = await fetch("/api/submit-bounty/", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({ problem_id: currentProblemId, code: code })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                if(data.is_correct) {
+                    feedbackBox.innerHTML = `
+                        <div class="t-success">> EXECUTION SUCCESSFUL</div>
+                        <div class="t-info">> STATUS: PERFECT LOGIC MATCH</div>
+                        <br>
+                        <div style="color: #ccc;">${data.feedback}</div>
+                        <br>
+                        <div style="color: var(--accent-yellow); font-weight: bold;">> REWARD GRANTED: +${data.earned_coins} LMS COINS 🪙</div>
+                    `;
+                } else {
+                    feedbackBox.innerHTML = `
+                        <div class="t-error">> EXECUTION FAILED</div>
+                        <div class="t-warning">> STATUS: LOGIC ERROR DETECTED</div>
+                        <br>
+                        <div style="color: #ccc;">${data.feedback}</div>
+                    `;
+                }
+            } else {
+                feedbackBox.innerHTML = `<span class="t-error">> ERROR: ${data.message}</span>`;
+            }
+
+        } catch (error) {
+            feedbackBox.innerHTML = '<span class="t-error">> FATAL ERROR: Network disconnected. AI could not be reached.</span>';
+        } finally {
+            checkBtn.innerHTML = '<i class="fas fa-microchip"></i> AI Logic Check';
+            checkBtn.disabled = false;
+        }
+    }
+</script>
+{% endblock %}

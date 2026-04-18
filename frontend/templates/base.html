@@ -49,7 +49,7 @@
             z-index: 1000;
         }
 
-        /* Brand Logo (Exactly as requested) */
+        /* Brand Logo (Restored to original) */
         .brand {
             display: flex;
             align-items: center;
@@ -109,6 +109,26 @@
         .nav-item a i { 
             width: 25px; text-align: center; 
             font-size: 1.2rem;
+        }
+
+        /* 🚀 NEW: Neon Badge Style for Syntax Singularity */
+        .badge-neon {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            margin-left: auto; /* Pushes the badge to the right edge */
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            animation: pulseNeon 2s infinite alternate;
+        }
+
+        @keyframes pulseNeon {
+            0% { box-shadow: 0 0 5px rgba(0, 212, 255, 0.2); }
+            100% { box-shadow: 0 0 12px rgba(0, 212, 255, 0.6); }
         }
 
         /* Logout Button (Bottom) */
@@ -204,6 +224,14 @@
                     <i class="fas fa-folder"></i> Library
                 </a>
             </li>
+            
+            <li class="nav-item">
+                <a href="{% url 'syntax_singularity' %}" class="{% if request.resolver_match.url_name == 'syntax_singularity' %}active{% endif %}">
+                    <i class="fas fa-laptop-code"></i> Syntax Singularity
+                    <span class="badge-neon">New</span>
+                </a>
+            </li>
+
             <li class="nav-item">
                 <a href="{% url 'student_exam_list' %}" class="{% if request.resolver_match.url_name == 'student_exam_list' or request.resolver_match.url_name == 'take_exam' %}active{% endif %}">
                     <i class="fas fa-edit"></i> AI Exams
@@ -319,23 +347,19 @@
             const toasts = document.querySelectorAll('.toast-popup');
             
             toasts.forEach((toast, index) => {
-                // Stagger animation if there are multiple messages at once
                 setTimeout(() => {
                     toast.style.display = 'flex';
                     
-                    // Optional: Play a sound effect if it's a coin achievement
                     if(toast.classList.contains('coin-achievement')) {
-                        // You can add an audio file path here later if you want a "Ka-ching" sound
-                        // new Audio('/static/sounds/coin.mp3').play().catch(e => console.log(e));
+                        // Sound logic optional
                     }
 
-                    // Auto-dismiss after 4.5 seconds
                     setTimeout(() => {
                         toast.style.animation = 'fadeOutUp 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards';
                         setTimeout(() => toast.remove(), 600);
                     }, 4500);
                     
-                }, index * 400); // 400ms delay between each popup
+                }, index * 400); 
             });
         });
     </script>

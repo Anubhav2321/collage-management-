@@ -50,4 +50,14 @@ urlpatterns = [
     
     # 👉 🚀 NEW: Local Docker Code Execution API
     path('api/chat/execute-local-code/', compiler_service.run_code_in_docker, name='run_code_in_docker'),
+    
+    # ==========================================
+    # 🚀 NEW: BOUNTY ARENA API ENDPOINTS
+    # ==========================================
+    # Route to render the main page (404 Error Fix)
+    path('bounty-arena/', views.bounty_arena_view, name='bounty_arena'),
+    
+    # API routing for bounty arena
+    path('api/bounty/generate/', views.generate_bounty_problem, name='generate_bounty_problem'),
+    path('api/bounty/submit/', views.submit_bounty_code, name='submit_bounty_code'),
 ]

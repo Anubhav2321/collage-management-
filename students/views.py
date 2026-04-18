@@ -4,7 +4,8 @@ import subprocess
 import json
 import datetime
 import time
-import re  # Regex Module for YouTube Link Parsing
+import re  
+import requests 
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, get_user_model
@@ -48,7 +49,10 @@ from .models import (
     Quiz, 
     Question,
     QuizResult,
-    LessonComment
+    LessonComment,
+    DynamicBountyProblem,  # For Bounty Arena / Syntax Singularity
+    ProblemTestCase,       # For Bounty Arena / Syntax Singularity
+    BountySubmission       # For Bounty Arena / Syntax Singularity
 )
 
 User = get_user_model()
@@ -698,7 +702,7 @@ def ai_chat(request):
     return JsonResponse({'error': "Invalid request"}, status=400)
 
 
-#  6. NEW DOCKER EXECUTION ENGINE (Integrated Here)
+#  6. PREVIOUS DOCKER EXECUTION ENGINE (Remains intact as requested)
 
 @csrf_exempt
 def execute_code_api(request):
@@ -1058,3 +1062,183 @@ def admin_delete_enrollment(request, enroll_id):
     enroll.delete()
     messages.success(request, "Enrollment removed.")
     return redirect('admin_enrollment_list')
+
+
+# =====================================================================
+# 8. NEW: SYNTAX SINGULARITY (AI LOGIC CHECKER)
+# =====================================================================
+
+@login_required
+def syntax_singularity_view(request):
+    """ Renders the VS Code style Syntax Singularity page. """
+    enrolled_courses = Enrollment.objects.filter(student=request.user).select_related('course')
+    return render(request, 'syntax_singularity.html', {'courses': enrolled_courses})
+
+@login_required
+@csrf_exempt
+def generate_ai_challenge(request):
+    """ Calls Groq API to generate a dynamic coding problem based on User's typed topic. """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            course_id = data.get('course_id')
+            language = data.get('language', 'python')
+            topic = data.get('topic', 'Logic') # Now accepts user-typed topic
+            difficulty = data.get('difficulty', 'Easy')
+            
+            course_obj = get_object_or_404(Course, id=course_id)
+            groq_api_key = getattr(settings, 'GROQ_API_KEY', os.environ.get('GROQ_API_KEY', ''))
+            
+            if not groq_api_key:
+                return JsonResponse({'status': 'error', 'message': 'Groq API Key is missing in backend.'}, status=500)
+                
+            headers = {"Authorization": f"Bearer {groq_api_key}", "Content-Type": "application/json"}
+            
+            prompt = f"""
+            You are ARIS, an advanced AI system. Generate a coding problem for a student.
+            Language: {language}
+            Topic: {topic}
+            Difficulty: {difficulty}
+            
+            CRITICAL INSTRUCTION FOR `base_code`: 
+            You MUST NOT provide the solution. Provide ONLY the empty function signature/template for the student to start with. The function body MUST be empty (use `pass` in Python, or empty brackets `{{}}` in other languages). DO NOT write the actual logic.
+            
+            Return ONLY a valid JSON object without markdown tags:
+            {{
+                "title": "A short engaging title",
+                "description": "Clear problem statement and constraints.",
+                "base_code": "def solve(arr):\\n    # Write your logic here\\n    pass"
+            }}
+            """
+            
+            payload = {
+                "model": "llama-3.3-70b-versatile", # 🚀 UPDATED MODEL NAME (Current Flagship)
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.5
+            }
+            
+            base_url = "https://"
+            endpoint = "api.groq.com/openai/v1/chat/completions"
+            groq_url = base_url + endpoint
+            
+            response = requests.post(groq_url, headers=headers, json=payload)
+            response_data = response.json()
+            
+            if 'choices' not in response_data:
+                error_msg = response_data.get('error', {}).get('message', str(response_data))
+                return JsonResponse({'status': 'error', 'message': f'Groq API Error: {error_msg}'}, status=500)
+            
+            content = response_data['choices'][0]['message']['content'].replace("```json", "").replace("```", "").strip()
+            
+            try: problem_data = json.loads(content)
+            except json.JSONDecodeError: return JsonResponse({'status': 'error', 'message': 'AI generated invalid JSON. Try again.'}, status=500)
+            
+            base_coins = 10 if difficulty == 'Easy' else (30 if difficulty == 'Medium' else 100)
+            
+            new_problem = DynamicBountyProblem.objects.create(
+                student=request.user, course=course_obj, language=language,
+                topic=topic, difficulty=difficulty, title=problem_data['title'],
+                description=problem_data['description'], base_code=problem_data.get('base_code', ''),
+                base_bounty_coins=base_coins
+            )
+            
+            return JsonResponse({
+                'status': 'success', 'problem_id': new_problem.id,
+                'title': new_problem.title, 'description': new_problem.description,
+                'base_code': new_problem.base_code, 'difficulty': new_problem.difficulty,
+                'base_coins': new_problem.base_bounty_coins
+            })
+            
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'Invalid Request'}, status=400)
+
+
+@login_required
+@csrf_exempt
+def submit_bounty_code(request):
+    """ Evaluates the student's code logically using Groq AI (No Docker Execution). """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            problem_id = data.get('problem_id')
+            submitted_code = data.get('code', '')
+            
+            problem = get_object_or_404(DynamicBountyProblem, id=problem_id, student=request.user)
+            
+            if not submitted_code.strip():
+                return JsonResponse({'status': 'error', 'message': 'Code cannot be empty.'})
+
+            groq_api_key = getattr(settings, 'GROQ_API_KEY', os.environ.get('GROQ_API_KEY', ''))
+            if not groq_api_key:
+                return JsonResponse({'status': 'error', 'message': 'Groq API Key is missing.'}, status=500)
+                
+            headers = {"Authorization": f"Bearer {groq_api_key}", "Content-Type": "application/json"}
+            
+            prompt = f"""
+            You are a strict, expert coding instructor.
+            Problem Title: {problem.title}
+            Problem Description: {problem.description}
+            Language: {problem.language}
+            
+            Student's Code:
+            {submitted_code}
+            
+            Check if the student's code logically and perfectly solves the problem. Ignore minor syntax warnings if the core logic is flawlessly correct.
+            
+            Return ONLY a valid JSON object in this exact format (no markdown):
+            {{
+                "is_correct": true or false,
+                "feedback": "Short encouraging explanation of what is right, or clear guidance on what is logically wrong."
+            }}
+            """
+            
+            payload = {
+                "model": "llama-3.3-70b-versatile", # 🚀 UPDATED MODEL NAME (Current Flagship)
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.2
+            }
+            
+            base_url = "https://"
+            endpoint = "api.groq.com/openai/v1/chat/completions"
+            groq_url = base_url + endpoint
+            
+            response = requests.post(groq_url, headers=headers, json=payload)
+            response_data = response.json()
+            
+            if 'choices' not in response_data:
+                return JsonResponse({'status': 'error', 'message': 'AI failed to evaluate code.'}, status=500)
+            
+            content = response_data['choices'][0]['message']['content'].replace("```json", "").replace("```", "").strip()
+            
+            try: eval_result = json.loads(content)
+            except json.JSONDecodeError: return JsonResponse({'status': 'error', 'message': 'AI response format error.'}, status=500)
+            
+            is_correct = eval_result.get('is_correct', False)
+            feedback = eval_result.get('feedback', 'No feedback provided.')
+            
+            earned_coins = 0
+            if is_correct and not problem.is_solved:
+                earned_coins = problem.base_bounty_coins
+                request.user.lms_coins += earned_coins
+                request.user.save(update_fields=['lms_coins'])
+                problem.is_solved = True
+                problem.save(update_fields=['is_solved'])
+            
+            BountySubmission.objects.create(
+                problem=problem, student=request.user, submitted_code=submitted_code,
+                status="AI Accepted" if is_correct else "AI Rejected",
+                earned_coins=earned_coins
+            )
+            
+            return JsonResponse({
+                'status': 'success',
+                'is_correct': is_correct,
+                'feedback': feedback,
+                'earned_coins': earned_coins
+            })
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            
+    return JsonResponse({'status': 'error', 'message': 'Invalid Request'}, status=400)

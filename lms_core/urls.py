@@ -28,6 +28,11 @@ from students.views import (
     process_payment,
     purchase_with_coins, # 🪙 NEW: Imported for Coin Payment
 
+    # 👉 🚀 NEW: SYNTAX SINGULARITY (AI Coding Arena)
+    syntax_singularity_view,
+    generate_ai_challenge,
+    submit_bounty_code,  # 🚀 NEW: Added this import!
+
     # 5. Quiz & AI
     student_exam_list,  # Exam List View
     take_exam,          # Take Exam View
@@ -120,7 +125,6 @@ urlpatterns = [
     path('library/', library_view, name='library'),
     
     #  9. ADVANCED COMMUNITY CHAT URLs 
-
     path('community/<slug:slug>/', course_community_chat, name='course_community_chat'),
     
     # AJAX APIs for Chat Features
@@ -138,8 +142,12 @@ urlpatterns = [
     #  NEW: Local Docker Code Execution API (THE MISSING LINK IS NOW HERE!)
     path('api/chat/execute-code/', execute_code_api, name='execute_code_api'),
     
-    # 5. Quiz & AI System
+    # 👉 🚀 NEW: SYNTAX SINGULARITY (LeetCode Style AI Arena URLs)
+    path('syntax-singularity/', syntax_singularity_view, name='syntax_singularity'),
+    path('api/generate-challenge/', generate_ai_challenge, name='generate_challenge'),
+    path('api/submit-bounty/', submit_bounty_code, name='submit_bounty'), # 🚀 NEW: Added this route!
     
+    # 5. Quiz & AI System
     # New Exam Logic (Course Linked)
     path('my-exams/', student_exam_list, name='student_exam_list'), 
     path('take-exam/<int:exam_id>/', take_exam, name='take_exam'), 
@@ -153,7 +161,6 @@ urlpatterns = [
     path('api/ai-chat/', ai_chat, name='ai_chat'),
 
     # 6. Admin Panel System
-   
     path('admin-panel/', admin_dashboard, name='admin_dashboard'),
     
     #  A. Student Management 
@@ -190,7 +197,6 @@ urlpatterns = [
 ]
 
 # Media & Static Files Configuration
-
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     if settings.STATICFILES_DIRS:

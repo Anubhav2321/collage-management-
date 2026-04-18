@@ -460,3 +460,62 @@ class MessageReaction(models.Model):
 
     def __str__(self):
         return f"{self.user.username} reacted {self.reaction_type} on Msg ID {self.message.id}"
+
+
+# =====================================================================
+# 🚀 NEW: BOUNTY ARENA (SYNTAX SINGULARITY) MODELS
+# =====================================================================
+
+class DynamicBountyProblem(models.Model):
+    """
+    Stores the AI-generated coding problem specific to a student.
+    """
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bounty_problems')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='bounty_problems')
+    language = models.CharField(max_length=50)
+    topic = models.CharField(max_length=100)
+    difficulty = models.CharField(max_length=50)
+    
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    base_code = models.TextField()
+    
+    base_bounty_coins = models.IntegerField(default=10)
+    is_solved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.student.username}"
+
+class ProblemTestCase(models.Model):
+    """
+    Stores the test cases for each generated problem.
+    Some are visible to students, some are hidden for backend evaluation.
+    """
+    problem = models.ForeignKey(DynamicBountyProblem, on_delete=models.CASCADE, related_name='test_cases')
+    input_data = models.TextField()
+    expected_output = models.TextField()
+    is_hidden = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Test Case for {self.problem.title} (Hidden: {self.is_hidden})"
+
+class BountySubmission(models.Model):
+    """
+    Tracks every time a student submits code to solve a Bounty Problem.
+    """
+    problem = models.ForeignKey(DynamicBountyProblem, on_delete=models.CASCADE, related_name='submissions')
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bounty_submissions')
+    
+    submitted_code = models.TextField()
+    status = models.CharField(max_length=50) # e.g., 'Accepted', 'Wrong Answer', 'Runtime Error'
+    execution_time = models.FloatField(null=True, blank=True)
+    
+    attempt_number = models.IntegerField(default=1)
+    earned_coins = models.IntegerField(default=0)
+    multiplier_applied = models.FloatField(default=1.0)
+    
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Submission by {self.student.username} - {self.status}"
