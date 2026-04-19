@@ -365,34 +365,46 @@ def delete_document_file(sender, instance, **kwargs):
     if instance.file and os.path.isfile(instance.file.path):
         os.remove(instance.file.path)
 
-# --- GOOGLE PROFILE PICTURE AUTO-SAVE ---
+# --- 🚀 FIX: GOOGLE PROFILE PICTURE & NAME AUTO-SAVE ---
 
 @receiver(user_logged_in)
 def fetch_google_profile_pic(request, user, **kwargs):
     try:
-        # Check if the user already has a profile picture
-        if user.profile.profile_pic:
-            return  # If yes, do nothing
-
         # Find the Google social account linked to this user
         social_account = SocialAccount.objects.filter(user=user, provider='google').first()
         
         if social_account:
-            # Extract the profile picture URL from Google's extra data
-            picture_url = social_account.extra_data.get('picture')
+            # 1. FIX MISSING NAMES FROM GOOGLE
+            name_updated = False
             
-            if picture_url:
-                # Download the image using requests
-                response = requests.get(picture_url)
+            if not user.first_name:
+                user.first_name = social_account.extra_data.get('given_name', '')
+                name_updated = True
                 
-                if response.status_code == 200:
-                    # Save the downloaded image to the user's profile
-                    file_name = f"{user.username}_google_pic.jpg"
-                    user.profile.profile_pic.save(file_name, ContentFile(response.content), save=True)
+            if not user.last_name:
+                user.last_name = social_account.extra_data.get('family_name', '')
+                name_updated = True
+                
+            # Fallback if given_name/family_name isn't available but 'name' is
+            if not user.first_name and social_account.extra_data.get('name'):
+                user.first_name = social_account.extra_data.get('name')
+                name_updated = True
+
+            # Save the user if name was updated
+            if name_updated:
+                user.save(update_fields=['first_name', 'last_name'])
+
+            # 2. FIX PROFILE PICTURE
+            if not user.profile.profile_pic:
+                picture_url = social_account.extra_data.get('picture')
+                if picture_url:
+                    response = requests.get(picture_url)
+                    if response.status_code == 200:
+                        file_name = f"{user.username}_google_pic.jpg"
+                        user.profile.profile_pic.save(file_name, ContentFile(response.content), save=True)
                     
     except Exception as e:
-        # If any error occurs (like profile not created yet), skip it safely
-        print(f"Could not save Google profile picture: {e}")
+        print(f"Could not save Google profile data: {e}")
 
 # --- COURSE COMMUNITY / WHATSAPP STYLE GROUP ---
 
