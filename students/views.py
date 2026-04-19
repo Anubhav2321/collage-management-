@@ -180,12 +180,16 @@ def student_dashboard(request):
     completed_courses = enrollments.filter(progress=100).count()
     certificate_eligible = completed_courses
     
+    # 🏆 GLOBAL LEADERBOARD LOGIC
+    top_students = User.objects.filter(is_student=True).order_by('-lms_coins')[:10]
+    
     context = {
         'enrollments': enrollments,
         'notifications': notifications,
         'total_enrolled': total_enrolled,
         'completed_courses': completed_courses,
         'certificate_eligible': certificate_eligible,
+        'top_students': top_students,
         'user': user
     }
     return render(request, 'student_dashboard.html', context)
@@ -215,10 +219,36 @@ def profile_view(request):
     # Fetch Enrolled Courses for display
     enrollments = Enrollment.objects.filter(student=user).select_related('course').order_by('-enrolled_at')
 
+    # =========================================================
+    # 🚀 SYNTAX SINGULARITY STATS & GITHUB HEATMAP GRAPH FETCHING
+    # =========================================================
+    successful_bounties = BountySubmission.objects.filter(
+        student=user, 
+        earned_coins__gt=0
+    ).select_related('problem').order_by('submitted_at') # ordered ascending for graph
+    
+    total_bounties_solved = successful_bounties.count()
+    bounty_coins_earned = sum(sub.earned_coins for sub in successful_bounties)
+    
+    # For recent list (descending)
+    recent_bounties = BountySubmission.objects.filter(
+        student=user, earned_coins__gt=0
+    ).select_related('problem').order_by('-submitted_at')[:5]
+
+    # 📊 GRAPH DATA LOGIC (Dictionary of date -> count)
+    contribution_data = {}
+    for sub in successful_bounties:
+        date_str = sub.submitted_at.strftime('%Y-%m-%d')
+        contribution_data[date_str] = contribution_data.get(date_str, 0) + 1
+
     context = {
         'user': user,
         'form': form,
         'enrollments': enrollments,
+        'total_bounties_solved': total_bounties_solved,
+        'bounty_coins_earned': bounty_coins_earned,
+        'recent_bounties': recent_bounties,
+        'contribution_json': json.dumps(contribution_data), # <-- Sent to Template for Heatmap Graph
     }
     return render(request, 'student_profile.html', context)
 
@@ -1172,6 +1202,10 @@ def submit_bounty_code(request):
             groq_api_key = getattr(settings, 'GROQ_API_KEY', os.environ.get('GROQ_API_KEY', ''))
             if not groq_api_key:
                 return JsonResponse({'status': 'error', 'message': 'Groq API Key is missing.'}, status=500)
+            
+            # 🎯 ONE-SHOT LOGIC: Check attempt count
+            attempt_count = BountySubmission.objects.filter(problem=problem, student=request.user).count()
+            current_attempt = attempt_count + 1
                 
             headers = {"Authorization": f"Bearer {groq_api_key}", "Content-Type": "application/json"}
             
@@ -1218,24 +1252,30 @@ def submit_bounty_code(request):
             feedback = eval_result.get('feedback', 'No feedback provided.')
             
             earned_coins = 0
+            
+            # 💰 ONE-SHOT REWARD LOGIC: Coin Reward only on 1st Attempt
             if is_correct and not problem.is_solved:
-                earned_coins = problem.base_bounty_coins
-                request.user.lms_coins += earned_coins
-                request.user.save(update_fields=['lms_coins'])
+                if current_attempt == 1:
+                    earned_coins = problem.base_bounty_coins
+                    request.user.lms_coins += earned_coins
+                    request.user.save(update_fields=['lms_coins'])
+                    
                 problem.is_solved = True
                 problem.save(update_fields=['is_solved'])
             
             BountySubmission.objects.create(
                 problem=problem, student=request.user, submitted_code=submitted_code,
                 status="AI Accepted" if is_correct else "AI Rejected",
-                earned_coins=earned_coins
+                earned_coins=earned_coins,
+                attempt_number=current_attempt
             )
             
             return JsonResponse({
                 'status': 'success',
                 'is_correct': is_correct,
                 'feedback': feedback,
-                'earned_coins': earned_coins
+                'earned_coins': earned_coins,
+                'attempt': current_attempt
             })
 
         except Exception as e:

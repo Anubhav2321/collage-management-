@@ -139,6 +139,7 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         gap: 30px;
+        margin-bottom: 50px; /* Gap before leaderboard */
     }
 
     .course-card {
@@ -202,6 +203,161 @@
     .btn-community:hover {
         background: var(--neon-blue); color: #000; box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
     }
+
+    /* =========================================================
+       🚀 NEW: GLOBAL LEADERBOARD (HALL OF FAME)
+       ========================================================= */
+    .leaderboard-section {
+        background: linear-gradient(145deg, rgba(15, 15, 20, 0.7), rgba(10, 10, 15, 0.9));
+        border: 1px solid rgba(0, 243, 255, 0.15);
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        margin-bottom: 50px;
+    }
+
+    .leaderboard-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 20px;
+    }
+
+    .leaderboard-header h2 {
+        font-family: 'Orbitron', sans-serif;
+        color: #fff;
+        margin: 0;
+        font-size: 1.8rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .leaderboard-header i {
+        color: #ffd700;
+        font-size: 2.2rem;
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    }
+
+    .subtitle-neon {
+        color: var(--neon-blue);
+        font-size: 1rem;
+        letter-spacing: 1px;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+    }
+
+    .rank-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .rank-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(255, 255, 255, 0.02);
+        padding: 15px 25px;
+        border-radius: 15px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border-left: 4px solid transparent;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+    }
+
+    .rank-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(8px) scale(1.01);
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+    }
+
+    .rank-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .rank-number {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #666;
+        width: 35px;
+        text-align: center;
+    }
+
+    .rank-avatar {
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #111;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #333;
+        overflow: hidden;
+    }
+    
+    .rank-avatar i { font-size: 1.2rem; color: #888; }
+
+    .rank-name {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #e0e0e0;
+        letter-spacing: 0.5px;
+    }
+
+    .rank-coins {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        color: #ffc01e;
+        font-size: 1.2rem;
+        background: rgba(255, 192, 30, 0.1);
+        padding: 8px 15px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 192, 30, 0.2);
+    }
+
+    .rank-coins i { text-shadow: 0 0 10px rgba(255, 192, 30, 0.6); }
+
+    /* 🥇 Top 1 Style */
+    .rank-1 { 
+        border-left: 5px solid #ffd700; 
+        background: linear-gradient(90deg, rgba(255, 215, 0, 0.08), rgba(0,0,0,0)); 
+        border: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    .rank-1 .rank-number { color: #ffd700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); }
+    .rank-1 .rank-avatar { border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+    .rank-1 .rank-name { color: #fff; }
+
+    /* 🥈 Top 2 Style */
+    .rank-2 { 
+        border-left: 5px solid #e3e4e5; 
+        background: linear-gradient(90deg, rgba(227, 228, 229, 0.05), rgba(0,0,0,0)); 
+        border: 1px solid rgba(227, 228, 229, 0.15);
+    }
+    .rank-2 .rank-number { color: #e3e4e5; text-shadow: 0 0 10px rgba(227, 228, 229, 0.5); }
+    .rank-2 .rank-avatar { border-color: #e3e4e5; }
+
+    /* 🥉 Top 3 Style */
+    .rank-3 { 
+        border-left: 5px solid #cd7f32; 
+        background: linear-gradient(90deg, rgba(205, 127, 50, 0.05), rgba(0,0,0,0)); 
+        border: 1px solid rgba(205, 127, 50, 0.15);
+    }
+    .rank-3 .rank-number { color: #cd7f32; text-shadow: 0 0 10px rgba(205, 127, 50, 0.5); }
+    .rank-3 .rank-avatar { border-color: #cd7f32; }
+
 
     /* --- NOTIFICATION MODAL --- */
     .modal-overlay {
@@ -477,6 +633,37 @@
                     <a href="{% url 'all_courses' %}" class="empty-state-link">Browse Library &rarr;</a>
                 </div>
             {% endif %}
+        </div>
+    </div>
+
+    <div class="leaderboard-section fade-in-up delay-2">
+        <div class="leaderboard-header">
+            <h2><i class="fas fa-trophy"></i> Global Leaderboard <span class="subtitle-neon">// Hall of Fame</span></h2>
+        </div>
+        
+        <div class="rank-list">
+            {% for student in top_students %}
+            <div class="rank-item {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% endif %}">
+                <div class="rank-left">
+                    <div class="rank-number">#{{ forloop.counter }}</div>
+                    <div class="rank-avatar">
+                        {% if student.profile.profile_pic %}
+                            <img src="{{ student.profile.profile_pic.url }}" alt="{{ student.username }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        {% else %}
+                            <i class="fas fa-user-ninja"></i>
+                        {% endif %}
+                    </div>
+                    <div class="rank-name">{{ student.first_name|default:student.username }}</div>
+                </div>
+                <div class="rank-coins">
+                    {{ student.lms_coins }} <i class="fas fa-coins"></i>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state-text" style="text-align: center; padding: 20px; width: 100%;">
+                No Hackers on the leaderboard yet. Start solving challenges!
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>

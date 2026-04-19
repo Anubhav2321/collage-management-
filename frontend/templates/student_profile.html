@@ -40,7 +40,8 @@
     /* Helper Classes to remove inline CSS warnings */
     .d-none { display: none; }
     .delay-2 { animation-delay: 0.2s; }
-    .delay-3 { animation-delay: 0.3s; }
+    .delay-3 { animation-delay: 0.4s; }
+    .delay-4 { animation-delay: 0.6s; }
     .status-active { color: #00ff9d; }
     .icon-cyan { color: var(--neon-cyan); }
     .icon-play { margin-left: 5px; font-size: 0.8rem; }
@@ -116,10 +117,10 @@
         color: var(--neon-cyan);
         padding: 6px 20px; border-radius: 30px;
         font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
-        margin-bottom: 15px; /* Added margin for coin card */
+        margin-bottom: 15px;
     }
 
-    /* --- NEW: COIN BALANCE CARD --- */
+    /* --- COIN BALANCE CARD --- */
     .coin-balance-card {
         background: linear-gradient(135deg, #1a1c29, #0a0f18); 
         border: 1px solid var(--neon-cyan); 
@@ -208,6 +209,181 @@
     .value { color: #fff; font-weight: 500; font-size: 1rem; }
     .highlight { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 243, 255, 0.3); }
 
+    /* ==========================================================
+       🚀 NEW: SYNTAX SINGULARITY ACTIVITY TRACKER 
+       ========================================================== */
+    .syntax-stats-card {
+        background: linear-gradient(145deg, #0d0d14, #050507);
+        border: 1px solid rgba(0, 243, 255, 0.2);
+        border-radius: 15px;
+        padding: 35px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Glow effect in background */
+    .syntax-stats-card::after {
+        content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
+        background: var(--neon-cyan); opacity: 0.05; filter: blur(50px); border-radius: 50%;
+    }
+
+    .syntax-card-title {
+        font-family: 'Orbitron', sans-serif;
+        color: #fff;
+        font-size: 1.4rem;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .syntax-card-title i { color: var(--neon-cyan); font-size: 1.6rem; text-shadow: 0 0 15px var(--neon-cyan); }
+
+    .syntax-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-bottom: 35px;
+    }
+
+    .syntax-stat-box {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+        transition: transform 0.3s, border-color 0.3s;
+    }
+    .syntax-stat-box:hover { 
+        transform: translateY(-5px); 
+        border-color: rgba(0, 243, 255, 0.4); 
+        background: rgba(0, 243, 255, 0.02);
+    }
+
+    .syntax-stat-box h4 {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 15px;
+        display: flex; justify-content: center; align-items: center; gap: 8px;
+    }
+
+    .syntax-stat-value {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #fff;
+    }
+    .syntax-stat-value.coins { color: #ffc01e; text-shadow: 0 0 15px rgba(255, 192, 30, 0.4); }
+
+    /* ==========================================================
+       📊 GITHUB-STYLE CONTRIBUTION GRAPH (HEATMAP)
+       ========================================================== */
+    .heatmap-wrapper {
+        margin-bottom: 30px;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .heatmap-title {
+        color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase;
+        letter-spacing: 1.5px; border-bottom: 1px solid var(--border-color);
+        padding-bottom: 12px; margin-bottom: 20px; font-weight: 600;
+    }
+    
+    .heatmap-scroll {
+        overflow-x: auto;
+        padding-bottom: 10px;
+        direction: ltr;
+    }
+    .heatmap-scroll::-webkit-scrollbar { height: 8px; }
+    .heatmap-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+    .heatmap-scroll::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.2); border-radius: 4px; }
+    .heatmap-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0, 243, 255, 0.5); }
+
+    .heatmap-container {
+        display: grid;
+        grid-template-rows: repeat(7, 13px);
+        grid-auto-flow: column;
+        gap: 4px;
+        width: max-content;
+    }
+    
+    .heatmap-cell {
+        width: 13px; height: 13px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.03);
+        transition: 0.2s;
+        cursor: pointer;
+    }
+    .heatmap-cell:hover { 
+        transform: scale(1.3); 
+        box-shadow: 0 0 8px var(--neon-cyan); 
+        border: 1px solid #fff; 
+        z-index: 10; 
+    }
+    
+    /* Heatmap Levels (Cyberpunk Cyan Theme) */
+    .lvl-0 { background: rgba(255, 255, 255, 0.04); }
+    .lvl-1 { background: rgba(0, 243, 255, 0.3); }
+    .lvl-2 { background: rgba(0, 243, 255, 0.6); box-shadow: 0 0 5px rgba(0, 243, 255, 0.3); }
+    .lvl-3 { background: rgba(0, 243, 255, 1); box-shadow: 0 0 10px rgba(0, 243, 255, 0.6); }
+
+    .heatmap-legend {
+        display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+        margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);
+    }
+    .heatmap-legend span { margin: 0 5px; }
+
+    /* Recent Bounties */
+    .recent-bounties-title {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    .recent-bounties-list { list-style: none; padding: 0; margin: 0; }
+
+    .recent-bounty-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 16px 20px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        border-left: 4px solid #00e676; /* Success green line */
+        transition: 0.3s;
+    }
+    .recent-bounty-item:hover { background: rgba(255,255,255,0.05); transform: translateX(5px); }
+
+    .bounty-info-left { display: flex; flex-direction: column; }
+    .bounty-name { color: #fff; font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
+    .bounty-topic { color: var(--neon-cyan); font-size: 0.85rem; font-family: 'Orbitron', sans-serif; }
+
+    .bounty-reward {
+        background: rgba(255, 192, 30, 0.1);
+        border: 1px solid rgba(255, 192, 30, 0.3);
+        color: #ffc01e;
+        padding: 6px 15px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        box-shadow: 0 0 10px rgba(255, 192, 30, 0.1);
+    }
+
     /* --- ENROLLED COURSES --- */
     .section-title {
         font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: #fff;
@@ -270,7 +446,8 @@
             {% if user.is_student %}Student Account{% else %}Instructor{% endif %}
         </div>
         
-        <br> <div class="coin-balance-card">
+        <br> 
+        <div class="coin-balance-card">
             <div class="coin-icon-wrapper">
                 <i class="fas fa-coins"></i>
             </div>
@@ -335,7 +512,60 @@
         </div>
     </div>
 
-    <div class="fade-in-up delay-3">
+    <div class="syntax-stats-card fade-in-up delay-3">
+        <div class="syntax-card-title">
+            <i class="fas fa-laptop-code"></i> Syntax Singularity Record
+        </div>
+        
+        <div class="syntax-stats-grid">
+            <div class="syntax-stat-box">
+                <h4><i class="fas fa-check-circle" style="color: #00e676;"></i> AI Missions Solved</h4>
+                <div class="syntax-stat-value">{{ total_bounties_solved|default:0 }}</div>
+            </div>
+            <div class="syntax-stat-box">
+                <h4><i class="fas fa-trophy" style="color: #ffc01e;"></i> Total Bounty Earned</h4>
+                <div class="syntax-stat-value coins">{{ bounty_coins_earned|default:0 }} <i class="fas fa-coins" style="font-size: 24px; color: #ffc01e;"></i></div>
+            </div>
+        </div>
+
+        <div class="heatmap-wrapper">
+            <div class="heatmap-title">Activity Graph // Last 365 Days</div>
+            
+            <div class="heatmap-scroll" id="heatmap-scroll-box">
+                <div class="heatmap-container" id="heatmap-container"></div>
+            </div>
+            
+            <div class="heatmap-legend">
+                <span>Less</span>
+                <div class="heatmap-cell lvl-0"></div>
+                <div class="heatmap-cell lvl-1"></div>
+                <div class="heatmap-cell lvl-2"></div>
+                <div class="heatmap-cell lvl-3"></div>
+                <span>More</span>
+            </div>
+        </div>
+
+        <div class="recent-bounties-title">Recent Missions Accomplished</div>
+        <ul class="recent-bounties-list">
+            {% if recent_bounties %}
+                {% for submission in recent_bounties %}
+                    <li class="recent-bounty-item">
+                        <div class="bounty-info-left">
+                            <span class="bounty-name">{{ submission.problem.title }}</span>
+                            <span class="bounty-topic">Topic: {{ submission.problem.topic }} | {{ submission.problem.language|title }}</span>
+                        </div>
+                        <div class="bounty-reward">+{{ submission.earned_coins }} <i class="fas fa-coins"></i></div>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li class="recent-bounty-item" style="border-left: 4px solid #333; justify-content: center;">
+                    <span style="color: #666; font-style: italic;">No AI coding missions completed yet. Start your journey!</span>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="fade-in-up delay-4">
         <div class="section-title">
             <i class="fas fa-layer-group icon-cyan"></i>
             Enrolled Courses ({{ enrollments.count }})
@@ -368,6 +598,59 @@
     document.getElementById('id_profile_pic').onchange = function() {
         document.getElementById('avatar-form').submit();
     };
+
+    // ===============================================
+    // 🔥 GITHUB STYLE HEATMAP GENERATION LOGIC 🔥
+    // ===============================================
+    document.addEventListener("DOMContentLoaded", function() {
+        // Parse the JSON data passed from views.py
+        const contributions = JSON.parse('{{ contribution_json|escapejs }}' || '{}');
+        const container = document.getElementById('heatmap-container');
+        
+        const totalDays = 364; // 52 weeks * 7 days
+        const today = new Date();
+        const startDate = new Date();
+        startDate.setDate(today.getDate() - totalDays);
+
+        // Generate exactly 365 cells
+        for (let i = 0; i <= totalDays; i++) {
+            let currentDate = new Date(startDate);
+            currentDate.setDate(startDate.getDate() + i);
+
+            // Format date to YYYY-MM-DD
+            let year = currentDate.getFullYear();
+            let month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            let day = String(currentDate.getDate()).padStart(2, '0');
+            let dateStr = `${year}-${month}-${day}`;
+
+            // Check how many bounties solved on this date
+            let count = contributions[dateStr] || 0;
+            
+            // Assign color level based on activity
+            let lvlClass = 'lvl-0';
+            if (count >= 1 && count <= 2) lvlClass = 'lvl-1';
+            else if (count >= 3 && count <= 4) lvlClass = 'lvl-2';
+            else if (count >= 5) lvlClass = 'lvl-3';
+
+            // Create the cell
+            let cell = document.createElement('div');
+            cell.className = `heatmap-cell ${lvlClass}`;
+            
+            // Beautiful hover tooltip text
+            let tooltipText = count === 0 
+                ? `No missions solved on ${dateStr}` 
+                : `${count} missions solved on ${dateStr}`;
+            cell.title = tooltipText;
+            
+            container.appendChild(cell);
+        }
+        
+        // Auto-scroll the heatmap to the right edge (most recent date)
+        const scrollBox = document.getElementById('heatmap-scroll-box');
+        if(scrollBox) {
+            scrollBox.scrollLeft = scrollBox.scrollWidth;
+        }
+    });
 </script>
 
 {% endblock %}
