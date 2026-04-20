@@ -7,7 +7,7 @@
 
 <script>
     // CRITICAL FIX: Securely check for profile picture to prevent ValueError and VS Code Redeclaration Error
-    const userHasProfileImg = {% if request.user.profile.profile_pic %}true{% else %}false{% endif %};
+    const userHasProfileImg = JSON.parse("{% if request.user.profile.profile_pic %}true{% else %}false{% endif %}");
     const userProfileImgUrl = "{% if request.user.profile.profile_pic %}{{ request.user.profile.profile_pic.url }}{% else %}{% endif %}";
 </script>
 
@@ -50,8 +50,10 @@
     .empty-state-link { color: var(--neon-blue); text-decoration: none; font-weight: bold; }
     .cursor-pointer-white { cursor: pointer; color: #fff; }
     .empty-notice { color: #666; text-align: center; padding: 20px; }
+    .empty-state-text-centered { text-align: center; padding: 20px; width: 100%; }
     .icon-cyan { color: #00f3ff; }
     #chat-loader { display: none; }
+    .progress-bar-fill { height: 100%; background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); width: var(--progress-width, 0%); }
 
     /* --- ANIMATIONS --- */
     .fade-in-up {
@@ -213,8 +215,8 @@
         border-radius: 20px;
         padding: 35px;
         box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-        backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
+        backdrop-filter: blur(15px);
         margin-bottom: 50px;
     }
 
@@ -614,7 +616,7 @@
                     </div>
 
                     <div class="progress-track">
-                        <div class="progress-bar" style="width: {{ enrollment.progress }}%;"></div>
+                        <div class="progress-bar-fill" style="--progress-width: {{ enrollment.progress }}%;"></div>
                     </div>
 
                     <a href="{% url 'course_watch' enrollment.course.id %}" class="btn-action">
@@ -660,7 +662,7 @@
                 </div>
             </div>
             {% empty %}
-            <div class="empty-state-text" style="text-align: center; padding: 20px; width: 100%;">
+            <div class="empty-state-text empty-state-text-centered">
                 No Hackers on the leaderboard yet. Start solving challenges!
             </div>
             {% endfor %}

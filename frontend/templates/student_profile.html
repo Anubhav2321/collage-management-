@@ -47,6 +47,13 @@
     .icon-play { margin-left: 5px; font-size: 0.8rem; }
     .link-cyan { color: var(--neon-cyan); }
 
+    /* 🚀 FIXED: Extracted Inline CSS to Classes */
+    .icon-success { color: #00e676; }
+    .icon-warning { color: #ffc01e; }
+    .icon-coins-large { font-size: 24px; color: #ffc01e; }
+    .empty-bounty-item { border-left: 4px solid #333 !important; justify-content: center !important; }
+    .empty-bounty-text { color: #666; font-style: italic; }
+
     /* --- PROFILE HEADER CARD --- */
     .profile-header {
         background: linear-gradient(135deg, rgba(19, 19, 26, 0.9), rgba(10, 10, 15, 0.95));
@@ -353,7 +360,7 @@
         font-weight: 600;
     }
 
-    .recent-bounties-list { list-style: none; padding: 0; margin: 0; }
+    .recent-bounties-list { display: flex; flex-direction: column; gap: 12px; }
 
     .recent-bounty-item {
         display: flex;
@@ -362,8 +369,7 @@
         background: rgba(0, 0, 0, 0.4);
         padding: 16px 20px;
         border-radius: 10px;
-        margin-bottom: 12px;
-        border-left: 4px solid #00e676; /* Success green line */
+        border-left: 4px solid #00e676;
         transition: 0.3s;
     }
     .recent-bounty-item:hover { background: rgba(255,255,255,0.05); transform: translateX(5px); }
@@ -519,12 +525,12 @@
         
         <div class="syntax-stats-grid">
             <div class="syntax-stat-box">
-                <h4><i class="fas fa-check-circle" style="color: #00e676;"></i> AI Missions Solved</h4>
+                <h4><i class="fas fa-check-circle icon-success"></i> AI Missions Solved</h4>
                 <div class="syntax-stat-value">{{ total_bounties_solved|default:0 }}</div>
             </div>
             <div class="syntax-stat-box">
-                <h4><i class="fas fa-trophy" style="color: #ffc01e;"></i> Total Bounty Earned</h4>
-                <div class="syntax-stat-value coins">{{ bounty_coins_earned|default:0 }} <i class="fas fa-coins" style="font-size: 24px; color: #ffc01e;"></i></div>
+                <h4><i class="fas fa-trophy icon-warning"></i> Total Bounty Earned</h4>
+                <div class="syntax-stat-value coins">{{ bounty_coins_earned|default:0 }} <i class="fas fa-coins icon-coins-large"></i></div>
             </div>
         </div>
 
@@ -546,23 +552,23 @@
         </div>
 
         <div class="recent-bounties-title">Recent Missions Accomplished</div>
-        <ul class="recent-bounties-list">
+        <div class="recent-bounties-list">
             {% if recent_bounties %}
                 {% for submission in recent_bounties %}
-                    <li class="recent-bounty-item">
+                    <div class="recent-bounty-item">
                         <div class="bounty-info-left">
                             <span class="bounty-name">{{ submission.problem.title }}</span>
                             <span class="bounty-topic">Topic: {{ submission.problem.topic }} | {{ submission.problem.language|title }}</span>
                         </div>
                         <div class="bounty-reward">+{{ submission.earned_coins }} <i class="fas fa-coins"></i></div>
-                    </li>
+                    </div>
                 {% endfor %}
             {% else %}
-                <li class="recent-bounty-item" style="border-left: 4px solid #333; justify-content: center;">
-                    <span style="color: #666; font-style: italic;">No AI coding missions completed yet. Start your journey!</span>
-                </li>
+                <div class="recent-bounty-item empty-bounty-item">
+                    <span class="empty-bounty-text">No AI coding missions completed yet. Start your journey!</span>
+                </div>
             {% endif %}
-        </ul>
+        </div>
     </div>
 
     <div class="fade-in-up delay-4">

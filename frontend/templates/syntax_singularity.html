@@ -33,8 +33,9 @@
     /* --- 1. PREMIUM SETUP MODAL (GLASSMORPHISM & ANIMATION) --- */
     .setup-card {
         background: linear-gradient(145deg, rgba(20, 20, 25, 0.6), rgba(10, 10, 15, 0.8));
-        backdrop-filter: blur(25px);
+        /* 🚀 FIXED: Vendor prefix order for CSS Validator */
         -webkit-backdrop-filter: blur(25px);
+        backdrop-filter: blur(25px);
         border: 1px solid rgba(0, 212, 255, 0.15); /* Slight cyan border */
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         border-left: 1px solid rgba(255, 255, 255, 0.1);
@@ -304,6 +305,15 @@
         z-index: 100;
     }
 
+    /* 🚀 FIXED: Extracted Inline CSS to dedicated classes */
+    .loader-icon { font-size: 50px; color: var(--accent-cyan); margin-bottom: 25px; }
+    .loader-text { color: #fff; font-family: 'Orbitron', sans-serif; letter-spacing: 2px; }
+    .loader-subtext { color: var(--text-muted); margin-top: 10px; font-family: 'Rajdhani', sans-serif; font-size: 18px; }
+    .tab-icon { color: var(--accent-cyan); }
+    .terminal-hint { color: var(--text-muted); }
+    .feedback-text { color: #ccc; }
+    .reward-text { color: var(--accent-yellow); font-weight: bold; }
+
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: var(--dark-base); }
     ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
@@ -317,7 +327,7 @@
         
         <div class="form-group">
             <label>Linked Course</label>
-            <select id="courseSelect" class="dark-select">
+            <select id="courseSelect" class="dark-select" aria-label="Select Linked Course">
                 {% for enrollment in courses %}
                     <option value="{{ enrollment.course.id }}">{{ enrollment.course.title }}</option>
                 {% empty %}
@@ -328,7 +338,7 @@
 
         <div class="form-group">
             <label>Programming Language</label>
-            <select id="langSelect" class="dark-select">
+            <select id="langSelect" class="dark-select" aria-label="Select Programming Language">
                 <option value="python">Python</option>
                 <option value="cpp">C++</option>
                 <option value="java">Java</option>
@@ -337,9 +347,6 @@
                 <option value="PHP">PHP</option>
                 <option value="Node Js">Node Js</option>
                 <option value="React js">React js</option>
-                
-                
-                
             </select>
         </div>
 
@@ -350,7 +357,7 @@
 
         <div class="form-group">
             <label>Difficulty Level</label>
-            <select id="diffSelect" class="dark-select">
+            <select id="diffSelect" class="dark-select" aria-label="Select Difficulty Level">
                 <option value="Easy">Easy</option>
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
@@ -363,9 +370,9 @@
     </div>
 
     <div class="full-loader" id="mainLoader">
-        <i class="fas fa-circle-notch fa-spin" style="font-size: 50px; color: var(--accent-cyan); margin-bottom: 25px;"></i>
-        <h3 style="color: #fff; font-family: 'Orbitron', sans-serif; letter-spacing: 2px;">GENERATING MISSION...</h3>
-        <p style="color: var(--text-muted); margin-top: 10px; font-family: 'Rajdhani', sans-serif; font-size: 18px;">Connecting to ARIS Mainframe</p>
+        <i class="fas fa-circle-notch fa-spin loader-icon"></i>
+        <h3 class="loader-text">GENERATING MISSION...</h3>
+        <p class="loader-subtext">Connecting to ARIS Mainframe</p>
     </div>
 
     <div class="workspace" id="workspaceArea">
@@ -398,7 +405,7 @@
             <div class="right-panel">
                 
                 <div class="editor-header" id="fileTabName">
-                    <i class="fas fa-code" style="color: var(--accent-cyan);"></i> solution.py
+                    <i class="fas fa-code tab-icon"></i> solution.py
                 </div>
                 
                 <div id="editor"># Write your clean code here...</div>
@@ -410,7 +417,7 @@
                     
                     <div class="terminal-content" id="aiFeedback">
                         <span class="t-info">> ARIS Terminal Initialized.</span><br>
-                        <span style="color: var(--text-muted);">> Write your code above and click 'AI Logic Check' to evaluate.</span>
+                        <span class="terminal-hint">> Write your code above and click 'AI Logic Check' to evaluate.</span>
                     </div>
                 </div>
 
@@ -482,7 +489,8 @@
         if(lang === 'java') ext = ".java";
         if(lang === 'javascript') ext = ".js";
         
-        document.getElementById('fileTabName').innerHTML = `<i class="fas fa-code" style="color: var(--accent-cyan);"></i> solution${ext}`;
+        // 🚀 FIXED: Removed inline styles
+        document.getElementById('fileTabName').innerHTML = `<i class="fas fa-code tab-icon"></i> solution${ext}`;
 
         try {
             const response = await fetch("{% url 'generate_challenge' %}", {
@@ -532,7 +540,8 @@
 
         checkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
         checkBtn.disabled = true;
-        feedbackBox.innerHTML = '<span class="t-warning">> Running AI evaluation protocol...</span><br><span style="color:#888">> Analyzing syntax and logic...</span>';
+        // 🚀 FIXED: Removed inline styles
+        feedbackBox.innerHTML = '<span class="t-warning">> Running AI evaluation protocol...</span><br><span class="terminal-hint">> Analyzing syntax and logic...</span>';
 
         try {
             const response = await fetch("/api/submit-bounty/", {
@@ -545,20 +554,22 @@
 
             if (data.status === 'success') {
                 if(data.is_correct) {
+                    // 🚀 FIXED: Replaced inline styles with classes
                     feedbackBox.innerHTML = `
                         <div class="t-success">> EXECUTION SUCCESSFUL</div>
                         <div class="t-info">> STATUS: PERFECT LOGIC MATCH</div>
                         <br>
-                        <div style="color: #ccc;">${data.feedback}</div>
+                        <div class="feedback-text">${data.feedback}</div>
                         <br>
-                        <div style="color: var(--accent-yellow); font-weight: bold;">> REWARD GRANTED: +${data.earned_coins} LMS COINS 🪙</div>
+                        <div class="reward-text">> REWARD GRANTED: +${data.earned_coins} LMS COINS 🪙</div>
                     `;
                 } else {
+                    // 🚀 FIXED: Replaced inline styles with classes
                     feedbackBox.innerHTML = `
                         <div class="t-error">> EXECUTION FAILED</div>
                         <div class="t-warning">> STATUS: LOGIC ERROR DETECTED</div>
                         <br>
-                        <div style="color: #ccc;">${data.feedback}</div>
+                        <div class="feedback-text">${data.feedback}</div>
                     `;
                 }
             } else {
@@ -568,7 +579,6 @@
         } catch (error) {
             feedbackBox.innerHTML = '<span class="t-error">> FATAL ERROR: Network disconnected. AI could not be reached.</span>';
         } finally {
-            // 🚀 FIXED: Restore Play icon after checking
             checkBtn.innerHTML = '<i class="fas fa-play"></i> AI Logic Check';
             checkBtn.disabled = false;
         }
