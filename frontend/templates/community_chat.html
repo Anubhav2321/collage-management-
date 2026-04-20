@@ -1,5 +1,5 @@
-<!DOCTYPE html>
 {% load static %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -108,6 +108,23 @@
         .ai-name-text { color: var(--ai-neon); text-shadow: 0 0 10px rgba(255,0,85,0.5); font-family: 'Orbitron', sans-serif; }
         .ai-role-text { color: #fff; }
 
+        /* 🚀 FIXED: Extracted inline styles to classes for VS Code / IDE */
+        .focus-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999;
+            flex-direction: column; justify-content: center; align-items: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+        .focus-timer { color: var(--neon-cyan); font-family: 'Orbitron', sans-serif; font-size: 5rem; font-weight: 700; margin-bottom: 10px; }
+        .focus-text { color: var(--neon-cyan); font-size: 1.5rem; letter-spacing: 2px; margin-bottom: 40px; text-transform: uppercase; }
+        .focus-controls { display: flex; gap: 20px; }
+        .focus-btn { background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); border-radius: 50%; width: 60px; height: 60px; cursor: pointer; transition: 0.3s; font-size: 1.5rem; display: flex; justify-content: center; align-items: center; outline: none; }
+        .focus-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); transform: scale(1.1); }
+        .focus-btn-danger { border-color: var(--danger-red); color: var(--danger-red); background: rgba(255, 51, 102, 0.1); }
+        .focus-btn-danger:hover { background: var(--danger-red); color: #fff; box-shadow: 0 0 20px var(--danger-red); }
+        .vs-title-icon { color: #007acc; font-size: 1.1rem; }
+        .vs-running-text { color: #007acc; font-weight: 600; }
+        .opacity-1 { opacity: 1 !important; }
+
         .msg-img-container { margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--neon-cyan); }
         .msg-img { max-width: 100%; height: auto; display: block; }
         .msg-audio-container { margin-top: 10px; }
@@ -135,7 +152,11 @@
             100% { transform: translate(-40px, 40px) scale(0.9); }
         }
 
-        .app-container { display: flex; width: 100%; height: 100%; padding: 20px; gap: 20px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: 0.5s; z-index: 10;}
+        .app-container { 
+            display: flex; width: 100%; height: 100%; padding: 20px; gap: 20px; 
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); 
+            transition: 0.5s; z-index: 10;
+        }
 
         /* Sidebar */
         .sidebar {
@@ -425,7 +446,8 @@
         .chat-input { 
             flex: 1; background: transparent; border: none; color: #fff; padding: 10px 5px; 
             font-family: 'Rajdhani'; font-size: 1.1rem; outline: none; resize: none;
-            max-height: 120px; overflow-y: auto; line-height: 1.4; height: 44px; scrollbar-width: none; 
+            max-height: 120px; overflow-y: auto; line-height: 1.4; height: 44px; 
+            -ms-overflow-style: none; scrollbar-width: none; 
         }
         .chat-input::-webkit-scrollbar { display: none; }
         
@@ -453,6 +475,7 @@
         .ide-modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); 
             z-index: 999999; justify-content: center; align-items: center; 
+            -webkit-backdrop-filter: blur(8px); /* 🚀 FIXED */
             backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.3s ease;
         }
         .ide-modal-overlay.show { display: flex; opacity: 1; }
@@ -467,7 +490,9 @@
 
         .vscode-header { 
             background: #323233; padding: 8px 20px; display: flex; justify-content: space-between; 
-            align-items: center; border-bottom: 1px solid #1e1e1e; user-select: none;
+            align-items: center; border-bottom: 1px solid #1e1e1e; 
+            -webkit-user-select: none; /* 🚀 FIXED */
+            user-select: none;
         }
         .vscode-title { 
             color: #cccccc; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 0.95rem; 
@@ -518,9 +543,9 @@
 
     <div class="vfx-bg"><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
 
-    <div id="focus-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #111 0%, #000 100%);">
-        <div class="focus-timer" id="focusTimerDisplay" style="color: var(--neon-cyan); font-family: 'Orbitron', sans-serif;">25:00</div>
-        <div class="focus-text" style="color: var(--neon-cyan);">Deep Work Protocol Engaged</div>
+    <div id="focus-overlay" class="focus-overlay">
+        <div class="focus-timer" id="focusTimerDisplay">25:00</div>
+        <div class="focus-text">Deep Work Protocol Engaged</div>
         <div class="focus-controls">
             <button class="focus-btn" id="focusPlayPauseBtn" title="Play/Pause Timer"><i class="fas fa-pause"></i></button>
             <button class="focus-btn" id="focusMusicBtn" title="Toggle Lo-Fi Music"><i class="fas fa-music"></i></button>
@@ -787,7 +812,7 @@
         <div class="vscode-container">
             <div class="vscode-header">
                 <div class="vscode-title">
-                    <i class="fas fa-code" style="color: #007acc;"></i> <span id="vsTitleText">app.py - Local Execution Engine (Docker)</span>
+                    <i class="fas fa-code vs-title-icon"></i> <span id="vsTitleText">app.py - Local Execution Engine (Docker)</span>
                 </div>
                 <div class="vscode-controls">
                     <i class="fas fa-expand" id="vsMaximizeBtn" title="Toggle Fullscreen"></i>
@@ -1032,8 +1057,9 @@
                 fetchAndInjectChat(true); 
                 
                 if (msgText.toLowerCase().startsWith('/ai')) {
+                    // 🚀 FIXED: Extracted inline styles to classes
                     chatBox.insertAdjacentHTML('beforeend', `
-                        <div class="msg-wrapper other-msg-wrapper" id="ai-typing-indicator" style="opacity: 1;">
+                        <div class="msg-wrapper other-msg-wrapper opacity-1" id="ai-typing-indicator">
                             <span class="msg-sender ai-sender"><i class="fas fa-robot"></i> AI Commander</span>
                             <div class="msg ai-msg">
                                 <span class="typing-dots">Thinking<span>.</span><span>.</span><span>.</span></span>
@@ -1368,7 +1394,8 @@
             const code = vsEditor.getValue();
             const lang = vsLanguage.value;
 
-            vsOutput.innerHTML = `<span style="color:#007acc;"><i class="fas fa-circle-notch fa-spin"></i> Running inside isolated Docker container...</span>`;
+            // 🚀 FIXED: Extracted Inline Style
+            vsOutput.innerHTML = `<span class="vs-running-text"><i class="fas fa-circle-notch fa-spin"></i> Running inside isolated Docker container...</span>`;
 
             try {
                 // 🟢 FIXED: Hardcoded exact URL matching the working views.py

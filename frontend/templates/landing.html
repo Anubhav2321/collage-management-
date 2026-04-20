@@ -59,7 +59,9 @@
         .navbar {
             display: flex; justify-content: space-between; align-items: center;
             padding: 20px 5%; position: fixed; top: 0; width: 100%; z-index: 1000;
-            background: rgba(3, 0, 5, 0.85); backdrop-filter: blur(20px);
+            background: rgba(3, 0, 5, 0.85); 
+            -webkit-backdrop-filter: blur(20px); /* FIXED Safari compat */
+            backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
             transition: all 0.4s ease; 
         }
@@ -92,8 +94,8 @@
         
         .typed-text-grad {
             background: linear-gradient(to right, #fff, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text; /* FIXED prefix order */
             background-clip: text;
-            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             color: transparent;
         }
@@ -114,6 +116,7 @@
         .btn-glass {
             padding: 15px 40px; border-radius: 50px; font-weight: 700; text-decoration: none;
             border: 2px solid var(--glass-border); color: white; transition: 0.3s;
+            -webkit-backdrop-filter: blur(5px); /* FIXED Safari compat */
             backdrop-filter: blur(5px);
         }
         .btn-glass:hover {
@@ -126,7 +129,9 @@
         .big-hat-icon {
             font-size: 350px; 
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; /* FIXED prefix order */
+            background-clip: text; 
+            -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 20px 50px rgba(188, 19, 254, 0.5));
             animation: floatIcon 6s ease-in-out infinite;
         }
@@ -154,6 +159,7 @@
         .anim-block {
             position: absolute; width: 80px; height: 80px; border-radius: 20px;
             background: rgba(255, 255, 255, 0.05); border: 2px solid var(--neon-cyan);
+            -webkit-backdrop-filter: blur(10px); /* FIXED Safari compat */
             backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center;
             font-size: 35px; color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
             opacity: 0; transform: scale(0); transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -175,7 +181,9 @@
         .char-rest {
             display: inline-block; width: 0; overflow: hidden; white-space: nowrap; opacity: 0;
             background: linear-gradient(to right, white, var(--neon-cyan));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; /* FIXED prefix order */
+            background-clip: text; 
+            -webkit-text-fill-color: transparent;
             transition: width 1s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
         }
         .logo-365 {
@@ -204,7 +212,9 @@
             display: flex; align-items: center; gap: 50px; margin-bottom: 80px;
             padding: 40px; border-radius: 30px;
             background: linear-gradient(90deg, rgba(255,255,255,0.03), transparent);
-            border-left: 5px solid var(--neon-cyan); backdrop-filter: blur(5px); transition: 0.4s;
+            border-left: 5px solid var(--neon-cyan); 
+            -webkit-backdrop-filter: blur(5px); /* FIXED Safari compat */
+            backdrop-filter: blur(5px); transition: 0.4s;
         }
         .feature-row:hover { background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent); box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         .f-icon-box {
@@ -320,7 +330,9 @@
         .contact-container {
             display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 50px;
             background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border);
-            border-radius: 20px; padding: 50px; backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 50px; 
+            -webkit-backdrop-filter: blur(10px); /* FIXED Safari compat */
+            backdrop-filter: blur(10px);
             max-width: 1200px; margin: 0 auto; transition: all 0.3s ease;
         }
         .contact-container:hover { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); border-color: rgba(0, 243, 255, 0.2); }
@@ -355,12 +367,15 @@
         .ide-modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.80); 
             z-index: 999999; justify-content: center; align-items: center; 
+            -webkit-backdrop-filter: blur(10px); /* FIXED Safari compat */
             backdrop-filter: blur(10px); opacity: 0; transition: opacity 0.4s ease;
         }
         .ide-modal-overlay.show { display: flex; opacity: 1; }
         
         .terms-container {
-            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(20px);
+            background: rgba(10, 10, 15, 0.85); 
+            -webkit-backdrop-filter: blur(20px); /* FIXED Safari compat */
+            backdrop-filter: blur(20px);
             width: 700px; max-width: 90%; max-height: 80vh;
             border-radius: 20px; border: 1px solid rgba(0, 243, 255, 0.3);
             display: flex; flex-direction: column; overflow: hidden;
@@ -386,6 +401,28 @@
         .terms-body h4:nth-of-type(1) { color: var(--neon-cyan); }
         .terms-body h4:nth-of-type(2) { color: var(--neon-purple); }
         .terms-body h4:nth-of-type(3) { color: var(--neon-pink); }
+
+        /* =========================================
+           FIXES FOR VS CODE INLINE CSS WARNINGS
+           ========================================= */
+        .section-subtitle { color: #999; font-size: 18px; }
+        .section-subtitle-sm { color: #999; }
+        .text-grad-custom {
+            background: linear-gradient(to right, #fff, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .contact-heading-cyan { font-size: 32px; margin-bottom: 25px; color: var(--neon-cyan); font-family: 'Rajdhani', sans-serif; }
+        .contact-heading-purple { font-size: 32px; margin-bottom: 25px; color: var(--neon-purple); font-family: 'Rajdhani', sans-serif; }
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .btn-submit-full { width: 100%; border: none; cursor: pointer; font-size: 18px; padding: 15px; }
+        .contact-subheading { margin: 40px 0 15px; color: white; font-size: 20px; }
+        .icon-cyan { color: var(--neon-cyan); }
+        .modal-icon-cyan { color: var(--neon-cyan); font-size: 1.5rem; }
+        .btn-close-modal { color: rgba(255,255,255,0.5); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+        .terms-h3 { color: white; margin-bottom: 10px; font-size: 24px; }
+
 
         /* =========================================
            FOOTER
@@ -473,7 +510,7 @@
 
         <div class="section-header" data-aos="fade-down">
             <h2>Our Core <span>Features</span></h2>
-            <p style="color: #999; font-size: 18px;">Experience the power of a digital campus.</p>
+            <p class="section-subtitle">Experience the power of a digital campus.</p>
         </div>
 
         <div class="feature-row" data-aos="fade-right">
@@ -606,8 +643,8 @@
 
     <section id="developers" class="dev-section">
         <div class="section-header" data-aos="fade-up">
-            <h2>Meet Our <span style="background: linear-gradient(to right, #fff, var(--neon-cyan), var(--neon-purple)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Developers</span></h2>
-            <p style="color: #999;">The brilliant minds behind Learning-365</p>
+            <h2>Meet Our <span class="text-grad-custom">Developers</span></h2>
+            <p class="section-subtitle-sm">The brilliant minds behind Learning-365</p>
         </div>
 
         <div class="dev-carousel">
@@ -624,10 +661,10 @@
                             <h3>Soham Shymal</h3>
                             <div class="dev-sub-role">(React & UI)</div>
                             <div class="socials">
-                                <a href="https://github.com/Soham2319"><i class="fab fa-github"></i></a>
-                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                                <a href="#"><i class="fas fa-envelope"></i></a>
-                                <a href="https://www.instagram.com/rik___009"><i class="fab fa-instagram"></i></a>
+                                <a href="https://github.com/Soham2319" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                                <a href="#" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                                <a href="https://www.instagram.com/rik___009" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -642,10 +679,10 @@
                             <h3>Anubhav Samanta</h3>
                             <div class="dev-sub-role">Backend & API Developer</div>
                             <div class="socials">
-                                <a href="https://github.com/Anubhav2321"><i class="fab fa-github"></i></a>
-                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                                <a href="#"><i class="fas fa-envelope"></i></a>
-                                <a href="#"><i class="fab fa-instagram"></i></a>
+                                <a href="https://github.com/Anubhav2321" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                                <a href="#" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -662,10 +699,10 @@
                             <h3>Avik Kulavi</h3>
                             <div class="dev-sub-role">Database & Data Management</div>
                             <div class="socials">
-                                <a href="https://github.com/avikkulavi1-max"><i class="fab fa-github"></i></a>
-                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                                <a href="#"><i class="fas fa-envelope"></i></a>
-                                <a href="https://www.instagram.com/avikkulavi"><i class="fab fa-instagram"></i></a>
+                                <a href="https://github.com/avikkulavi1-max" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                                <a href="#" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                                <a href="https://www.instagram.com/avikkulavi" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -680,10 +717,10 @@
                             <h3>Abhishek Chowdhoury</h3>
                             <div class="dev-sub-role">CYBER SECURITY</div>
                             <div class="socials">
-                                <a href="https://github.com/Abhishek2187"><i class="fab fa-github"></i></a>
-                                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                                <a href="#"><i class="fas fa-envelope"></i></a>
-                                <a href="https://www.instagram.com/its__mr___abhishek"><i class="fab fa-instagram"></i></a>
+                                <a href="https://github.com/Abhishek2187" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                                <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                                <a href="#" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                                <a href="https://www.instagram.com/its__mr___abhishek" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                             </div>
                         </div>
                     </div>
@@ -701,37 +738,37 @@
     <section id="help-center">
         <div class="section-header">
             <h2>Help Center & <span>Contact Us</span></h2>
-            <p style="color: #999; font-size: 18px;">Get in touch with our team for any support or inquiries.</p>
+            <p class="section-subtitle">Get in touch with our team for any support or inquiries.</p>
         </div>
         
         <div class="contact-container">
             <div class="contact-form">
-                <h3 style="font-size: 32px; margin-bottom: 25px; color: var(--neon-cyan); font-family: 'Rajdhani', sans-serif;">Send a Message</h3>
+                <h3 class="contact-heading-cyan">Send a Message</h3>
                 <form action="{% url 'contact_developers' %}" method="POST">
                     {% csrf_token %}
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-grid-2">
                         <input type="text" name="first_name" placeholder="First Name" required>
                         <input type="text" name="last_name" placeholder="Last Name" required>
                     </div>
                     <input type="email" name="email" placeholder="Email Address" required>
                     <textarea name="message" rows="5" placeholder="How can we help you?" required></textarea>
-                    <button type="submit" class="btn-fill" style="width: 100%; border: none; cursor: pointer; font-size: 18px; padding: 15px;">Submit Request</button>
+                    <button type="submit" class="btn-fill btn-submit-full">Submit Request</button>
                 </form>
             </div>
             
             <div class="contact-info">
-                <h3 style="font-size: 32px; margin-bottom: 25px; color: var(--neon-purple); font-family: 'Rajdhani', sans-serif;">Contact Information</h3>
+                <h3 class="contact-heading-purple">Contact Information</h3>
                 <div class="info-item"><i class="fas fa-map-marker-alt"></i> <span>Tech Park, Sector 5, Cyber City</span></div>
                 <div class="info-item"><i class="fas fa-envelope"></i> <span>support@learning365.com</span></div>
                 <div class="info-item"><i class="fas fa-phone"></i> <span>+91 98765 43210</span></div>
                 
-                <h4 style="margin: 40px 0 15px; color: white; font-size: 20px;">Connect With Us</h4>
+                <h4 class="contact-subheading">Connect With Us</h4>
                 <div class="social-links-lg">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-github"></i></a>
-                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#"><i class="fab fa-discord"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="Discord"><i class="fab fa-discord"></i></a>
                 </div>
             </div>
         </div>
@@ -741,7 +778,7 @@
         <div class="footer-grid">
             <div class="footer-brand">
                 <div class="logo">
-                    <i class="fas fa-graduation-cap" style="color: var(--neon-cyan);"></i> LEARNING-365
+                    <i class="fas fa-graduation-cap icon-cyan"></i> LEARNING-365
                 </div>
                 <p>Empowering the next generation of learners with advanced tools, community support, and expert guidance.</p>
             </div>
@@ -774,12 +811,12 @@
         <div class="terms-container">
             <div class="terms-header">
                 <div class="terms-title">
-                    <i class="fas fa-shield-alt" style="color: var(--neon-cyan); font-size: 1.5rem;"></i> <span>Terms & Conditions</span>
+                    <i class="fas fa-shield-alt modal-icon-cyan"></i> <span>Terms & Conditions</span>
                 </div>
-                <i class="fas fa-times" id="closeTermsBtn" title="Close" style="color: rgba(255,255,255,0.5); font-size: 1.5rem; cursor: pointer; transition: 0.3s;"></i>
+                <i class="fas fa-times btn-close-modal" id="closeTermsBtn" title="Close"></i>
             </div>
             <div class="terms-body">
-                <h3 style="color: white; margin-bottom: 10px; font-size: 24px;">Welcome to Learning-365</h3>
+                <h3 class="terms-h3">Welcome to Learning-365</h3>
                 <p>By accessing this platform, you agree to be bound by these terms of use. Our platform is dedicated to providing high-quality tech education.</p>
                 
                 <h4>1. User Conduct & Ethics</h4>
@@ -792,7 +829,7 @@
                 <p>We respect your privacy. All your code executions in our IDE are handled securely inside isolated Docker containers. Your personal data is encrypted and never shared with third parties.</p>
                 
                 <br><br>
-                <button class="btn-fill" id="acceptTermsBtn" style="width: 100%; border: none; cursor: pointer; font-size: 18px; padding: 15px;">I Accept & Continue</button>
+                <button class="btn-fill btn-submit-full" id="acceptTermsBtn">I Accept & Continue</button>
             </div>
         </div>
     </div>
