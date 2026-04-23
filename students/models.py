@@ -474,9 +474,7 @@ class MessageReaction(models.Model):
         return f"{self.user.username} reacted {self.reaction_type} on Msg ID {self.message.id}"
 
 
-# =====================================================================
 # 🚀 NEW: BOUNTY ARENA (SYNTAX SINGULARITY) MODELS
-# =====================================================================
 
 class DynamicBountyProblem(models.Model):
     """
