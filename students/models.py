@@ -428,9 +428,7 @@ class CourseGroupMessage(models.Model):
     # --- PREVIOUS NEW: Edit Feature (Restored) ---
     is_edited = models.BooleanField(default=False)
     
-    # =========================================
     # --- NEW: Chat Bounty System ---
-    # =========================================
     bounty_amount = models.PositiveIntegerField(default=0, help_text="Amount offered for solving this question")
     is_bounty_resolved = models.BooleanField(default=False)
     bounty_winner = models.ForeignKey(
