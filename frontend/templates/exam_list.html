@@ -3,239 +3,320 @@
 
 {% block content %}
 
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-    /* --- CSS VARIABLES (Matches Screenshot) --- */
+    /* --- CSS VARIABLES (Halka Blue / Neon Cyan Theme) --- */
     :root {
-        --neon-cyan: #00d4ff;  /* The specific blue from your screenshot */
-        --card-bg: #13131f;    /* Dark card background */
-        --text-grey: #888899;
-        --border-dark: #2a2a35;
+        --neon-blue: #00f3ff;
+        --bg-dark: #0a0a0f;
+        --card-bg: #13131a;
+        --border-color: #2a2a35;
+        --text-white: #ffffff;
+        --text-grey: #8892b0;
+    }
+
+    body {
+        font-family: 'Rajdhani', sans-serif;
+        background-color: var(--bg-dark);
+        color: var(--text-white);
     }
 
     .page-container {
         padding: 40px;
         max-width: 1400px;
         margin: 0 auto;
-        animation: fadeIn 0.6s ease-out;
+        animation: fadeIn 0.5s ease-out;
     }
 
-    /* --- 1. ASSESSMENT HEADER (Exact Match) --- */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- 1. HEADER SECTION --- */
     .assessment-header {
-        background: linear-gradient(90deg, #13131f 0%, #0a0a0f 100%);
+        background: linear-gradient(135deg, rgba(19, 19, 26, 0.8), rgba(10, 10, 15, 0.9));
+        border: 1px solid var(--border-color);
         border-radius: 16px;
         padding: 35px 40px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        margin-bottom: 40px;
         position: relative;
         overflow: hidden;
-        border: 1px solid var(--border-dark);
-        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-        margin-bottom: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
-    /* Neon Border Left */
     .assessment-header::before {
         content: '';
         position: absolute;
-        left: 0; top: 0; bottom: 0;
-        width: 6px;
-        background: var(--neon-cyan);
-        box-shadow: 0 0 25px var(--neon-cyan); /* Glowing effect */
-        border-top-left-radius: 16px;
-        border-bottom-left-radius: 16px;
+        top: 0; left: 0;
+        width: 100%; height: 4px;
+        background: var(--neon-blue);
+        box-shadow: 0 0 20px var(--neon-blue);
     }
 
-    .header-title h1 {
+    .header-text h1 {
         font-family: 'Orbitron', sans-serif;
         font-size: 2.2rem;
         font-weight: 700;
-        color: white;
-        margin: 0;
-        letter-spacing: 2px;
+        color: var(--text-white);
+        margin: 0 0 8px;
+        letter-spacing: 1px;
         text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        gap: 15px;
     }
 
-    .header-title i { color: var(--neon-cyan); }
+    .header-text p {
+        color: var(--text-grey);
+        font-size: 1.1rem;
+        margin: 0;
+    }
 
-    /* --- 2. PILL TABS (Exact Match) --- */
-    .tabs-wrapper {
-        background: #0f0f13; /* Very dark pill container */
-        padding: 5px;
-        border-radius: 50px;
-        border: 1px solid #333;
+    /* --- 2. TABS --- */
+    .tabs-container {
         display: flex;
-        gap: 5px;
+        gap: 20px;
+        margin-bottom: 30px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
     }
 
     .tab-btn {
         background: transparent;
         border: none;
         color: var(--text-grey);
-        padding: 10px 25px;
-        font-family: 'Inter', sans-serif;
+        font-size: 1.1rem;
         font-weight: 600;
-        font-size: 0.95rem;
-        border-radius: 30px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    /* Active Tab Style */
-    .tab-btn.active {
-        background: var(--neon-cyan);
-        color: #000; /* Black text on blue bg */
-        font-weight: 700;
-        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
-    }
-
-    .tab-btn:hover:not(.active) { color: white; }
-
-    .badge {
-        font-size: 0.75rem;
-        background: rgba(255, 255, 255, 0.15);
-        padding: 2px 8px;
-        border-radius: 10px;
-        color: inherit;
-    }
-    .tab-btn.active .badge {
-        background: rgba(0, 0, 0, 0.2); /* Darker badge on active */
-    }
-
-    /* --- 3. EMPTY STATE (Dashed Box) --- */
-    .empty-state-box {
-        border: 2px dashed #333;
-        border-radius: 20px;
-        padding: 100px 0;
-        text-align: center;
-        background: rgba(19, 19, 31, 0.3);
-        margin-top: 20px;
-        transition: 0.3s;
-    }
-    .empty-state-box:hover {
-        border-color: #444;
-        background: rgba(19, 19, 31, 0.5);
-    }
-
-    .check-circle {
-        width: 70px; height: 70px;
-        background: #1a1a25;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-        color: #555;
-        font-size: 2rem;
-    }
-
-    .empty-title {
         font-family: 'Orbitron', sans-serif;
-        color: #bbb;
-        font-size: 1.4rem;
-        margin-bottom: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+        position: relative;
+        transition: 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
-    .empty-desc { color: #666; font-size: 0.95rem; }
 
-    /* --- 4. EXAM CARDS GRID --- */
+    .tab-btn:hover { color: var(--text-white); }
+
+    .tab-btn.active {
+        color: var(--neon-blue);
+        text-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+    }
+
+    .tab-btn::after {
+        content: '';
+        position: absolute;
+        bottom: -16px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--neon-blue);
+        transform: scaleX(0);
+        transition: 0.3s;
+        box-shadow: 0 -2px 10px var(--neon-blue);
+    }
+
+    .tab-btn.active::after { transform: scaleX(1); }
+
+    /* --- 3. SQUARE EXAM CARDS GRID --- */
     .exam-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 25px;
-        margin-top: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
     }
 
     .exam-card {
         background: var(--card-bg);
-        border: 1px solid var(--border-dark);
+        border: 1px solid var(--border-color);
         border-radius: 16px;
-        padding: 25px;
-        position: relative;
+        padding: 30px 25px;
+        display: flex;
+        flex-direction: column;
         transition: all 0.3s ease;
-        overflow: hidden;
+        position: relative;
+        min-height: 280px; /* Makes the box squarish */
     }
 
     .exam-card:hover {
-        border-color: var(--neon-cyan);
+        border-color: var(--neon-blue);
+        box-shadow: 0 10px 30px rgba(0, 243, 255, 0.15);
         transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0, 212, 255, 0.15);
     }
 
-    .card-badge {
-        position: absolute; top: 20px; right: 20px;
-        font-size: 0.7rem; border: 1px solid var(--neon-cyan); color: var(--neon-cyan);
-        padding: 4px 10px; border-radius: 20px; text-transform: uppercase; font-weight: 700;
-        background: rgba(0, 212, 255, 0.05);
+    .card-icon {
+        font-size: 2.5rem;
+        color: var(--neon-blue);
+        margin-bottom: 20px;
     }
 
-    .brain-icon {
-        font-size: 2rem; color: var(--neon-cyan); margin-bottom: 15px;
-        text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+    .exam-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-white);
+        margin: 0 0 10px;
+        line-height: 1.3;
     }
 
-    .exam-name {
-        font-family: 'Orbitron', sans-serif; font-size: 1.3rem; color: white; margin-bottom: 10px;
+    .course-tag {
+        font-size: 0.95rem;
+        color: var(--text-grey);
+        background: rgba(255, 255, 255, 0.05);
+        padding: 5px 12px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: max-content;
     }
 
-    .exam-meta {
-        display: flex; gap: 15px; color: var(--text-grey); font-size: 0.9rem; margin-bottom: 25px;
+    .exam-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 25px;
+        border-top: 1px solid var(--border-color);
+        padding-top: 15px;
+        margin-top: auto; /* Pushes to bottom */
     }
 
-    .start-btn {
-        display: block; width: 100%; padding: 12px;
-        background: var(--neon-cyan); color: #000;
-        text-align: center; border-radius: 8px; font-weight: 800;
-        text-decoration: none; text-transform: uppercase; letter-spacing: 1px;
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-grey);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .stat-value {
         font-family: 'Orbitron', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-white);
+    }
+
+    .btn-start {
+        display: block;
+        width: 100%;
+        background: rgba(0, 243, 255, 0.1);
+        color: var(--neon-blue);
+        border: 1px solid var(--neon-blue);
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
         transition: 0.3s;
     }
-    .start-btn:hover {
-        background: #00b8dd; box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+
+    .btn-start:hover {
+        background: var(--neon-blue);
+        color: #000;
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
     }
 
-    /* --- HISTORY LIST --- */
-    .history-item {
-        background: var(--card-bg); border: 1px solid var(--border-dark);
-        padding: 20px 30px; border-radius: 12px; margin-bottom: 15px;
-        display: flex; align-items: center; justify-content: space-between;
+    /* --- 4. HISTORY GRID --- */
+    .history-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+    }
+
+    .history-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
         transition: 0.3s;
+        min-height: 220px;
+        border-top: 3px solid #444;
     }
-    .history-item:hover { border-color: #444; background: #181825; }
 
-    .score-box {
-        font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: var(--neon-cyan);
+    .history-card:hover {
+        background: rgba(255, 255, 255, 0.02);
+        border-color: rgba(255, 255, 255, 0.1);
     }
-    .score-box small { font-size: 0.9rem; color: #666; }
 
-    /* Animations */
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .hidden { display: none; }
+    .history-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-white);
+        margin-bottom: 10px;
+    }
 
+    .history-date {
+        font-size: 0.9rem;
+        color: var(--text-grey);
+        margin-bottom: 20px;
+    }
+
+    .score-display {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2rem;
+        color: var(--neon-blue);
+        font-weight: 700;
+        background: rgba(0, 243, 255, 0.05);
+        padding: 10px 25px;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 243, 255, 0.2);
+    }
+
+    .score-display small {
+        font-size: 1rem;
+        color: var(--text-grey);
+    }
+
+    /* --- 5. EMPTY STATE --- */
+    .empty-box {
+        text-align: center;
+        padding: 80px 20px;
+        background: var(--card-bg);
+        border: 1px dashed #444;
+        border-radius: 16px;
+        margin-top: 20px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .empty-text {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.5rem;
+        color: var(--text-grey);
+    }
+
+    /* Utility */
+    .hidden { display: none !important; }
 </style>
 
 <div class="page-container">
 
     <div class="assessment-header">
-        <div class="header-title">
-            <h1><i class="fas fa-brain"></i> ASSESSMENT CENTER</h1>
+        <div class="header-text">
+            <h1>Assessment Center</h1>
+            <p>Complete missions, check your logic, and earn LMS Coins.</p>
         </div>
+    </div>
 
-        <div class="tabs-wrapper">
-            <button class="tab-btn active" onclick="switchView('active', this)">
-                Active Exams <span class="badge">{{ exams.count }}</span>
-            </button>
-            <button class="tab-btn" onclick="switchView('history', this)">
-                Result History <span class="badge">{{ results.count }}</span>
-            </button>
-        </div>
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchView('active', this)">Active Modules</button>
+        <button class="tab-btn" onclick="switchView('history', this)">Result Archives</button>
     </div>
 
     <div id="view-active">
@@ -243,53 +324,56 @@
             <div class="exam-grid">
                 {% for exam in exams %}
                 <div class="exam-card">
-                    <div class="card-badge">
-                        {% if exam.course %} COURSE EXAM {% else %} AI GENERATED {% endif %}
-                    </div>
-                    <div class="brain-icon"><i class="fas fa-atom"></i></div>
+                    <div class="card-icon"><i class="fas fa-file-code"></i></div>
+                    <h3 class="exam-title">{{ exam.title }}</h3>
                     
-                    <div class="exam-name">{{ exam.title }}</div>
-                    
-                    <div class="exam-meta">
-                        <span><i class="far fa-clock"></i> {{ exam.duration_minutes }} min</span>
-                        <span><i class="fas fa-star"></i> {{ exam.total_marks }} marks</span>
+                    <div class="course-tag">
+                        {% if exam.course %} {{ exam.course.title|truncatechars:20 }} {% else %} General Module {% endif %}
                     </div>
 
-                    <a href="{% url 'take_exam' exam.id %}" class="start-btn">
-                        START EXAM <i class="fas fa-arrow-right"></i>
+                    <div class="exam-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Duration</span>
+                            <span class="stat-value">{{ exam.duration_minutes }} Min</span>
+                        </div>
+                        <div class="stat-item" style="text-align: right;">
+                            <span class="stat-label">Total Marks</span>
+                            <span class="stat-value">{{ exam.total_marks }}</span>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'take_exam' exam.id %}" class="btn-start">
+                        START EXAM
                     </a>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="empty-state-box">
-                <div class="check-circle"><i class="fas fa-check"></i></div>
-                <div class="empty-title">All Caught Up!</div>
-                <div class="empty-desc">No pending exams at the moment.</div>
+            <div class="empty-box">
+                <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+                <div class="empty-text">NO ACTIVE MODULES FOUND</div>
             </div>
         {% endif %}
     </div>
 
     <div id="view-history" class="hidden">
         {% if results %}
-            <div style="animation: fadeIn 0.5s ease-out;">
+            <div class="history-grid" style="animation: fadeIn 0.4s ease-out;">
                 {% for result in results %}
-                <div class="history-item">
-                    <div>
-                        <h3 style="color: white; margin-bottom: 5px;">{{ result.exam.title }}</h3>
-                        <span style="color: #666; font-size: 0.9rem;"><i class="far fa-calendar"></i> {{ result.taken_at|date:"M d, Y" }}</span>
-                    </div>
-                    <div class="score-box">
+                <div class="history-card">
+                    <h3 class="history-title">{{ result.exam.title }}</h3>
+                    <div class="history-date"><i class="far fa-calendar-check"></i> {{ result.taken_at|date:"d M, Y" }}</div>
+                    
+                    <div class="score-display">
                         {{ result.score|floatformat:0 }}<small>/{{ result.total_marks }}</small>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="empty-state-box">
-                <div class="check-circle"><i class="fas fa-history"></i></div>
-                <div class="empty-title">No History</div>
-                <div class="empty-desc">You haven't taken any exams yet.</div>
+            <div class="empty-box">
+                <div class="empty-icon"><i class="fas fa-history"></i></div>
+                <div class="empty-text">ARCHIVE IS EMPTY</div>
             </div>
         {% endif %}
     </div>
