@@ -491,7 +491,7 @@
     <nav class="navbar">
         <div class="logo"><i class="fas fa-graduation-cap"></i> LEARNING-365</div>
         {% if request.user.is_authenticated %}
-            <a href="{% url 'dashboard' %}" class="nav-btn">Dashboard</a>
+            <a href="{% url 'dashboard' %}" class="nav-btn">Get Started</a>
         {% else %}
             <a href="{% url 'register' %}" class="nav-btn">Get Started</a>
         {% endif %}
