@@ -60,7 +60,7 @@
             display: flex; justify-content: space-between; align-items: center;
             padding: 20px 5%; position: fixed; top: 0; width: 100%; z-index: 1000;
             background: rgba(3, 0, 5, 0.85); 
-            -webkit-backdrop-filter: blur(20px); /* FIXED Safari compat */
+            -webkit-backdrop-filter: blur(20px); 
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
             transition: all 0.4s ease; 
@@ -94,7 +94,7 @@
         
         .typed-text-grad {
             background: linear-gradient(to right, #fff, var(--neon-cyan), var(--neon-purple));
-            -webkit-background-clip: text; /* FIXED prefix order */
+            -webkit-background-clip: text; 
             background-clip: text;
             -webkit-text-fill-color: transparent;
             color: transparent;
@@ -116,7 +116,7 @@
         .btn-glass {
             padding: 15px 40px; border-radius: 50px; font-weight: 700; text-decoration: none;
             border: 2px solid var(--glass-border); color: white; transition: 0.3s;
-            -webkit-backdrop-filter: blur(5px); /* FIXED Safari compat */
+            -webkit-backdrop-filter: blur(5px); 
             backdrop-filter: blur(5px);
         }
         .btn-glass:hover {
@@ -129,7 +129,7 @@
         .big-hat-icon {
             font-size: 350px; 
             background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
-            -webkit-background-clip: text; /* FIXED prefix order */
+            -webkit-background-clip: text; 
             background-clip: text; 
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 20px 50px rgba(188, 19, 254, 0.5));
@@ -159,7 +159,7 @@
         .anim-block {
             position: absolute; width: 80px; height: 80px; border-radius: 20px;
             background: rgba(255, 255, 255, 0.05); border: 2px solid var(--neon-cyan);
-            -webkit-backdrop-filter: blur(10px); /* FIXED Safari compat */
+            -webkit-backdrop-filter: blur(10px); 
             backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center;
             font-size: 35px; color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
             opacity: 0; transform: scale(0); transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -181,7 +181,7 @@
         .char-rest {
             display: inline-block; width: 0; overflow: hidden; white-space: nowrap; opacity: 0;
             background: linear-gradient(to right, white, var(--neon-cyan));
-            -webkit-background-clip: text; /* FIXED prefix order */
+            -webkit-background-clip: text; 
             background-clip: text; 
             -webkit-text-fill-color: transparent;
             transition: width 1s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
@@ -213,7 +213,7 @@
             padding: 40px; border-radius: 30px;
             background: linear-gradient(90deg, rgba(255,255,255,0.03), transparent);
             border-left: 5px solid var(--neon-cyan); 
-            -webkit-backdrop-filter: blur(5px); /* FIXED Safari compat */
+            -webkit-backdrop-filter: blur(5px); 
             backdrop-filter: blur(5px); transition: 0.4s;
         }
         .feature-row:hover { background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent); box-shadow: 0 0 30px rgba(0,0,0,0.5); }
@@ -264,7 +264,7 @@
 
 
         /* =========================================
-           DEVELOPERS SECTION (No 3D effect)
+           DEVELOPERS SECTION (Fixed Image Alignment)
            ========================================= */
         .dev-section { padding: 50px 5% 100px; position: relative; z-index: 1; }
         .dev-carousel { overflow: hidden; max-width: 1200px; margin: 0 auto; position: relative; }
@@ -279,19 +279,43 @@
         }
         .dev-card:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
 
+        /* 🚀 FIXED: Professional Clean Look, Larger Size 🚀 */
         .dev-avatar-container {
-            position: relative; width: 180px; height: 180px; display: flex; justify-content: center; align-items: center;
+            position: relative; 
+            width: 210px; 
+            height: 210px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
         }
         .static-ring {
-            position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid transparent; z-index: 1;
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            border: 3px solid transparent; 
+            z-index: 1;
         }
-        .ring-cyan { border-color: var(--neon-cyan); box-shadow: 0 0 25px var(--neon-cyan), inset 0 0 15px var(--neon-cyan); }
-        .ring-purple { border-color: var(--neon-purple); box-shadow: 0 0 25px var(--neon-purple), inset 0 0 15px var(--neon-purple); }
+        .ring-cyan { 
+            border-color: var(--neon-cyan); 
+            box-shadow: 0 10px 25px rgba(0, 243, 255, 0.1); 
+        }
+        .ring-purple { 
+            border-color: var(--neon-purple); 
+            box-shadow: 0 10px 25px rgba(188, 19, 254, 0.1); 
+        }
 
         .dev-img {
-            width: 160px; height: 160px; border-radius: 50%; object-fit: cover; 
-            z-index: 2; border: 3px solid #000; image-rendering: -webkit-optimize-contrast; image-rendering: high-quality;
+            width: 190px; 
+            height: 190px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            z-index: 2; 
+            border: 4px solid var(--card-bg); /* Clean separation */
+            image-rendering: -webkit-optimize-contrast; 
+            image-rendering: high-quality;
             filter: contrast(1.05) brightness(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); /* Professional inner depth */
         }
 
         .dev-info h3 { font-family: 'Rajdhani'; font-size: 28px; color: white; margin-bottom: 5px; font-weight: 700; }
@@ -313,7 +337,7 @@
 
 
         /* =========================================
-           🚀 NEW: HELP CENTER & CONTACT FORM (Hidden by default)
+           HELP CENTER & CONTACT FORM
            ========================================= */
         #help-center { 
             padding: 80px 5% 20px; position: relative; z-index: 1;
@@ -331,7 +355,7 @@
             display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 50px;
             background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border);
             border-radius: 20px; padding: 50px; 
-            -webkit-backdrop-filter: blur(10px); /* FIXED Safari compat */
+            -webkit-backdrop-filter: blur(10px); 
             backdrop-filter: blur(10px);
             max-width: 1200px; margin: 0 auto; transition: all 0.3s ease;
         }
@@ -362,19 +386,19 @@
         }
 
         /* =========================================
-           🚀 ADVANCED: TERMS OF USE MODAL 
+           TERMS OF USE MODAL 
            ========================================= */
         .ide-modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.80); 
             z-index: 999999; justify-content: center; align-items: center; 
-            -webkit-backdrop-filter: blur(10px); /* FIXED Safari compat */
+            -webkit-backdrop-filter: blur(10px); 
             backdrop-filter: blur(10px); opacity: 0; transition: opacity 0.4s ease;
         }
         .ide-modal-overlay.show { display: flex; opacity: 1; }
         
         .terms-container {
             background: rgba(10, 10, 15, 0.85); 
-            -webkit-backdrop-filter: blur(20px); /* FIXED Safari compat */
+            -webkit-backdrop-filter: blur(20px); 
             backdrop-filter: blur(20px);
             width: 700px; max-width: 90%; max-height: 80vh;
             border-radius: 20px; border: 1px solid rgba(0, 243, 255, 0.3);
@@ -466,7 +490,11 @@
 
     <nav class="navbar">
         <div class="logo"><i class="fas fa-graduation-cap"></i> LEARNING-365</div>
-        <a href="{% url 'register' %}" class="nav-btn">Get Started</a>
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="nav-btn">Dashboard</a>
+        {% else %}
+            <a href="{% url 'register' %}" class="nav-btn">Get Started</a>
+        {% endif %}
     </nav>
 
     <section class="hero-section">
@@ -479,8 +507,13 @@
                 </h1>
                 <p class="hero-subtitle">Join thousands of students learning AI, Coding, and Design. Access live classes, AI-proctored exams, and a vast library.</p>
                 <div class="hero-btns">
-                    <a href="{% url 'register' %}" class="btn-fill">Start Learning</a>
-                    <a href="#features" class="btn-glass">Explore Courses</a>
+                    {% if request.user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="btn-fill">Go to Dashboard</a>
+                        <a href="{% url 'all_courses' %}" class="btn-glass">Browse Courses</a>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="btn-fill">Start Learning</a>
+                        <a href="#features" class="btn-glass">Explore Features</a>
+                    {% endif %}
                 </div>
             </div>
             <div class="hero-icon-box" data-aos="zoom-in">
@@ -502,7 +535,6 @@
                 <div class="logo-text-group">
                     <span class="char-l">L</span>
                     <span class="char-rest">EARNING-</span>
-                    
                 </div>
                 <span class="logo-365">365</span>
             </div>
@@ -654,7 +686,7 @@
                     <div class="dev-card">
                         <div class="dev-avatar-container">
                             <div class="static-ring ring-cyan"></div>
-                            <img src="{% static 'images/dev1.png' %}" class="dev-img" width="160" height="160" alt="Soham">
+                            <img src="{% static 'images/dev1.png' %}" class="dev-img" alt="Soham">
                         </div>
                         <div class="dev-info">
                             <span class="role-text role-cyan">"UI/UX Designer"</span>
@@ -672,7 +704,7 @@
                     <div class="dev-card">
                         <div class="dev-avatar-container">
                             <div class="static-ring ring-purple"></div>
-                            <img src="{% static 'images/dev2.png' %}" class="dev-img" width="160" height="160" alt="Anubhav">
+                            <img src="{% static 'images/dev2.png' %}" class="dev-img" alt="Anubhav">
                         </div>
                         <div class="dev-info">
                             <span class="role-text role-purple">"Backend developer"</span>
@@ -692,7 +724,7 @@
                     <div class="dev-card">
                         <div class="dev-avatar-container">
                             <div class="static-ring ring-cyan"></div>
-                            <img src="{% static 'images/dev3.png' %}" class="dev-img" width="160" height="160" alt="Avik">
+                            <img src="{% static 'images/dev3.png' %}" class="dev-img" alt="Avik">
                         </div>
                         <div class="dev-info">
                             <span class="role-text role-cyan">"Database Administrator"</span>
@@ -710,7 +742,7 @@
                     <div class="dev-card">
                         <div class="dev-avatar-container">
                             <div class="static-ring ring-purple"></div>
-                            <img src="{% static 'images/dev4.png' %}" class="dev-img" width="160" height="160" alt="Abhishek">
+                            <img src="{% static 'images/dev4.png' %}" class="dev-img" alt="Abhishek">
                         </div>
                         <div class="dev-info">
                             <span class="role-text role-purple">"Security Expert"</span>
@@ -786,9 +818,27 @@
             <div class="footer-col">
                 <h4>Platform</h4>
                 <ul>
-                    <li><a href="{% url 'all_courses' %}">Browse Courses</a></li>
-                    <li><a href="{% url 'live_classes' %}">Live Classes</a></li>
-                    <li><a href="{% url 'student_exam_list' %}">AI Exams</a></li>
+                    <li>
+                        {% if request.user.is_authenticated %}
+                            <a href="{% url 'all_courses' %}">Browse Courses</a>
+                        {% else %}
+                            <a href="{% url 'register' %}">Browse Courses</a>
+                        {% endif %}
+                    </li>
+                    <li>
+                        {% if request.user.is_authenticated %}
+                            <a href="{% url 'live_classes' %}">Live Classes</a>
+                        {% else %}
+                            <a href="{% url 'register' %}">Live Classes</a>
+                        {% endif %}
+                    </li>
+                    <li>
+                        {% if request.user.is_authenticated %}
+                            <a href="{% url 'student_exam_list' %}">AI Exams</a>
+                        {% else %}
+                            <a href="{% url 'register' %}">AI Exams</a>
+                        {% endif %}
+                    </li>
                 </ul>
             </div>
 
@@ -847,22 +897,20 @@
             scale: 1.02
         });
 
-        // 🚀 NEW: Contact Section Reveal Logic
+        // Contact Section Reveal Logic
         document.querySelectorAll('.open-contact-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const helpSection = document.getElementById('help-center');
-                // Show the block first, then trigger opacity transition
                 helpSection.style.display = 'block';
                 setTimeout(() => {
                     helpSection.classList.add('visible');
-                    // Smooth scroll to the form
                     helpSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 50);
             });
         });
 
-        // 🚀 NEW: Advanced Terms of Use Modal Logic
+        // Terms of Use Modal Logic
         const termsModal = document.getElementById('termsModal');
         const openTermsModal = document.getElementById('openTermsModal');
         const closeTermsBtn = document.getElementById('closeTermsBtn');
@@ -906,6 +954,7 @@
         const stage = document.getElementById('animStage');
 
         function runAnimation() {
+            if(!stage) return;
             stage.classList.remove('phase-1', 'phase-2', 'phase-3', 'phase-4');
             void stage.offsetWidth; 
             
@@ -925,9 +974,13 @@
 
         function moveSlide(index) {
             currentSlide = index;
-            track.style.transform = `translateX(-${index * 100}%)`;
+            if(track) {
+                track.style.transform = `translateX(-${index * 100}%)`;
+            }
             dots.forEach(d => d.classList.remove('active'));
-            dots[index].classList.add('active');
+            if(dots[index]) {
+                dots[index].classList.add('active');
+            }
         }
 
         setInterval(() => {
@@ -975,10 +1028,12 @@
 
         // --- CURSOR GLOW LOGIC ---
         const cursorGlow = document.getElementById('cursor-glow');
-        document.addEventListener('mousemove', (e) => {
-            cursorGlow.style.left = e.clientX + 'px';
-            cursorGlow.style.top = e.clientY + 'px';
-        });
+        if(cursorGlow) {
+            document.addEventListener('mousemove', (e) => {
+                cursorGlow.style.left = e.clientX + 'px';
+                cursorGlow.style.top = e.clientY + 'px';
+            });
+        }
     </script>
 
 </body>
