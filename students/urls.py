@@ -58,4 +58,15 @@ urlpatterns = [
     # API routing for bounty arena
     path('api/bounty/generate/', views.generate_bounty_problem, name='generate_bounty_problem'),
     path('api/bounty/submit/', views.submit_bounty_code, name='submit_bounty_code'),
+
+    # ==========================================
+    # 🚀 NEW ROUTES ADDED BELOW (No old code removed)
+    # ==========================================
+
+    # 🚀 SYNTAX SINGULARITY URLS (Matched with updated views.py)
+    path('syntax-singularity/', views.syntax_singularity_view, name='syntax_singularity'),
+    path('api/generate-challenge/', views.generate_ai_challenge, name='generate_challenge'),
+
+    # 🚀 FACULTY PANEL SYSTEM
+    path('faculty-panel/', views.faculty_dashboard, name='faculty_dashboard'),
 ]

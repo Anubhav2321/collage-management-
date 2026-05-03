@@ -36,7 +36,7 @@ from .forms import (
     LessonCommentForm
 )
 
-# Import Models
+# Import Models[cite: 5]
 from .models import (
     Course,
     Enrollment,
@@ -50,9 +50,10 @@ from .models import (
     Question,
     QuizResult,
     LessonComment,
-    DynamicBountyProblem,  # For Bounty Arena / Syntax Singularity
-    ProblemTestCase,       # For Bounty Arena / Syntax Singularity
-    BountySubmission       # For Bounty Arena / Syntax Singularity
+    DynamicBountyProblem,  
+    ProblemTestCase,       
+    BountySubmission,      
+    FacultyProfile         
 )
 
 User = get_user_model()
@@ -124,6 +125,8 @@ def login_view(request):
         messages.success(request, "You are already logged in.")
         if request.user.is_staff or request.user.is_superuser:
             return redirect('admin_dashboard')
+        elif getattr(request.user, 'is_faculty', False):
+            return redirect('faculty_dashboard')
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -147,6 +150,8 @@ def login_view(request):
             
             if user.is_staff or user.is_superuser:
                 return redirect('admin_dashboard')
+            elif getattr(user, 'is_faculty', False):
+                return redirect('faculty_dashboard')
             else:
                 return redirect('dashboard')
         else:
@@ -1095,7 +1100,7 @@ def admin_delete_enrollment(request, enroll_id):
 
 
 # =====================================================================
-# 8. NEW: SYNTAX SINGULARITY (AI LOGIC CHECKER)
+# 8. PREVIOUS: SYNTAX SINGULARITY (AI LOGIC CHECKER)
 # =====================================================================
 
 @login_required
@@ -1245,8 +1250,10 @@ def submit_bounty_code(request):
             
             content = response_data['choices'][0]['message']['content'].replace("```json", "").replace("```", "").strip()
             
-            try: eval_result = json.loads(content)
-            except json.JSONDecodeError: return JsonResponse({'status': 'error', 'message': 'AI response format error.'}, status=500)
+            try: 
+                eval_result = json.loads(content)
+            except json.JSONDecodeError: 
+                return JsonResponse({'status': 'error', 'message': 'AI response format error.'}, status=500)
             
             is_correct = eval_result.get('is_correct', False)
             feedback = eval_result.get('feedback', 'No feedback provided.')
@@ -1282,3 +1289,41 @@ def submit_bounty_code(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
             
     return JsonResponse({'status': 'error', 'message': 'Invalid Request'}, status=400)
+
+
+# =====================================================================
+# 9. NEW: FACULTY PANEL SYSTEM
+# =====================================================================
+
+@login_required
+def faculty_dashboard(request):
+    """
+    Main Dashboard for Faculty Members.
+    """
+    user = request.user
+    if not getattr(user, 'is_faculty', False):
+        messages.error(request, "Access Denied! Only faculty members can view this page.")
+        return redirect('dashboard')
+    
+    # Fetch assigned courses
+    assigned_courses = Course.objects.filter(assigned_faculty=user)
+    total_courses = assigned_courses.count()
+    
+    # Fetch total unique students enrolled in these courses
+    total_students = Enrollment.objects.filter(course__in=assigned_courses).values('student').distinct().count()
+    
+    # Upcoming Live Classes for these courses
+    upcoming_classes = LiveClass.objects.filter(course__in=assigned_courses, date_time__gte=timezone.now()).order_by('date_time')
+    
+    # Recent Documents uploaded for these courses
+    documents = LibraryDocument.objects.filter(course__in=assigned_courses).order_by('-uploaded_at')[:5]
+
+    context = {
+        'user': user,
+        'assigned_courses': assigned_courses,
+        'total_courses': total_courses,
+        'total_students': total_students,
+        'upcoming_classes': upcoming_classes,
+        'documents': documents,
+    }
+    return render(request, 'faculty_dashboard.html', context)

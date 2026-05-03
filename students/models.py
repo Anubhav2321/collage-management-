@@ -17,6 +17,7 @@ from allauth.socialaccount.models import SocialAccount # NEW: Google data fetch 
 class User(AbstractUser):
     is_student = models.BooleanField(default=True, verbose_name="Is Student")
     is_teacher = models.BooleanField(default=False, verbose_name="Is Teacher")
+    is_faculty = models.BooleanField(default=False, verbose_name="Is Faculty") # NEW: Added Faculty Role
     
     student_level = models.CharField(
         max_length=50, 
@@ -36,7 +37,7 @@ class User(AbstractUser):
         ordering = ['-date_joined']
 
     def __str__(self):
-        role = "Teacher" if self.is_teacher else "Student"
+        role = "Teacher" if self.is_teacher else ("Faculty" if self.is_faculty else "Student")
         return f"{self.username} | {role}"
 
     @property
@@ -62,6 +63,19 @@ class Profile(models.Model):
     def __str__(self):
         return f"Profile: {self.user.username}"
 
+# NEW: FACULTY PROFILE MODEL
+class FacultyProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='faculty_profile', limit_choices_to={'is_faculty': True})
+    department = models.CharField(max_length=100, blank=True, null=True)
+    experience_years = models.PositiveIntegerField(default=0)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    specialization = models.CharField(max_length=200, blank=True, null=True, help_text="e.g., Data Science, AI, Backend")
+    background = models.CharField(max_length=100, blank=True, null=True, help_text="e.g., Science, Arts")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Faculty Profile: {self.user.full_name}"
+
 # 3. COURSE MODEL
 
 class Course(models.Model):
@@ -69,9 +83,12 @@ class Course(models.Model):
     slug = models.SlugField(max_length=250, unique=True, blank=True, help_text="Auto-generated from title")
     description = models.TextField()
     
-    #  Faculty Name 
+    #  Faculty Name (String Field)
     faculty_name = models.CharField(max_length=100, default="Expert Faculty") 
     
+    # NEW: Assigned Faculty (Foreign Key)
+    assigned_faculty = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_courses', limit_choices_to={'is_faculty': True})
+
     thumbnail = models.ImageField(upload_to='course_thumbnails/', blank=True, null=True)
     
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
