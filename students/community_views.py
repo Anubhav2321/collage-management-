@@ -53,36 +53,26 @@ def generate_ai_reply(course_id, prompt, reply_to_id=None, image_path=None):
         system_prompt = "You are an expert AI teaching assistant for a tech community. Provide short, clear, and very helpful answers. DO NOT use markdown asterisks (**) or bold text. Instead, use relevant emojis 🚀💡💻 🤖 to highlight key points. Format code blocks using standard markdown."
         
         # 3. Check if an Image was provided to use the Vision Model
+        # NOTE: Vision models are currently unavailable on Groq (llama-3.2-90b-vision-preview was decommissioned).
+        # Falling back to text-only model for all requests.
         if image_path and os.path.exists(image_path):
-            with open(image_path, "rb") as image_file:
-                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
-            
-            # Message format for Vision Model
+            # Vision model unavailable - use text model with a note about the image
+            image_note = " (Note: An image was attached but I cannot process images currently. Please describe what's in the image if you need help with it.)"
             api_messages = [
                 {"role": "system", "content": system_prompt},
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt if prompt else "Can you describe what is in this image?"},
-                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
-                    ]
-                }
+                {"role": "user", "content": (prompt if prompt else "An image was shared but I cannot process it.") + image_note}
             ]
-            # FIXED: Updated to the new, supported 90B Vision model
-            ai_model = "llama-3.2-90b-vision-preview" 
-            
         else:
             # Standard Text-Only Model
             api_messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
             ]
-            ai_model = "llama-3.3-70b-versatile" # GROQ TEXT MODEL
 
         # Call Groq API
         chat_completion = client.chat.completions.create(
             messages=api_messages,
-            model=ai_model, 
+            model="qwen/qwen3.8-27b",  # Updated: using qwen model since llama models were removed
         )
         ai_response = chat_completion.choices[0].message.content
         

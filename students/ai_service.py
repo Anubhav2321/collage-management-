@@ -72,7 +72,7 @@ def generate_learning_assistant_response(user_message, chat_history=[]):
         chat_completion = client.chat.completions.create(
             messages=messages,
             # UPDATE: Changed to the latest supported model
-            model="llama-3.3-70b-versatile", 
+            model="qwen/qwen3.8-27b",  # Updated: llama-3.3-70b-versatile was removed from Groq
             temperature=0.7,         
             max_tokens=400,
         )

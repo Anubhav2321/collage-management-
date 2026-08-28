@@ -1,6 +1,8 @@
 import os
 import json
+# pyrefly: ignore [missing-import]
 import PyPDF2
+# pyrefly: ignore [missing-import]
 import docx
 from groq import Groq
 from dotenv import load_dotenv
@@ -18,7 +20,7 @@ client = Groq(
 def get_groq_response(system_instruction, user_message):
     """
     Sends data to Groq API and retrieves the AI response.
-    Updated Model: llama-3.3-70b-versatile (Latest Supported)
+    Updated Model: qwen/qwen3.8-27b (Latest Supported)
     """
     try:
         chat_completion = client.chat.completions.create(
@@ -33,7 +35,7 @@ def get_groq_response(system_instruction, user_message):
                 }
             ],
             #  UPDATE: Changed deprecated model to the latest one 
-            model="llama-3.3-70b-versatile", 
+            model="qwen/qwen3.8-27b",  # Updated: llama-3.3-70b-versatile was removed from Groq
             temperature=0.5,
             max_tokens=1024,
         )

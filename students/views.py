@@ -1211,7 +1211,7 @@ def generate_ai_challenge(request):
             """
             
             payload = {
-                "model": "llama-3.3-70b-versatile", #  UPDATED MODEL NAME (Current Flagship)
+                "model": "qwen/qwen3.8-27b",  # Updated: llama-3.3-70b-versatile was removed from Groq
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.5
             }
@@ -1297,7 +1297,7 @@ def submit_bounty_code(request):
             """
             
             payload = {
-                "model": "llama-3.3-70b-versatile", # 🚀 UPDATED MODEL NAME (Current Flagship)
+                "model": "qwen/qwen3.8-27b",  # Updated: llama-3.3-70b-versatile was removed from Groq
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.2
             }
